@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>COIN FLIP CASINO | Multi-Crypto | 11% House Edge</title>
     <style>
-        /* [KEEP ALL YOUR EXISTING STYLES - they are fine] */
         * {
             user-select: none;
             -webkit-tap-highlight-color: transparent;
@@ -475,9 +474,286 @@
         <div class="info-text">💡 Deposits/Withdrawals are sent to admin for manual processing</div>
     </div>
 
-    <!-- DEPOSIT MODAL (keep your existing modal HTML - it's fine) -->
-    <div id="depositModal" class="modal">...</div>
-    <div id="withdrawModal" class="modal">...</div>
+    <!-- DEPOSIT MODAL -->
+    <div id="depositModal" class="modal">
+        <div class="modal-content">
+            <h3>💵 DEPOSIT REQUEST</h3>
+            <div class="deposit-two-columns">
+                <div class="deposit-left-column">
+                    <select id="depositMethod" class="modal-select">
+                        <optgroup label="🔷 Bitcoin & Ethereum">
+                            <option value="Bitcoin (BTC)">Bitcoin (BTC)</option>
+                            <option value="Ethereum (ETH)">Ethereum (ETH)</option>
+                        </optgroup>
+                        <optgroup label="💎 USDT & USDC (Multiple Chains)">
+                            <option value="USDT (ERC20)">USDT (ERC20) - Ethereum</option>
+                            <option value="USDT (BEP20)">USDT (BEP20) - BNB Chain</option>
+                            <option value="USDT (TRC20)">USDT (TRC20) - TRON</option>
+                            <option value="USDC (ERC20)">USDC (ERC20) - Ethereum</option>
+                            <option value="USDC (BEP20)">USDC (BEP20) - BNB Chain</option>
+                            <option value="USDC (TRC20)">USDC (TRC20) - TRON</option>
+                        </optgroup>
+                        <optgroup label="🟣 BNB & Altcoins">
+                            <option value="BNB (BSC)">BNB (BSC) - Binance Coin</option>
+                            <option value="Litecoin (LTC)">Litecoin (LTC)</option>
+                            <option value="Solana (SOL)">Solana (SOL)</option>
+                            <option value="Dogecoin (DOGE)">Dogecoin (DOGE)</option>
+                            <option value="Ripple (XRP)">Ripple (XRP)</option>
+                            <option value="Cardano (ADA)">Cardano (ADA)</option>
+                            <option value="Polkadot (DOT)">Polkadot (DOT)</option>
+                            <option value="Polygon (MATIC)">Polygon (MATIC)</option>
+                            <option value="Avalanche (AVAX)">Avalanche (AVAX)</option>
+                            <option value="TRON (TRX)">TRON (TRX)</option>
+                            <option value="Monero (XMR)">Monero (XMR)</option>
+                            <option value="TONCOIN (TON)">TONCOIN (TON)</option>
+                            <option value="Shiba Inu (SHIB)">Shiba Inu (SHIB) - ERC20</option>
+                        </optgroup>
+                    </select>
+                    
+                    <div class="qr-section" id="depositQRSection">
+                        <!-- BTC -->
+                        <div id="qr-btc" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 Bitcoin (BTC) Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=16Hv2ngy7qy6ZEAxfga2mRDdMhzqgryXUC">
+                            <div class="wallet-address-container"><span class="wallet-address" id="btcAddress">16Hv2ngy7qy6ZEAxfga2mRDdMhzqgryXUC</span><button class="copy-btn" onclick="copyToClipboard('btcAddress')">📋 COPY</button></div>
+                        </div>
+                        <!-- ETH -->
+                        <div id="qr-eth" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 Ethereum (ETH) Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
+                            <div class="wallet-address-container"><span class="wallet-address" id="ethAddress">0x524b351129D5bC89eFA657f5266155297F398344</span><button class="copy-btn" onclick="copyToClipboard('ethAddress')">📋 COPY</button></div>
+                        </div>
+                        <!-- USDT ERC20 -->
+                        <div id="qr-usdt-erc20" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 USDT (ERC20) - Ethereum Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
+                            <div class="wallet-address-container"><span class="wallet-address" id="usdtErc20Address">0x524b351129D5bC89eFA657f5266155297F398344</span><button class="copy-btn" onclick="copyToClipboard('usdtErc20Address')">📋 COPY</button></div>
+                        </div>
+                        <!-- USDT BEP20 -->
+                        <div id="qr-usdt-bep20" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 USDT (BEP20) - BNB Chain Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
+                            <div class="wallet-address-container"><span class="wallet-address" id="usdtBep20Address">0x524b351129D5bC89eFA657f5266155297F398344</span><button class="copy-btn" onclick="copyToClipboard('usdtBep20Address')">📋 COPY</button></div>
+                        </div>
+                        <!-- USDT TRC20 -->
+                        <div id="qr-usdt-trc20" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 USDT (TRC20) - TRON Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN">
+                            <div class="wallet-address-container"><span class="wallet-address" id="usdtTrc20Address">TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN</span><button class="copy-btn" onclick="copyToClipboard('usdtTrc20Address')">📋 COPY</button></div>
+                        </div>
+                        <!-- USDC ERC20 -->
+                        <div id="qr-usdc-erc20" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 USDC (ERC20) - Ethereum Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
+                            <div class="wallet-address-container"><span class="wallet-address" id="usdcErc20Address">0x524b351129D5bC89eFA657f5266155297F398344</span><button class="copy-btn" onclick="copyToClipboard('usdcErc20Address')">📋 COPY</button></div>
+                        </div>
+                        <!-- USDC BEP20 -->
+                        <div id="qr-usdc-bep20" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 USDC (BEP20) - BNB Chain Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
+                            <div class="wallet-address-container"><span class="wallet-address" id="usdcBep20Address">0x524b351129D5bC89eFA657f5266155297F398344</span><button class="copy-btn" onclick="copyToClipboard('usdcBep20Address')">📋 COPY</button></div>
+                        </div>
+                        <!-- USDC TRC20 -->
+                        <div id="qr-usdc-trc20" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 USDC (TRC20) - TRON Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN">
+                            <div class="wallet-address-container"><span class="wallet-address" id="usdcTrc20Address">TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN</span><button class="copy-btn" onclick="copyToClipboard('usdcTrc20Address')">📋 COPY</button></div>
+                        </div>
+                        <!-- BNB -->
+                        <div id="qr-bnb" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 BNB (BSC) - Binance Coin Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
+                            <div class="wallet-address-container"><span class="wallet-address" id="bnbAddress">0x524b351129D5bC89eFA657f5266155297F398344</span><button class="copy-btn" onclick="copyToClipboard('bnbAddress')">📋 COPY</button></div>
+                        </div>
+                        <!-- LTC -->
+                        <div id="qr-ltc" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 Litecoin (LTC) Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=LLVjH9nxPjGLNrGQA7TXyUx2eexKL4Yuxn">
+                            <div class="wallet-address-container"><span class="wallet-address" id="ltcAddress">LLVjH9nxPjGLNrGQA7TXyUx2eexKL4Yuxn</span><button class="copy-btn" onclick="copyToClipboard('ltcAddress')">📋 COPY</button></div>
+                        </div>
+                        <!-- SOL -->
+                        <div id="qr-sol" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 Solana (SOL) Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=6RFV3E4jSuEnATwi9NMTBfqE9yfNAz3Nh9Ad2ZPpFeE">
+                            <div class="wallet-address-container"><span class="wallet-address" id="solAddress">6RFV3E4jSuEnATwi9NMTBfqE9yfNAz3Nh9Ad2ZPpFeE</span><button class="copy-btn" onclick="copyToClipboard('solAddress')">📋 COPY</button></div>
+                        </div>
+                        <!-- DOGE -->
+                        <div id="qr-doge" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 Dogecoin (DOGE) Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=DUBtSMnvRWKJks8GvRSGtKkusmFsWdgzWK">
+                            <div class="wallet-address-container"><span class="wallet-address" id="dogeAddress">DUBtSMnvRWKJks8GvRSGtKkusmFsWdgzWK</span><button class="copy-btn" onclick="copyToClipboard('dogeAddress')">📋 COPY</button></div>
+                        </div>
+                        <!-- XRP -->
+                        <div id="qr-xrp" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 Ripple (XRP) Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=rG3SL9GntFomLeFxJMP1tvs5fdQwogZttG">
+                            <div class="wallet-address-container"><span class="wallet-address" id="xrpAddress">rG3SL9GntFomLeFxJMP1tvs5fdQwogZttG</span><button class="copy-btn" onclick="copyToClipboard('xrpAddress')">📋 COPY</button></div>
+                        </div>
+                        <!-- ADA -->
+                        <div id="qr-ada" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 Cardano (ADA) Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=addr1q8nalkryt3j43zz2cl4c6vwmcp3smugvr5jvj7l0hmkjgn7szeu32fljmxyhtksdsdh8gue73qtgkh0q875tthemh0lq2phz4v">
+                            <div class="wallet-address-container"><span class="wallet-address" id="adaAddress">addr1q8nalkryt3j43zz2cl4c6vwmcp3smugvr5jvj7l0hmkjgn7szeu32fljmxyhtksdsdh8gue73qtgkh0q875tthemh0lq2phz4v</span><button class="copy-btn" onclick="copyToClipboard('adaAddress')">📋 COPY</button></div>
+                        </div>
+                        <!-- DOT -->
+                        <div id="qr-dot" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 Polkadot (DOT) Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=14mDXE2j5HbzXdGEXKj5xR3kJSRLyyDH94TjtDk3F1kVS2Ub">
+                            <div class="wallet-address-container"><span class="wallet-address" id="dotAddress">14mDXE2j5HbzXdGEXKj5xR3kJSRLyyDH94TjtDk3F1kVS2Ub</span><button class="copy-btn" onclick="copyToClipboard('dotAddress')">📋 COPY</button></div>
+                        </div>
+                        <!-- MATIC -->
+                        <div id="qr-matic" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 Polygon (MATIC) Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
+                            <div class="wallet-address-container"><span class="wallet-address" id="maticAddress">0x524b351129D5bC89eFA657f5266155297F398344</span><button class="copy-btn" onclick="copyToClipboard('maticAddress')">📋 COPY</button></div>
+                        </div>
+                        <!-- AVAX -->
+                        <div id="qr-avax" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 Avalanche (AVAX) Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
+                            <div class="wallet-address-container"><span class="wallet-address" id="avaxAddress">0x524b351129D5bC89eFA657f5266155297F398344</span><button class="copy-btn" onclick="copyToClipboard('avaxAddress')">📋 COPY</button></div>
+                        </div>
+                        <!-- TRX -->
+                        <div id="qr-trx" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 TRON (TRX) Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN">
+                            <div class="wallet-address-container"><span class="wallet-address" id="trxAddress">TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN</span><button class="copy-btn" onclick="copyToClipboard('trxAddress')">📋 COPY</button></div>
+                        </div>
+                        <!-- XMR -->
+                        <div id="qr-xmr" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 Monero (XMR) Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=46ujpgsAHhW325Hq2qTfm7FFDE2adKwum65TvMS83oMkbt7Ezn5oCH5TaCer3Hn7adcvewixcm9MR4X4pNTtSuxNCeKErjU">
+                            <div class="wallet-address-container"><span class="wallet-address" id="xmrAddress">46ujpgsAHhW325Hq2qTfm7FFDE2adKwum65TvMS83oMkbt7Ezn5oCH5TaCer3Hn7adcvewixcm9MR4X4pNTtSuxNCeKErjU</span><button class="copy-btn" onclick="copyToClipboard('xmrAddress')">📋 COPY</button></div>
+                        </div>
+                        <!-- TON -->
+                        <div id="qr-ton" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 TONCOIN (TON) Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=EQBJHKaLTccsEmxP8Tc0B-1yzSeHksP7O9fbbO5jrABdZPBU">
+                            <div class="wallet-address-container"><span class="wallet-address" id="tonAddress">EQBJHKaLTccsEmxP8Tc0B-1yzSeHksP7O9fbbO5jrABdZPBU</span><button class="copy-btn" onclick="copyToClipboard('tonAddress')">📋 COPY</button></div>
+                        </div>
+                        <!-- SHIB -->
+                        <div id="qr-shib" class="qr-placeholder" style="display: none;">
+                            <div class="qr-title">💎 Shiba Inu (SHIB) - ERC20 Wallet</div>
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
+                            <div class="wallet-address-container"><span class="wallet-address" id="shibAddress">0x524b351129D5bC89eFA657f5266155297F398344</span><button class="copy-btn" onclick="copyToClipboard('shibAddress')">📋 COPY</button></div>
+                        </div>
+                    </div>
+                    
+                    <input type="number" step="0.01" id="depositAmount" class="modal-input" placeholder="Amount (min 10 points)" value="100">
+                    <input type="text" id="depositWallet" class="modal-input" placeholder="Your Wallet Address / Transaction ID / Hash *REQUIRED*">
+                    <textarea id="depositNote" class="modal-textarea" placeholder="Additional notes (optional)"></textarea>
+                </div>
+                
+                <div class="deposit-right-column">
+                    <div class="instructions-box">
+                        <div class="instructions-title">📋 DEPOSIT INSTRUCTIONS</div>
+                        <div class="instructions-text">
+                            <strong>1.</strong> Select your cryptocurrency from the dropdown.<br>
+                            <strong>2.</strong> Send the EXACT amount to the displayed wallet address.<br>
+                            <strong>3.</strong> Scan the QR code or click COPY to copy the address.<br>
+                            <strong>4.</strong> ⚠️ <strong>IMPORTANT:</strong> Send ONLY on the correct network!<br>
+                            <strong>5.</strong> Enter your Transaction ID / Hash in the field below.<br>
+                            <strong>6.</strong> Click "SEND REQUEST" so your transaction get processed.<br>
+                            <strong>7.</strong> Wait for admin to confirm your deposit (1-2 hours, usually less).
+                        </div>
+                        <div class="warning-text">
+                            ⚠️ <strong>CRITICAL WARNINGS:</strong><br>
+                            • <strong>BTC:</strong> Send on Bitcoin network only.<br>
+                            • <strong>ETH, USDC, USDT (ERC20), MATIC, AVAX, SHIB:</strong> Send on Ethereum (ERC20) network only.<br>
+                            • <strong>USDT (BEP20), BNB:</strong> Send on BNB Smart Chain (BSC/BEP20) only.<br>
+                            • <strong>USDT (TRC20), USDC (TRC20), TRX:</strong> Send on TRON (TRC20) network only.<br>
+                            • <strong>SOL:</strong> Send on Solana network only.<br>
+                            • <strong>LTC:</strong> Send on Litecoin network only.<br>
+                            • <strong>DOGE:</strong> Send on Dogecoin network only.<br>
+                            • <strong>XRP:</strong> Send on Ripple network only.<br>
+                            • <strong>ADA:</strong> Send on Cardano network only.<br>
+                            • <strong>DOT:</strong> Send on Polkadot network only.<br>
+                            • <strong>XMR:</strong> Send on Monero network only.<br>
+                            • <strong>TON:</strong> Send on TON network only.<br>
+                            • <strong>Sending on wrong network = PERMANENT LOSS!</strong><br>
+                            • You MUST send the Request via the button below.<br>
+                            • Include your Transaction ID exactly as shown in your wallet.<br>
+                            • No Request = no credit to your account.<br>
+                            • Minimum deposit: no minimum (but +10 dollars provide the best value)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button id="confirmDepositBtn" class="modal-confirm">📧 SEND REQUEST</button>
+                <button id="cancelDepositBtn" class="modal-cancel">❌ CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WITHDRAW MODAL -->
+    <div id="withdrawModal" class="modal">
+        <div class="modal-content">
+            <h3>💰 WITHDRAW REQUEST</h3>
+            <div class="deposit-two-columns">
+                <div class="deposit-left-column">
+                    <select id="withdrawMethod" class="modal-select">
+                        <optgroup label="🔷 Bitcoin & Ethereum">
+                            <option value="Bitcoin (BTC)">Bitcoin (BTC)</option>
+                            <option value="Ethereum (ETH)">Ethereum (ETH)</option>
+                        </optgroup>
+                        <optgroup label="💎 USDT & USDC (Multiple Chains)">
+                            <option value="USDT (ERC20)">USDT (ERC20) - Ethereum</option>
+                            <option value="USDT (BEP20)">USDT (BEP20) - BNB Chain</option>
+                            <option value="USDT (TRC20)">USDT (TRC20) - TRON</option>
+                            <option value="USDC (ERC20)">USDC (ERC20) - Ethereum</option>
+                            <option value="USDC (BEP20)">USDC (BEP20) - BNB Chain</option>
+                            <option value="USDC (TRC20)">USDC (TRC20) - TRON</option>
+                        </optgroup>
+                        <optgroup label="🟣 BNB & Altcoins">
+                            <option value="BNB (BSC)">BNB (BSC) - Binance Coin</option>
+                            <option value="Litecoin (LTC)">Litecoin (LTC)</option>
+                            <option value="Solana (SOL)">Solana (SOL)</option>
+                            <option value="Dogecoin (DOGE)">Dogecoin (DOGE)</option>
+                            <option value="Ripple (XRP)">Ripple (XRP)</option>
+                            <option value="Cardano (ADA)">Cardano (ADA)</option>
+                            <option value="Polkadot (DOT)">Polkadot (DOT)</option>
+                            <option value="Polygon (MATIC)">Polygon (MATIC)</option>
+                            <option value="Avalanche (AVAX)">Avalanche (AVAX)</option>
+                            <option value="TRON (TRX)">TRON (TRX)</option>
+                            <option value="Monero (XMR)">Monero (XMR)</option>
+                            <option value="TONCOIN (TON)">TONCOIN (TON)</option>
+                            <option value="Shiba Inu (SHIB)">Shiba Inu (SHIB) - ERC20</option>
+                        </optgroup>
+                    </select>
+                    <input type="number" step="0.01" id="withdrawAmount" class="modal-input" placeholder="Amount (min 10 points)" value="100">
+                    <input type="text" id="withdrawWallet" class="modal-input" placeholder="Your Wallet Address *REQUIRED*">
+                    <textarea id="withdrawNote" class="modal-textarea" placeholder="Additional notes (optional)"></textarea>
+                </div>
+                
+                <div class="deposit-right-column">
+                    <div class="instructions-box">
+                        <div class="instructions-title">📋 WITHDRAW INSTRUCTIONS</div>
+                        <div class="instructions-text">
+                            <strong>1.</strong> Select your cryptocurrency.<br>
+                            <strong>2.</strong> Enter your withdrawal amount (minimum 10 points).<br>
+                            <strong>3.</strong> Provide your wallet address where you want to receive funds.<br>
+                            <strong>4.</strong> Click "SEND REQUEST" to send request to the Admin.<br>
+                            <strong>5.</strong> Admin will process your withdrawal within 1-2 hours.
+                        </div>
+                        <div class="warning-text">
+                            ⚠️ <strong>CRITICAL WARNINGS:</strong><br>
+                            • Double-check your wallet address - wrong addresses cause PERMANENT LOSS!<br>
+                            • You MUST send the request via the button below.<br>
+                            • Minimum withdrawal: 10 points.<br>
+                            • Processing time: Up to 1-2 hours.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button id="confirmWithdrawBtn" class="modal-confirm">📧 SEND REQUEST</button>
+                <button id="cancelWithdrawBtn" class="modal-cancel">❌ CANCEL</button>
+            </div>
+        </div>
+    </div>
 
     <!-- COIN FLIP SECTION -->
     <div class="coin-area" id="coinArea">
@@ -509,8 +785,8 @@
 </div>
 
 <script>
-    // ========== API CONFIGURATION - FIXED! ==========
-    const API_URL = ''; // Empty means use same domain (relative paths)
+    // ========== API CONFIGURATION ==========
+    const API_URL = '';
     let authToken = null;
     let currentUser = null;
     let currentUserData = null;
@@ -553,6 +829,31 @@
     const depositModal = document.getElementById('depositModal');
     const withdrawModal = document.getElementById('withdrawModal');
     
+    // QR elements mapping
+    const qrElements = {
+        'Bitcoin (BTC)': 'qr-btc',
+        'Ethereum (ETH)': 'qr-eth',
+        'USDT (ERC20)': 'qr-usdt-erc20',
+        'USDT (BEP20)': 'qr-usdt-bep20',
+        'USDT (TRC20)': 'qr-usdt-trc20',
+        'USDC (ERC20)': 'qr-usdc-erc20',
+        'USDC (BEP20)': 'qr-usdc-bep20',
+        'USDC (TRC20)': 'qr-usdc-trc20',
+        'BNB (BSC)': 'qr-bnb',
+        'Litecoin (LTC)': 'qr-ltc',
+        'Solana (SOL)': 'qr-sol',
+        'Dogecoin (DOGE)': 'qr-doge',
+        'Ripple (XRP)': 'qr-xrp',
+        'Cardano (ADA)': 'qr-ada',
+        'Polkadot (DOT)': 'qr-dot',
+        'Polygon (MATIC)': 'qr-matic',
+        'Avalanche (AVAX)': 'qr-avax',
+        'TRON (TRX)': 'qr-trx',
+        'Monero (XMR)': 'qr-xmr',
+        'TONCOIN (TON)': 'qr-ton',
+        'Shiba Inu (SHIB)': 'qr-shib'
+    };
+    
     // ========== API CALL FUNCTION ==========
     async function apiCall(endpoint, method = 'GET', data = null) {
         const headers = {
@@ -572,6 +873,146 @@
             throw new Error(result.error || 'API error');
         }
         return result;
+    }
+    
+    // ========== CELEBRATION FUNCTIONS ==========
+    function showWinCelebration(amount) {
+        const flash = document.createElement('div'); flash.className = 'flash'; document.body.appendChild(flash); setTimeout(() => flash.remove(), 500);
+        const overlay = document.createElement('div'); overlay.className = 'celebration-overlay'; overlay.style.display = 'block'; document.body.appendChild(overlay);
+        for (let i = 0; i < 50; i++) {
+            const confetti = document.createElement('div'); confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.background = `hsl(${Math.random() * 360}, 70%, 60%)`;
+            confetti.style.animationDelay = Math.random() * 0.5 + 's';
+            overlay.appendChild(confetti);
+        }
+        setTimeout(() => overlay.remove(), 2000);
+        const popup = document.createElement('div'); popup.className = 'big-win-popup';
+        popup.innerHTML = `✨ WINNER!<br>+${amount.toFixed(2)}`;
+        document.body.appendChild(popup); setTimeout(() => popup.remove(), 1500);
+        const coinArea = document.getElementById('coinArea');
+        coinArea.classList.add('win-glow'); setTimeout(() => coinArea.classList.remove('win-glow'), 800);
+        showNotification(`🎉 WIN! Won ${amount.toFixed(2)}! 🎉`);
+    }
+    
+    function showNotification(msg) {
+        const notif = document.createElement('div'); notif.className = 'notification';
+        notif.innerHTML = msg; document.body.appendChild(notif);
+        setTimeout(() => notif.remove(), 2000);
+    }
+    
+    function copyToClipboard(elementId) {
+        const text = document.getElementById(elementId).innerText;
+        navigator.clipboard.writeText(text).then(() => showNotification(`📋 Copied: ${text.substring(0, 20)}...`));
+    }
+    function copyUserId() {
+        const userId = document.getElementById('userIdDisplay').innerText;
+        if (userId && userId !== '-') navigator.clipboard.writeText(userId).then(() => showNotification(`📋 User ID copied: ${userId}`));
+    }
+    window.copyToClipboard = copyToClipboard;
+    window.copyUserId = copyUserId;
+    
+    function updateUI() {
+        if (!currentUserData) return;
+        balanceEl.innerText = currentUserData.balance.toFixed(2);
+        bestStreakEl.innerText = currentUserData.bestStreak || 0;
+        totalWageredEl.innerText = (currentUserData.totalWagered || 0).toFixed(2);
+        winsCountEl.innerText = currentUserData.wins || 0;
+        lossesCountEl.innerText = currentUserData.losses || 0;
+        const total = (currentUserData.wins || 0) + (currentUserData.losses || 0);
+        const winRate = total > 0 ? Math.round(((currentUserData.wins || 0) / total) * 100) : 0;
+        winRateEl.innerText = winRate + '%';
+        currentStreakEl.innerText = currentUserData.currentStreak || 0;
+        betInput.max = currentUserData.balance;
+        userIdDisplay.innerText = currentUserData.id || currentUserData._id;
+    }
+    
+    function updateSelectedButton() {
+        headsBtn.classList.remove('selected');
+        tailsBtn.classList.remove('selected');
+        if (selectedChoice === 'heads') headsBtn.classList.add('selected');
+        if (selectedChoice === 'tails') tailsBtn.classList.add('selected');
+    }
+    
+    function validateBet() {
+        let bet = parseFloat(betInput.value);
+        if (isNaN(bet) || bet <= 0) { showNotification('Please enter a valid bet amount!'); return null; }
+        if (bet > currentUserData.balance) { showNotification('Not enough balance!'); return null; }
+        return bet;
+    }
+    
+    function setGameEnabled(enabled) {
+        betInput.disabled = !enabled;
+        headsBtn.disabled = !enabled;
+        tailsBtn.disabled = !enabled;
+        halfBtn.disabled = !enabled;
+        doubleBtn.disabled = !enabled;
+        maxBtn.disabled = !enabled;
+        flipBtn.disabled = !enabled;
+        depositBtn.disabled = !enabled;
+        withdrawBtn.disabled = !enabled;
+        if (!enabled) resultEl.innerHTML = 'Login to start playing!';
+        else resultEl.innerHTML = 'Select HEADS or TAILS to start';
+    }
+    
+    function updateDepositQR() {
+        const method = document.getElementById('depositMethod').value;
+        for (let id in qrElements) {
+            const element = document.getElementById(qrElements[id]);
+            if (element) element.style.display = 'none';
+        }
+        if (qrElements[method]) {
+            const selected = document.getElementById(qrElements[method]);
+            if (selected) selected.style.display = 'flex';
+        }
+    }
+    
+    function sendEmailRequest(type, data) {
+        const subject = `[COIN FLIP CASINO] ${type.toUpperCase()} REQUEST - User: ${currentUser.username}`;
+        const body = `=== ${type.toUpperCase()} REQUEST ===\nUser ID: ${currentUser.id || currentUser._id}\nUsername: ${currentUser.username}\nAmount: ${data.amount}\nPayment Method: ${data.method}\n${type === 'DEPOSIT' ? `Transaction ID: ${data.wallet}` : `Wallet Address: ${data.wallet}`}\nNotes: ${data.note || 'None'}\nTimestamp: ${new Date().toLocaleString()}`;
+        window.open(`mailto:yujigraphics@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
+        showNotification(`📧 Email client opened! Send the request to admin.`);
+    }
+    
+    // ========== MODAL FUNCTIONS ==========
+    function openDepositModal() { if (!currentUser) { showNotification('Please login first!'); return; } updateDepositQR(); depositModal.style.display = 'flex'; }
+    function closeDepositModal() { depositModal.style.display = 'none'; document.getElementById('depositMethod').value = 'Bitcoin (BTC)'; document.getElementById('depositAmount').value = '100'; document.getElementById('depositWallet').value = ''; document.getElementById('depositNote').value = ''; updateDepositQR(); }
+    
+    function confirmDeposit() { 
+        const amount = parseFloat(document.getElementById('depositAmount').value); 
+        const method = document.getElementById('depositMethod').value; 
+        const wallet = document.getElementById('depositWallet').value; 
+        const note = document.getElementById('depositNote').value; 
+        if (!amount || amount < 10) { showNotification('Minimum deposit is 10 points!'); return; } 
+        if (!wallet) { showNotification('Please provide your wallet address / transaction ID!'); return; } 
+        sendEmailRequest('DEPOSIT', { amount, method, wallet, note }); 
+        closeDepositModal(); 
+    }
+    
+    function openWithdrawModal() { 
+        if (!currentUser) { showNotification('Please login first!'); return; } 
+        if (currentUserData.balance < 10) { showNotification('Minimum balance for withdrawal is 10 points!'); return; } 
+        withdrawModal.style.display = 'flex'; 
+    }
+    
+    function closeWithdrawModal() { 
+        withdrawModal.style.display = 'none'; 
+        document.getElementById('withdrawMethod').value = 'Bitcoin (BTC)'; 
+        document.getElementById('withdrawAmount').value = '100'; 
+        document.getElementById('withdrawWallet').value = ''; 
+        document.getElementById('withdrawNote').value = ''; 
+    }
+    
+    function confirmWithdraw() { 
+        const amount = parseFloat(document.getElementById('withdrawAmount').value); 
+        const method = document.getElementById('withdrawMethod').value; 
+        const wallet = document.getElementById('withdrawWallet').value; 
+        const note = document.getElementById('withdrawNote').value; 
+        if (!amount || amount < 10) { showNotification('Minimum withdrawal is 10 points!'); return; } 
+        if (amount > currentUserData.balance) { showNotification('Insufficient balance!'); return; } 
+        if (!wallet) { showNotification('Please provide your wallet address!'); return; } 
+        sendEmailRequest('WITHDRAW', { amount, method, wallet, note }); 
+        closeWithdrawModal(); 
     }
     
     // ========== AUTH FUNCTIONS ==========
@@ -652,6 +1093,63 @@
         showNotification('Logged out');
     }
     
+    // ========== ADMIN FUNCTIONS ==========
+    async function loadAdminUsers() {
+        if (!isAdmin) return;
+        try {
+            const users = await apiCall('/admin/users');
+            adminUserSelect.innerHTML = '<option value="">-- Select User --</option>';
+            for (const user of users) {
+                const option = document.createElement('option');
+                option.value = user.username;
+                option.textContent = `${user.username} - Balance: ${user.balance.toFixed(2)}`;
+                adminUserSelect.appendChild(option);
+            }
+        } catch (error) {
+            console.error('Failed to load users:', error);
+        }
+    }
+    
+    async function adminAddFunds() {
+        if (!isAdmin) { showNotification('❌ Admin access required!'); return; }
+        const username = adminUserSelect.value;
+        const amount = parseFloat(adminAmount.value);
+        if (!username) { showNotification('Select a user first!'); return; }
+        if (isNaN(amount) || amount <= 0) { showNotification('Enter a valid amount!'); return; }
+        try {
+            await apiCall('/admin/add-funds', 'POST', { username, amount });
+            showNotification(`✅ Added ${amount.toFixed(2)} points to ${username}`);
+            loadAdminUsers();
+            if (currentUser && currentUser.username === username) {
+                const stats = await apiCall('/game/stats');
+                currentUserData = stats;
+                updateUI();
+            }
+        } catch (error) {
+            showNotification(error.message);
+        }
+    }
+    
+    async function adminRemoveFunds() {
+        if (!isAdmin) { showNotification('❌ Admin access required!'); return; }
+        const username = adminUserSelect.value;
+        const amount = parseFloat(adminAmount.value);
+        if (!username) { showNotification('Select a user first!'); return; }
+        if (isNaN(amount) || amount <= 0) { showNotification('Enter a valid amount!'); return; }
+        try {
+            await apiCall('/admin/remove-funds', 'POST', { username, amount });
+            showNotification(`✅ Removed ${amount.toFixed(2)} points from ${username}`);
+            loadAdminUsers();
+            if (currentUser && currentUser.username === username) {
+                const stats = await apiCall('/game/stats');
+                currentUserData = stats;
+                updateUI();
+            }
+        } catch (error) {
+            showNotification(error.message);
+        }
+    }
+    
     // ========== GAME FUNCTIONS ==========
     async function loadGameStats() {
         if (!authToken) return;
@@ -729,80 +1227,6 @@
         }
     }
     
-    // ========== HELPER FUNCTIONS ==========
-    function formatBalance(v) { return v.toFixed(2); }
-    
-    function showWinCelebration(amount) {
-        const flash = document.createElement('div'); flash.className = 'flash'; document.body.appendChild(flash); setTimeout(() => flash.remove(), 500);
-        const overlay = document.createElement('div'); overlay.className = 'celebration-overlay'; overlay.style.display = 'block'; document.body.appendChild(overlay);
-        for (let i = 0; i < 50; i++) {
-            const confetti = document.createElement('div'); confetti.className = 'confetti';
-            confetti.style.left = Math.random() * 100 + '%';
-            confetti.style.background = `hsl(${Math.random() * 360}, 70%, 60%)`;
-            confetti.style.animationDelay = Math.random() * 0.5 + 's';
-            overlay.appendChild(confetti);
-        }
-        setTimeout(() => overlay.remove(), 2000);
-        const popup = document.createElement('div'); popup.className = 'big-win-popup';
-        popup.innerHTML = `✨ WINNER!<br>+${formatBalance(amount)}`;
-        document.body.appendChild(popup); setTimeout(() => popup.remove(), 1500);
-        const coinArea = document.getElementById('coinArea');
-        coinArea.classList.add('win-glow'); setTimeout(() => coinArea.classList.remove('win-glow'), 800);
-        showNotification(`🎉 WIN! Won ${formatBalance(amount)}! 🎉`);
-    }
-    
-    function showNotification(msg) {
-        const notif = document.createElement('div'); notif.className = 'notification';
-        notif.innerHTML = msg; document.body.appendChild(notif);
-        setTimeout(() => notif.remove(), 2000);
-    }
-    
-    function copyToClipboard(elementId) {
-        const text = document.getElementById(elementId).innerText;
-        navigator.clipboard.writeText(text).then(() => showNotification(`📋 Copied: ${text.substring(0, 20)}...`));
-    }
-    function copyUserId() {
-        const userId = document.getElementById('userIdDisplay').innerText;
-        if (userId && userId !== '-') navigator.clipboard.writeText(userId).then(() => showNotification(`📋 User ID copied: ${userId}`));
-    }
-    window.copyToClipboard = copyToClipboard;
-    window.copyUserId = copyUserId;
-    
-    function updateUI() {
-        if (!currentUserData) return;
-        balanceEl.innerText = formatBalance(currentUserData.balance);
-        bestStreakEl.innerText = currentUserData.bestStreak || 0;
-        totalWageredEl.innerText = formatBalance(currentUserData.totalWagered || 0);
-        winsCountEl.innerText = currentUserData.wins || 0;
-        lossesCountEl.innerText = currentUserData.losses || 0;
-        const total = (currentUserData.wins || 0) + (currentUserData.losses || 0);
-        const winRate = total > 0 ? Math.round(((currentUserData.wins || 0) / total) * 100) : 0;
-        winRateEl.innerText = winRate + '%';
-        currentStreakEl.innerText = currentUserData.currentStreak || 0;
-        betInput.max = currentUserData.balance;
-    }
-    
-    function updateSelectedButton() {
-        headsBtn.classList.remove('selected');
-        tailsBtn.classList.remove('selected');
-        if (selectedChoice === 'heads') headsBtn.classList.add('selected');
-        if (selectedChoice === 'tails') tailsBtn.classList.add('selected');
-    }
-    
-    function setGameEnabled(enabled) {
-        betInput.disabled = !enabled;
-        headsBtn.disabled = !enabled;
-        tailsBtn.disabled = !enabled;
-        halfBtn.disabled = !enabled;
-        doubleBtn.disabled = !enabled;
-        maxBtn.disabled = !enabled;
-        flipBtn.disabled = !enabled;
-        depositBtn.disabled = !enabled;
-        withdrawBtn.disabled = !enabled;
-        if (!enabled) resultEl.innerHTML = 'Login to start playing!';
-        else resultEl.innerHTML = 'Select HEADS or TAILS to start';
-    }
-    
     function halfBet() {
         if (!currentUserData) return;
         let currentBet = parseFloat(betInput.value);
@@ -829,109 +1253,6 @@
         showNotification(`Max bet: ${currentUserData.balance.toFixed(2)}`);
     }
     
-    // QR elements mapping
-    const qrElements = {
-        'Bitcoin (BTC)': 'qr-btc',
-        'Ethereum (ETH)': 'qr-eth',
-        'USDT (ERC20)': 'qr-usdt-erc20',
-        'USDT (BEP20)': 'qr-usdt-bep20',
-        'USDT (TRC20)': 'qr-usdt-trc20',
-        'USDC (ERC20)': 'qr-usdc-erc20',
-        'USDC (BEP20)': 'qr-usdc-bep20',
-        'USDC (TRC20)': 'qr-usdc-trc20',
-        'BNB (BSC)': 'qr-bnb',
-        'Litecoin (LTC)': 'qr-ltc',
-        'Solana (SOL)': 'qr-sol',
-        'Dogecoin (DOGE)': 'qr-doge',
-        'Ripple (XRP)': 'qr-xrp',
-        'Cardano (ADA)': 'qr-ada',
-        'Polkadot (DOT)': 'qr-dot',
-        'Polygon (MATIC)': 'qr-matic',
-        'Avalanche (AVAX)': 'qr-avax',
-        'TRON (TRX)': 'qr-trx',
-        'Monero (XMR)': 'qr-xmr',
-        'TONCOIN (TON)': 'qr-ton',
-        'Shiba Inu (SHIB)': 'qr-shib'
-    };
-    
-    function updateDepositQR() {
-        const method = document.getElementById('depositMethod').value;
-        for (let id in qrElements) {
-            const element = document.getElementById(qrElements[id]);
-            if (element) element.style.display = 'none';
-        }
-        if (qrElements[method]) {
-            const selected = document.getElementById(qrElements[method]);
-            if (selected) selected.style.display = 'flex';
-        }
-    }
-    
-    async function loadAdminUsers() {
-        if (!isAdmin) return;
-        try {
-            const users = await apiCall('/admin/users');
-            adminUserSelect.innerHTML = '<option value="">-- Select User --</option>';
-            for (const user of users) {
-                const option = document.createElement('option');
-                option.value = user.username;
-                option.textContent = `${user.username} - Balance: ${user.balance.toFixed(2)}`;
-                adminUserSelect.appendChild(option);
-            }
-        } catch (error) {
-            console.error('Failed to load users:', error);
-        }
-    }
-    
-    async function adminAddFunds() {
-        if (!isAdmin) { showNotification('❌ Admin access required!'); return; }
-        const username = adminUserSelect.value;
-        const amount = parseFloat(adminAmount.value);
-        if (!username) { showNotification('Select a user first!'); return; }
-        if (isNaN(amount) || amount <= 0) { showNotification('Enter a valid amount!'); return; }
-        try {
-            await apiCall('/admin/add-funds', 'POST', { username, amount });
-            showNotification(`✅ Added ${amount.toFixed(2)} points to ${username}`);
-            loadAdminUsers();
-            if (currentUser && currentUser.username === username) {
-                await loadGameStats();
-            }
-        } catch (error) {
-            showNotification(error.message);
-        }
-    }
-    
-    async function adminRemoveFunds() {
-        if (!isAdmin) { showNotification('❌ Admin access required!'); return; }
-        const username = adminUserSelect.value;
-        const amount = parseFloat(adminAmount.value);
-        if (!username) { showNotification('Select a user first!'); return; }
-        if (isNaN(amount) || amount <= 0) { showNotification('Enter a valid amount!'); return; }
-        try {
-            await apiCall('/admin/remove-funds', 'POST', { username, amount });
-            showNotification(`✅ Removed ${amount.toFixed(2)} points from ${username}`);
-            loadAdminUsers();
-            if (currentUser && currentUser.username === username) {
-                await loadGameStats();
-            }
-        } catch (error) {
-            showNotification(error.message);
-        }
-    }
-    
-    function sendEmailRequest(type, data) {
-        const subject = `[COIN FLIP CASINO] ${type.toUpperCase()} REQUEST - User: ${currentUser.username}`;
-        const body = `=== ${type.toUpperCase()} REQUEST ===\nUser ID: ${currentUser.id}\nUsername: ${currentUser.username}\nAmount: ${data.amount}\nPayment Method: ${data.method}\n${type === 'DEPOSIT' ? `Transaction ID: ${data.wallet}` : `Wallet Address: ${data.wallet}`}\nNotes: ${data.note || 'None'}\nTimestamp: ${new Date().toLocaleString()}`;
-        window.open(`mailto:yujigraphics@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
-        showNotification(`📧 Email client opened! Send the request to admin.`);
-    }
-    
-    function openDepositModal() { if (!currentUser) { showNotification('Please login first!'); return; } updateDepositQR(); depositModal.style.display = 'flex'; }
-    function closeDepositModal() { depositModal.style.display = 'none'; document.getElementById('depositMethod').value = 'Bitcoin (BTC)'; document.getElementById('depositAmount').value = '100'; document.getElementById('depositWallet').value = ''; document.getElementById('depositNote').value = ''; updateDepositQR(); }
-    function confirmDeposit() { const amount = parseFloat(document.getElementById('depositAmount').value); const method = document.getElementById('depositMethod').value; const wallet = document.getElementById('depositWallet').value; const note = document.getElementById('depositNote').value; if (!amount || amount < 10) { showNotification('Minimum deposit is 10 points!'); return; } if (!wallet) { showNotification('Please provide your wallet address / transaction ID!'); return; } sendEmailRequest('DEPOSIT', { amount, method, wallet, note }); closeDepositModal(); }
-    function openWithdrawModal() { if (!currentUser) { showNotification('Please login first!'); return; } if (currentUserData.balance < 10) { showNotification('Minimum balance for withdrawal is 10 points!'); return; } withdrawModal.style.display = 'flex'; }
-    function closeWithdrawModal() { withdrawModal.style.display = 'none'; document.getElementById('withdrawMethod').value = 'Bitcoin (BTC)'; document.getElementById('withdrawAmount').value = '100'; document.getElementById('withdrawWallet').value = ''; document.getElementById('withdrawNote').value = ''; }
-    function confirmWithdraw() { const amount = parseFloat(document.getElementById('withdrawAmount').value); const method = document.getElementById('withdrawMethod').value; const wallet = document.getElementById('withdrawWallet').value; const note = document.getElementById('withdrawNote').value; if (!amount || amount < 10) { showNotification('Minimum withdrawal is 10 points!'); return; } if (amount > currentUserData.balance) { showNotification('Insufficient balance!'); return; } if (!wallet) { showNotification('Please provide your wallet address!'); return; } sendEmailRequest('WITHDRAW', { amount, method, wallet, note }); closeWithdrawModal(); }
-    
     // Check for saved session
     async function checkSession() {
         const savedToken = localStorage.getItem('authToken');
@@ -945,7 +1266,7 @@
                 document.getElementById('authForm').style.display = 'none';
                 document.getElementById('userInfo').style.display = 'block';
                 document.getElementById('currentUserDisplay').innerText = currentUser.username;
-                userIdDisplay.innerText = currentUser.id;
+                userIdDisplay.innerText = currentUser.id || currentUser._id;
                 if (isAdmin) {
                     adminBadge.style.display = 'inline-block';
                     adminPanel.style.display = 'block';
