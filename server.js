@@ -30,7 +30,7 @@ app.use('/api/game', gameRoutes);
 app.use('/api/deposit', depositRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Serve HTML files
+// Serve HTML files - IMPORTANT: These must be AFTER API routes
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
