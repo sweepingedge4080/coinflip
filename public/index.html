@@ -967,27 +967,76 @@
         }
     }
     
-    function sendEmailRequest(type, data) {
-        const subject = `[COIN FLIP CASINO] ${type.toUpperCase()} REQUEST - User: ${currentUser.username}`;
-        const body = `=== ${type.toUpperCase()} REQUEST ===\nUser ID: ${currentUser.id || currentUser._id}\nUsername: ${currentUser.username}\nAmount: ${data.amount}\nPayment Method: ${data.method}\n${type === 'DEPOSIT' ? `Transaction ID: ${data.wallet}` : `Wallet Address: ${data.wallet}`}\nNotes: ${data.note || 'None'}\nTimestamp: ${new Date().toLocaleString()}`;
-        window.open(`mailto:yujigraphics@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
-        showNotification(`📧 Email client opened! Send the request to admin.`);
+    // ========== NEW BACKEND API FUNCTIONS (replacing email) ==========
+    async function confirmDeposit() {
+        const amount = parseFloat(document.getElementById('depositAmount').value);
+        const method = document.getElementById('depositMethod').value;
+        const wallet = document.getElementById('depositWallet').value;
+        const note = document.getElementById('depositNote').value;
+        
+        if (!amount || amount < 10) { showNotification('Minimum deposit is 10 points!'); return; }
+        if (!wallet) { showNotification('Please provide your wallet address / transaction ID!'); return; }
+        
+        try {
+            // Send to backend API instead of email
+            const result = await apiCall('/deposit/request-deposit', 'POST', {
+                amount: amount,
+                amountPoints: amount,
+                cryptoMethod: method,
+                walletAddress: wallet,
+                transactionId: wallet,
+                note: note
+            });
+            
+            showNotification('✅ Deposit request sent! Admin will review and add funds.');
+            closeDepositModal();
+            
+            // Clear form
+            document.getElementById('depositAmount').value = '100';
+            document.getElementById('depositWallet').value = '';
+            document.getElementById('depositNote').value = '';
+            
+        } catch (error) {
+            showNotification('❌ Error: ' + error.message);
+        }
+    }
+    
+    async function confirmWithdraw() {
+        const amount = parseFloat(document.getElementById('withdrawAmount').value);
+        const method = document.getElementById('withdrawMethod').value;
+        const wallet = document.getElementById('withdrawWallet').value;
+        const note = document.getElementById('withdrawNote').value;
+        
+        if (!amount || amount < 10) { showNotification('Minimum withdrawal is 10 points!'); return; }
+        if (amount > currentUserData.balance) { showNotification('Insufficient balance!'); return; }
+        if (!wallet) { showNotification('Please provide your wallet address!'); return; }
+        
+        try {
+            // Send to backend API instead of email
+            const result = await apiCall('/deposit/request-withdraw', 'POST', {
+                amount: amount,
+                amountPoints: amount,
+                cryptoMethod: method,
+                walletAddress: wallet,
+                note: note
+            });
+            
+            showNotification('✅ Withdrawal request sent! Admin will review and process.');
+            closeWithdrawModal();
+            
+            // Clear form
+            document.getElementById('withdrawAmount').value = '100';
+            document.getElementById('withdrawWallet').value = '';
+            document.getElementById('withdrawNote').value = '';
+            
+        } catch (error) {
+            showNotification('❌ Error: ' + error.message);
+        }
     }
     
     // ========== MODAL FUNCTIONS ==========
     function openDepositModal() { if (!currentUser) { showNotification('Please login first!'); return; } updateDepositQR(); depositModal.style.display = 'flex'; }
     function closeDepositModal() { depositModal.style.display = 'none'; document.getElementById('depositMethod').value = 'Bitcoin (BTC)'; document.getElementById('depositAmount').value = '100'; document.getElementById('depositWallet').value = ''; document.getElementById('depositNote').value = ''; updateDepositQR(); }
-    
-    function confirmDeposit() { 
-        const amount = parseFloat(document.getElementById('depositAmount').value); 
-        const method = document.getElementById('depositMethod').value; 
-        const wallet = document.getElementById('depositWallet').value; 
-        const note = document.getElementById('depositNote').value; 
-        if (!amount || amount < 10) { showNotification('Minimum deposit is 10 points!'); return; } 
-        if (!wallet) { showNotification('Please provide your wallet address / transaction ID!'); return; } 
-        sendEmailRequest('DEPOSIT', { amount, method, wallet, note }); 
-        closeDepositModal(); 
-    }
     
     function openWithdrawModal() { 
         if (!currentUser) { showNotification('Please login first!'); return; } 
@@ -1001,18 +1050,6 @@
         document.getElementById('withdrawAmount').value = '100'; 
         document.getElementById('withdrawWallet').value = ''; 
         document.getElementById('withdrawNote').value = ''; 
-    }
-    
-    function confirmWithdraw() { 
-        const amount = parseFloat(document.getElementById('withdrawAmount').value); 
-        const method = document.getElementById('withdrawMethod').value; 
-        const wallet = document.getElementById('withdrawWallet').value; 
-        const note = document.getElementById('withdrawNote').value; 
-        if (!amount || amount < 10) { showNotification('Minimum withdrawal is 10 points!'); return; } 
-        if (amount > currentUserData.balance) { showNotification('Insufficient balance!'); return; } 
-        if (!wallet) { showNotification('Please provide your wallet address!'); return; } 
-        sendEmailRequest('WITHDRAW', { amount, method, wallet, note }); 
-        closeWithdrawModal(); 
     }
     
     // ========== AUTH FUNCTIONS ==========
