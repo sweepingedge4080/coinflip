@@ -23,7 +23,6 @@
             margin: 0 auto;
         }
 
-        /* Header */
         .admin-header {
             display: flex;
             justify-content: space-between;
@@ -59,9 +58,9 @@
             border-radius: 40px;
             cursor: pointer;
             font-family: monospace;
+            margin-left: 10px;
         }
 
-        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -89,7 +88,6 @@
             margin-top: 5px;
         }
 
-        /* Tabs */
         .tabs {
             display: flex;
             gap: 10px;
@@ -114,8 +112,7 @@
             font-weight: bold;
         }
 
-        /* Requests Table */
-        .requests-table {
+        .requests-table, .users-table {
             background: #0f1724;
             border-radius: 28px;
             padding: 20px;
@@ -148,24 +145,6 @@
             display: inline-block;
         }
 
-        .status-confirmed, .status-completed {
-            background: #22c55e;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            display: inline-block;
-        }
-
-        .status-rejected {
-            background: #ef4444;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            display: inline-block;
-        }
-
         .approve-btn {
             background: #22c55e;
             border: none;
@@ -185,16 +164,6 @@
             cursor: pointer;
         }
 
-        /* Users Table */
-        .users-table {
-            background: #0f1724;
-            border-radius: 28px;
-            padding: 20px;
-            overflow-x: auto;
-            margin-top: 20px;
-        }
-
-        /* Notification */
         .notification {
             position: fixed;
             top: 20px;
@@ -213,126 +182,155 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
-        /* Loading */
         .loading {
             text-align: center;
             padding: 40px;
             color: #94a3b8;
         }
 
-        .refresh-btn {
-            background: #3b82f6;
-            border: none;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 40px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-
-        /* Action buttons container */
         .action-buttons {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
         }
+
+        .login-prompt {
+            text-align: center;
+            padding: 60px;
+            background: #1e2a3a;
+            border-radius: 48px;
+        }
+
+        .login-prompt h2 {
+            color: #facc15;
+            margin-bottom: 20px;
+        }
+
+        .login-prompt button {
+            background: #facc15;
+            color: #0f1724;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 40px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-<div class="admin-container">
+<div class="admin-container" id="app">
     <div class="admin-header">
         <div class="logo">🪙 COIN FLIP CASINO | ADMIN DASHBOARD</div>
         <div>
-            <span class="admin-badge" id="adminUser">ADMIN</span>
+            <span class="admin-badge" id="adminUser">Checking...</span>
             <button class="logout-btn" id="logoutBtn">🚪 LOGOUT</button>
         </div>
     </div>
 
-    <!-- Stats Grid -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-value" id="totalUsers">0</div>
-            <div class="stat-label">Total Users</div>
+    <div id="dashboardContent" style="display: none;">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalUsers">0</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalVolume">0</div>
+                <div class="stat-label">Total Wagered</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="pendingDeposits">0</div>
+                <div class="stat-label">Pending Deposits</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="pendingWithdrawals">0</div>
+                <div class="stat-label">Pending Withdrawals</div>
+            </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-value" id="totalVolume">0</div>
-            <div class="stat-label">Total Wagered</div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="deposits">💵 Pending Deposits</button>
+            <button class="tab-btn" data-tab="withdrawals">💰 Pending Withdrawals</button>
+            <button class="tab-btn" data-tab="users">👥 All Users</button>
+            <button class="tab-btn" id="refreshBtn">🔄 Refresh</button>
         </div>
-        <div class="stat-card">
-            <div class="stat-value" id="pendingDeposits">0</div>
-            <div class="stat-label">Pending Deposits</div>
+
+        <!-- Deposits Table -->
+        <div id="depositsTab" class="requests-table">
+            <h3 style="margin-bottom: 15px; color: #facc15;">💵 Pending Deposit Requests</h3>
+            <div id="depositsList">Loading...</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-value" id="pendingWithdrawals">0</div>
-            <div class="stat-label">Pending Withdrawals</div>
+
+        <!-- Withdrawals Table -->
+        <div id="withdrawalsTab" class="requests-table" style="display: none;">
+            <h3 style="margin-bottom: 15px; color: #facc15;">💰 Pending Withdrawal Requests</h3>
+            <div id="withdrawalsList">Loading...</div>
+        </div>
+
+        <!-- Users Table -->
+        <div id="usersTab" class="users-table" style="display: none;">
+            <h3 style="margin-bottom: 15px; color: #facc15;">👥 All Users</h3>
+            <div id="usersList">Loading...</div>
         </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="tabs">
-        <button class="tab-btn active" data-tab="deposits">💵 Pending Deposits</button>
-        <button class="tab-btn" data-tab="withdrawals">💰 Pending Withdrawals</button>
-        <button class="tab-btn" data-tab="users">👥 All Users</button>
-        <button class="tab-btn" data-tab="history">📜 Request History</button>
-        <button class="tab-btn" id="refreshBtn">🔄 Refresh</button>
-    </div>
-
-    <!-- Deposits Table -->
-    <div id="depositsTab" class="requests-table">
-        <h3 style="margin-bottom: 15px; color: #facc15;">💵 Pending Deposit Requests</h3>
-        <div id="depositsList">Loading...</div>
-    </div>
-
-    <!-- Withdrawals Table -->
-    <div id="withdrawalsTab" class="requests-table" style="display: none;">
-        <h3 style="margin-bottom: 15px; color: #facc15;">💰 Pending Withdrawal Requests</h3>
-        <div id="withdrawalsList">Loading...</div>
-    </div>
-
-    <!-- Users Table -->
-    <div id="usersTab" class="users-table" style="display: none;">
-        <h3 style="margin-bottom: 15px; color: #facc15;">👥 All Users</h3>
-        <div id="usersList">Loading...</div>
-    </div>
-
-    <!-- History Table -->
-    <div id="historyTab" class="requests-table" style="display: none;">
-        <h3 style="margin-bottom: 15px; color: #facc15;">📜 Processed Requests History</h3>
-        <div id="historyList">Loading...</div>
+    <div id="loginPrompt" class="login-prompt" style="display: none;">
+        <h2>🔐 Admin Access Required</h2>
+        <p>You need to be logged in as an administrator to access this page.</p>
+        <button onclick="window.location.href='/'">🎮 Go to Game & Login</button>
     </div>
 </div>
 
 <script>
-    const API_URL = ''; // Same domain
+    const API_URL = '';
     let authToken = null;
     let currentUser = null;
 
-    // Check if user is logged in and is admin
     async function checkAuth() {
-        const token = localStorage.getItem('adminToken');
+        // Try to get token from localStorage (set by index.html)
+        const token = localStorage.getItem('authToken');
+        
         if (!token) {
-            window.location.href = '/';
+            showLoginPrompt();
             return;
         }
+        
         authToken = token;
         
         try {
             const response = await fetch(`${API_URL}/api/auth/me`, {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             });
+            
+            if (!response.ok) {
+                throw new Error('Not authenticated');
+            }
+            
             const user = await response.json();
+            
             if (!user.isAdmin) {
-                localStorage.removeItem('adminToken');
-                window.location.href = '/';
+                showLoginPrompt();
                 return;
             }
+            
             currentUser = user;
             document.getElementById('adminUser').innerText = user.username.toUpperCase();
+            document.getElementById('dashboardContent').style.display = 'block';
+            document.getElementById('loginPrompt').style.display = 'none';
+            
             loadDashboard();
         } catch (error) {
-            localStorage.removeItem('adminToken');
-            window.location.href = '/';
+            console.error('Auth error:', error);
+            showLoginPrompt();
         }
+    }
+
+    function showLoginPrompt() {
+        document.getElementById('dashboardContent').style.display = 'none';
+        document.getElementById('loginPrompt').style.display = 'block';
+        document.getElementById('adminUser').innerText = 'Not logged in';
     }
 
     async function apiCall(endpoint, method = 'GET', data = null) {
@@ -347,7 +345,7 @@
         
         const response = await fetch(`${API_URL}/api${endpoint}`, options);
         const result = await response.json();
-        if (!response.ok) throw new Error(result.error);
+        if (!response.ok) throw new Error(result.error || 'API error');
         return result;
     }
 
@@ -370,7 +368,6 @@
             document.getElementById('pendingDeposits').innerText = deposits.length;
             document.getElementById('pendingWithdrawals').innerText = withdrawals.length;
             
-            // Calculate total volume (sum of all user totalWagered)
             let totalVolume = users.reduce((sum, user) => sum + (user.totalWagered || 0), 0);
             document.getElementById('totalVolume').innerText = totalVolume.toFixed(0);
         } catch (error) {
@@ -388,24 +385,22 @@
                 return;
             }
             
-            let html = '<table><thead><tr>';
-            html += '<th>Date</th><th>User</th><th>Amount</th><th>Crypto</th><th>TXID</th><th>Actions</th>';
-            html += '</tr></thead><tbody>';
+            let html = '<table><thead><tr><th>Date</th><th>User</th><th>Amount</th><th>Crypto</th><th>TXID</th><th>Actions</th></tr></thead><tbody>';
             
             for (const deposit of deposits) {
-                html += '<tr>';
-                html += `<td>${new Date(deposit.createdAt).toLocaleString()}</td>`;
-                html += `<td>${deposit.username}</td>`;
-                html += `<td>${deposit.amountPoints} points</td>`;
-                html += `<td>${deposit.cryptoMethod}</td>`;
-                html += `<td style="font-size:0.7rem;max-width:200px;word-break:break-all;">${deposit.transactionId}</td>`;
-                html += `<td class="action-buttons">
-                            <button class="approve-btn" onclick="approveDeposit('${deposit._id}')">✅ Approve</button>
-                            <button class="reject-btn" onclick="rejectDeposit('${deposit._id}')">❌ Reject</button>
-                        </td>`;
-                html += '</tr>';
+                html += `<tr>
+                    <td>${new Date(deposit.createdAt).toLocaleString()}</td>
+                    <td>${deposit.username}</td>
+                    <td>${deposit.amountPoints} points</td>
+                    <td>${deposit.cryptoMethod}</td>
+                    <td style="font-size:0.7rem;max-width:200px;word-break:break-all;">${deposit.transactionId}</td>
+                    <td class="action-buttons">
+                        <button class="approve-btn" onclick="approveDeposit('${deposit._id}')">✅ Approve</button>
+                        <button class="reject-btn" onclick="rejectDeposit('${deposit._id}')">❌ Reject</button>
+                    </td>
+                </tr>`;
             }
-            html += '</tbody></table>';
+            html += '</tbody><table>';
             container.innerHTML = html;
         } catch (error) {
             document.getElementById('depositsList').innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;">❌ Failed to load deposits</div>';
@@ -422,22 +417,20 @@
                 return;
             }
             
-            let html = '<table><thead><tr>';
-            html += '<th>Date</th><th>User</th><th>Amount</th><th>Crypto</th><th>Wallet Address</th><th>Actions</th>';
-            html += '</tr></thead><tbody>';
+            let html = '<table><thead><tr><th>Date</th><th>User</th><th>Amount</th><th>Crypto</th><th>Wallet Address</th><th>Actions</th></tr></thead><tbody>';
             
             for (const withdrawal of withdrawals) {
-                html += '<tr>';
-                html += `<td>${new Date(withdrawal.createdAt).toLocaleString()}</td>`;
-                html += `<td>${withdrawal.username}</td>`;
-                html += `<td>${withdrawal.amountPoints} points</td>`;
-                html += `<td>${withdrawal.cryptoMethod}</td>`;
-                html += `<td style="font-size:0.7rem;max-width:200px;word-break:break-all;">${withdrawal.walletAddress}</td>`;
-                html += `<td class="action-buttons">
-                            <button class="approve-btn" onclick="approveWithdrawal('${withdrawal._id}')">✅ Approve</button>
-                            <button class="reject-btn" onclick="rejectWithdrawal('${withdrawal._id}')">❌ Reject</button>
-                        </td>`;
-                html += '</tr>';
+                html += `<tr>
+                    <td>${new Date(withdrawal.createdAt).toLocaleString()}</td>
+                    <td>${withdrawal.username}</td>
+                    <td>${withdrawal.amountPoints} points</td>
+                    <td>${withdrawal.cryptoMethod}</td>
+                    <td style="font-size:0.7rem;max-width:200px;word-break:break-all;">${withdrawal.walletAddress}</td>
+                    <td class="action-buttons">
+                        <button class="approve-btn" onclick="approveWithdrawal('${withdrawal._id}')">✅ Approve</button>
+                        <button class="reject-btn" onclick="rejectWithdrawal('${withdrawal._id}')">❌ Reject</button>
+                    </td>
+                </tr>`;
             }
             html += '</tbody></table>';
             container.innerHTML = html;
@@ -451,21 +444,19 @@
             const users = await apiCall('/admin/users');
             const container = document.getElementById('usersList');
             
-            let html = '<table><thead><tr>';
-            html += '<th>Username</th><th>Balance</th><th>Wins/Losses</th><th>Win Rate</th><th>Total Wagered</th><th>Joined</th>';
-            html += '</tr></thead><tbody>';
+            let html = '<table><thead><tr><th>Username</th><th>Balance</th><th>Wins/Losses</th><th>Win Rate</th><th>Total Wagered</th><th>Joined</th></tr></thead><tbody>';
             
             for (const user of users) {
                 const total = user.wins + user.losses;
                 const winRate = total > 0 ? ((user.wins / total) * 100).toFixed(1) : 0;
-                html += '<tr>';
-                html += `<td>${user.username} ${user.isAdmin ? '👑' : ''}</td>`;
-                html += `<td style="color:#facc15;">${user.balance.toFixed(2)}</td>`;
-                html += `<td>${user.wins} / ${user.losses}</td>`;
-                html += `<td>${winRate}%</td>`;
-                html += `<td>${(user.totalWagered || 0).toFixed(2)}</td>`;
-                html += `<td>${new Date(user.createdAt).toLocaleDateString()}</td>`;
-                html += '</tr>';
+                html += `<tr>
+                    <td>${user.username} ${user.isAdmin ? '👑' : ''}</td>
+                    <td style="color:#facc15;">${user.balance.toFixed(2)}</td>
+                    <td>${user.wins} / ${user.losses}</td>
+                    <td>${winRate}%</td>
+                    <td>${(user.totalWagered || 0).toFixed(2)}</td>
+                    <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+                </tr>`;
             }
             html += '</tbody></table>';
             container.innerHTML = html;
@@ -548,22 +539,15 @@
             document.getElementById('depositsTab').style.display = tab === 'deposits' ? 'block' : 'none';
             document.getElementById('withdrawalsTab').style.display = tab === 'withdrawals' ? 'block' : 'none';
             document.getElementById('usersTab').style.display = tab === 'users' ? 'block' : 'none';
-            document.getElementById('historyTab').style.display = tab === 'history' ? 'block' : 'none';
         });
     });
 
     document.getElementById('logoutBtn').onclick = () => {
-        localStorage.removeItem('adminToken');
+        localStorage.removeItem('authToken');
         window.location.href = '/';
     };
 
-    // Get token from URL or localStorage
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    if (token) {
-        localStorage.setItem('adminToken', token);
-    }
-    
+    // Start
     checkAuth();
 </script>
 </body>
