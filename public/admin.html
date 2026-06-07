@@ -3,26 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Admin Dashboard | Coin Flip Casino</title>
+    <title>Admin Login | Coin Flip Casino</title>
     <style>
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
 
         body {
             background: linear-gradient(145deg, #0a0f1e 0%, #0c1222 100%);
             font-family: 'Courier New', 'Segoe UI', monospace;
             color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
         }
 
-        .admin-container {
-            max-width: 1400px;
-            margin: 0 auto;
+        .login-container {
+            background: #1e2a3a;
+            border-radius: 48px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid #facc15;
         }
 
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #facc15, #a855f7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #94a3b8;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            background: #0f1724;
+            border: 1px solid #334155;
+            border-radius: 30px;
+            color: white;
+            font-family: monospace;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #facc15;
+        }
+
+        button {
+            background: #facc15;
+            color: #0f1724;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-family: monospace;
+        }
+
+        button:hover {
+            transform: scale(1.02);
+        }
+
+        .error-message {
+            color: #ef4444;
+            margin-top: 15px;
+            font-size: 0.8rem;
+        }
+
+        .back-link {
+            margin-top: 20px;
+            display: block;
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+
+        .back-link a {
+            color: #facc15;
+            text-decoration: none;
+        }
+
+        .dashboard {
+            display: none;
+        }
+
+        /* Dashboard Styles */
         .admin-header {
             display: flex;
             justify-content: space-between;
@@ -34,33 +121,6 @@
             border: 1px solid #facc15;
             flex-wrap: wrap;
             gap: 15px;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            background: linear-gradient(135deg, #facc15, #a855f7);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .admin-badge {
-            background: #a855f7;
-            padding: 8px 16px;
-            border-radius: 40px;
-            font-size: 0.8rem;
-        }
-
-        .logout-btn {
-            background: #ef4444;
-            border: none;
-            color: white;
-            padding: 8px 20px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-family: monospace;
-            margin-left: 10px;
         }
 
         .stats-grid {
@@ -105,7 +165,6 @@
             border-radius: 40px;
             cursor: pointer;
             font-family: monospace;
-            transition: all 0.2s;
         }
 
         .tab-btn.active {
@@ -134,7 +193,6 @@
 
         th {
             color: #facc15;
-            font-weight: bold;
         }
 
         .approve-btn {
@@ -180,196 +238,184 @@
             flex-wrap: wrap;
         }
 
-        .login-prompt {
+        .loading {
             text-align: center;
-            padding: 60px;
-            background: #1e2a3a;
-            border-radius: 48px;
-            max-width: 500px;
-            margin: 100px auto;
-        }
-
-        .login-prompt h2 {
-            color: #facc15;
-            margin-bottom: 20px;
-        }
-
-        .login-prompt button {
-            background: #facc15;
-            color: #0f1724;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 40px;
-            font-size: 1rem;
-            cursor: pointer;
-            font-weight: bold;
-            margin: 5px;
-        }
-
-        .login-status {
-            display: inline-block;
-            margin-left: 15px;
-            font-size: 0.8rem;
-        }
-
-        .status-online {
-            color: #22c55e;
-        }
-
-        .status-offline {
-            color: #ef4444;
+            padding: 40px;
+            color: #94a3b8;
         }
     </style>
 </head>
 <body>
-<div class="admin-container" id="app">
+<!-- LOGIN FORM -->
+<div id="loginForm" class="login-container">
+    <div class="logo">🪙 ADMIN LOGIN</div>
+    <div class="input-group">
+        <label>👑 Admin Username</label>
+        <input type="text" id="adminUsername" placeholder="Enter admin username">
+    </div>
+    <div class="input-group">
+        <label>🔐 Admin Password</label>
+        <input type="password" id="adminPassword" placeholder="Enter admin password">
+    </div>
+    <button id="adminLoginBtn">🔓 LOGIN TO DASHBOARD</button>
+    <div id="loginError" class="error-message"></div>
+    <div class="back-link"><a href="/">← Back to Game</a></div>
+</div>
+
+<!-- DASHBOARD (hidden until login) -->
+<div id="dashboard" class="dashboard">
     <div class="admin-header">
         <div class="logo">🪙 COIN FLIP CASINO | ADMIN DASHBOARD</div>
         <div>
-            <span class="admin-badge" id="adminUser">Checking...</span>
-            <span id="loginStatus" class="login-status"></span>
-            <button class="logout-btn" id="logoutBtn">🚪 LOGOUT</button>
+            <span id="adminUserDisplay" class="stat-label" style="background:#a855f7;padding:8px 16px;border-radius:40px;">Admin</span>
+            <button id="logoutDashboardBtn" style="background:#ef4444;margin-left:10px;padding:8px 20px;width:auto;">🚪 LOGOUT</button>
         </div>
     </div>
 
-    <div id="dashboardContent" style="display: none;">
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-value" id="totalUsers">0</div>
-                <div class="stat-label">Total Users</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="totalVolume">0</div>
-                <div class="stat-label">Total Wagered</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="pendingDeposits">0</div>
-                <div class="stat-label">Pending Deposits</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="pendingWithdrawals">0</div>
-                <div class="stat-label">Pending Withdrawals</div>
-            </div>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="totalUsers">0</div>
+            <div class="stat-label">Total Users</div>
         </div>
-
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="deposits">💵 Pending Deposits</button>
-            <button class="tab-btn" data-tab="withdrawals">💰 Pending Withdrawals</button>
-            <button class="tab-btn" data-tab="users">👥 All Users</button>
-            <button class="tab-btn" id="refreshBtn">🔄 Refresh</button>
+        <div class="stat-card">
+            <div class="stat-value" id="totalVolume">0</div>
+            <div class="stat-label">Total Wagered</div>
         </div>
-
-        <!-- Deposits Table -->
-        <div id="depositsTab" class="requests-table">
-            <h3 style="margin-bottom: 15px; color: #facc15;">💵 Pending Deposit Requests</h3>
-            <div id="depositsList">Loading...</div>
+        <div class="stat-card">
+            <div class="stat-value" id="pendingDeposits">0</div>
+            <div class="stat-label">Pending Deposits</div>
         </div>
-
-        <!-- Withdrawals Table -->
-        <div id="withdrawalsTab" class="requests-table" style="display: none;">
-            <h3 style="margin-bottom: 15px; color: #facc15;">💰 Pending Withdrawal Requests</h3>
-            <div id="withdrawalsList">Loading...</div>
-        </div>
-
-        <!-- Users Table -->
-        <div id="usersTab" class="users-table" style="display: none;">
-            <h3 style="margin-bottom: 15px; color: #facc15;">👥 All Users</h3>
-            <div id="usersList">Loading...</div>
+        <div class="stat-card">
+            <div class="stat-value" id="pendingWithdrawals">0</div>
+            <div class="stat-label">Pending Withdrawals</div>
         </div>
     </div>
 
-    <div id="loginPrompt" class="login-prompt" style="display: none;">
-        <h2>🔐 Admin Access Required</h2>
-        <p>You are not logged in or don't have admin privileges.</p>
-        <button onclick="goToGameAndLogin()">🎮 Go to Game & Login</button>
-        <button onclick="tryReload()">🔄 I'm already logged in - Try again</button>
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="deposits">💵 Pending Deposits</button>
+        <button class="tab-btn" data-tab="withdrawals">💰 Pending Withdrawals</button>
+        <button class="tab-btn" data-tab="users">👥 All Users</button>
+        <button class="tab-btn" id="refreshDashboardBtn">🔄 Refresh</button>
+    </div>
+
+    <div id="depositsTab" class="requests-table">
+        <h3 style="margin-bottom: 15px; color: #facc15;">💵 Pending Deposit Requests</h3>
+        <div id="depositsList">Loading...</div>
+    </div>
+
+    <div id="withdrawalsTab" class="requests-table" style="display: none;">
+        <h3 style="margin-bottom: 15px; color: #facc15;">💰 Pending Withdrawal Requests</h3>
+        <div id="withdrawalsList">Loading...</div>
+    </div>
+
+    <div id="usersTab" class="users-table" style="display: none;">
+        <h3 style="margin-bottom: 15px; color: #facc15;">👥 All Users</h3>
+        <div id="usersList">Loading...</div>
     </div>
 </div>
 
 <script>
     const API_URL = '';
-    
-    function goToGameAndLogin() {
-        // Save a flag so we know to come back
-        localStorage.setItem('redirectToAdmin', 'true');
-        window.location.href = '/';
+    let adminAuthToken = null;
+    let adminUserData = null;
+
+    // Check if already logged in (session storage)
+    const savedToken = sessionStorage.getItem('adminAuthToken');
+    if (savedToken) {
+        adminAuthToken = savedToken;
+        verifyAndShowDashboard();
     }
-    
-    function tryReload() {
-        // Clear and retry
-        checkAuth(true);
-    }
-    
-    async function checkAuth(forceRetry = false) {
-        // Try to get token from localStorage
-        let token = localStorage.getItem('authToken');
+
+    document.getElementById('adminLoginBtn').onclick = async () => {
+        const username = document.getElementById('adminUsername').value.trim();
+        const password = document.getElementById('adminPassword').value;
         
-        // Also check sessionStorage as backup
-        if (!token) {
-            token = sessionStorage.getItem('authToken');
-        }
-        
-        const statusSpan = document.getElementById('loginStatus');
-        
-        if (!token) {
-            statusSpan.innerHTML = '<span class="status-offline">❌ Not logged in</span>';
-            showLoginPrompt();
+        if (!username || !password) {
+            document.getElementById('loginError').innerText = 'Please enter username and password';
             return;
         }
         
-        statusSpan.innerHTML = '<span class="status-online">🟢 Token found, verifying...</span>';
+        document.getElementById('loginError').innerText = '';
+        document.getElementById('adminLoginBtn').disabled = true;
+        document.getElementById('adminLoginBtn').innerText = 'Logging in...';
         
         try {
-            const response = await fetch(`${API_URL}/api/auth/me`, {
+            // First, login to get token
+            const loginResponse = await fetch(`${API_URL}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            
+            const loginData = await loginResponse.json();
+            if (!loginResponse.ok) throw new Error(loginData.error || 'Login failed');
+            
+            const token = loginData.token;
+            
+            // Now check if user is admin
+            const meResponse = await fetch(`${API_URL}/api/auth/me`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             
-            if (!response.ok) {
-                throw new Error('Token invalid');
+            const userData = await meResponse.json();
+            if (!meResponse.ok) throw new Error('Failed to get user data');
+            
+            if (!userData.isAdmin) {
+                throw new Error('User is not an administrator. Access denied.');
             }
             
-            const user = await response.json();
+            // Success - store token and show dashboard
+            adminAuthToken = token;
+            adminUserData = userData;
+            sessionStorage.setItem('adminAuthToken', token);
+            sessionStorage.setItem('adminUser', JSON.stringify(userData));
             
-            if (!user.isAdmin) {
-                statusSpan.innerHTML = '<span class="status-offline">❌ Not an admin user</span>';
-                showLoginPrompt();
-                return;
-            }
+            // Show dashboard
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('adminUserDisplay').innerText = userData.username.toUpperCase();
             
-            // Success! Show dashboard
-            statusSpan.innerHTML = '<span class="status-online">✅ Admin verified</span>';
-            document.getElementById('adminUser').innerText = user.username.toUpperCase();
-            document.getElementById('dashboardContent').style.display = 'block';
-            document.getElementById('loginPrompt').style.display = 'none';
-            
-            // Store token in both places for consistency
-            localStorage.setItem('authToken', token);
-            sessionStorage.setItem('authToken', token);
-            
-            loadDashboard();
+            // Load dashboard data
+            loadDashboardData();
             
         } catch (error) {
-            console.error('Auth error:', error);
-            statusSpan.innerHTML = '<span class="status-offline">❌ Authentication failed</span>';
-            showLoginPrompt();
+            document.getElementById('loginError').innerText = error.message;
+        } finally {
+            document.getElementById('adminLoginBtn').disabled = false;
+            document.getElementById('adminLoginBtn').innerText = '🔓 LOGIN TO DASHBOARD';
+        }
+    };
+    
+    async function verifyAndShowDashboard() {
+        try {
+            const meResponse = await fetch(`${API_URL}/api/auth/me`, {
+                headers: { 'Authorization': `Bearer ${adminAuthToken}` }
+            });
+            
+            if (!meResponse.ok) throw new Error('Session expired');
+            
+            const userData = await meResponse.json();
+            if (!userData.isAdmin) throw new Error('Not admin');
+            
+            adminUserData = userData;
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('adminUserDisplay').innerText = userData.username.toUpperCase();
+            loadDashboardData();
+            
+        } catch (error) {
+            sessionStorage.removeItem('adminAuthToken');
+            sessionStorage.removeItem('adminUser');
+            adminAuthToken = null;
         }
     }
     
-    function showLoginPrompt() {
-        document.getElementById('dashboardContent').style.display = 'none';
-        document.getElementById('loginPrompt').style.display = 'block';
-        document.getElementById('adminUser').innerText = 'Not logged in';
-    }
-    
     async function apiCall(endpoint, method = 'GET', data = null) {
-        const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
         const options = {
             method,
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${adminAuthToken}`
             }
         };
         if (data) options.body = JSON.stringify(data);
@@ -380,7 +426,15 @@
         return result;
     }
     
-    async function loadDashboard() {
+    function showNotification(msg) {
+        const notif = document.createElement('div');
+        notif.className = 'notification';
+        notif.innerHTML = msg;
+        document.body.appendChild(notif);
+        setTimeout(() => notif.remove(), 3000);
+    }
+    
+    async function loadDashboardData() {
         await Promise.all([
             loadDeposits(),
             loadWithdrawals(),
@@ -423,3 +477,158 @@
                     <td>${new Date(deposit.createdAt).toLocaleString()}</td>
                     <td>${deposit.username}</td>
                     <td>${deposit.amountPoints} points</td>
+                    <td>${deposit.cryptoMethod}</td>
+                    <td style="font-size:0.7rem;max-width:200px;word-break:break-all;">${deposit.transactionId}</td>
+                    <td class="action-buttons">
+                        <button class="approve-btn" onclick="approveDeposit('${deposit._id}')">✅ Approve</button>
+                        <button class="reject-btn" onclick="rejectDeposit('${deposit._id}')">❌ Reject</button>
+                    </td>
+                </tr>`;
+            }
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        } catch (error) {
+            document.getElementById('depositsList').innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;">❌ Failed to load deposits</div>';
+        }
+    }
+    
+    async function loadWithdrawals() {
+        try {
+            const withdrawals = await apiCall('/admin/pending-withdrawals');
+            const container = document.getElementById('withdrawalsList');
+            
+            if (withdrawals.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:40px;">✅ No pending withdrawals</div>';
+                return;
+            }
+            
+            let html = '<tr><thead><tr><th>Date</th><th>User</th><th>Amount</th><th>Crypto</th><th>Wallet Address</th><th>Actions</th></tr></thead><tbody>';
+            
+            for (const withdrawal of withdrawals) {
+                html += `<tr>
+                    <td>${new Date(withdrawal.createdAt).toLocaleString()}</td>
+                    <td>${withdrawal.username}</td>
+                    <td>${withdrawal.amountPoints} points</td>
+                    <td>${withdrawal.cryptoMethod}</td>
+                    <td style="font-size:0.7rem;max-width:200px;word-break:break-all;">${withdrawal.walletAddress}</td>
+                    <td class="action-buttons">
+                        <button class="approve-btn" onclick="approveWithdrawal('${withdrawal._id}')">✅ Approve</button>
+                        <button class="reject-btn" onclick="rejectWithdrawal('${withdrawal._id}')">❌ Reject</button>
+                    </td>
+                </tr>`;
+            }
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        } catch (error) {
+            document.getElementById('withdrawalsList').innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;">❌ Failed to load withdrawals</div>';
+        }
+    }
+    
+    async function loadUsers() {
+        try {
+            const users = await apiCall('/admin/users');
+            const container = document.getElementById('usersList');
+            
+            let html = '<table><thead><tr><th>Username</th><th>Balance</th><th>Wins/Losses</th><th>Win Rate</th><th>Total Wagered</th><th>Joined</th></tr></thead><tbody>';
+            
+            for (const user of users) {
+                const total = user.wins + user.losses;
+                const winRate = total > 0 ? ((user.wins / total) * 100).toFixed(1) : 0;
+                html += `<tr>
+                    <td>${user.username} ${user.isAdmin ? '👑' : ''}</td>
+                    <td style="color:#facc15;">${user.balance.toFixed(2)}</td>
+                    <td>${user.wins} / ${user.losses}</td>
+                    <td>${winRate}%</td>
+                    <td>${(user.totalWagered || 0).toFixed(2)}</td>
+                    <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+                </tr>`;
+            }
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        } catch (error) {
+            document.getElementById('usersList').innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;">❌ Failed to load users</div>';
+        }
+    }
+    
+    window.approveDeposit = async function(requestId) {
+        if (!confirm('Approve this deposit? Funds will be added to user balance.')) return;
+        try {
+            await apiCall('/admin/approve-deposit', 'POST', { requestId });
+            showNotification('✅ Deposit approved! Funds added.');
+            loadDeposits();
+            loadStats();
+            loadUsers();
+        } catch (error) {
+            showNotification('❌ Error: ' + error.message);
+        }
+    };
+    
+    window.rejectDeposit = async function(requestId) {
+        const reason = prompt('Reason for rejection (optional):');
+        try {
+            await apiCall('/admin/reject-deposit', 'POST', { requestId, reason });
+            showNotification('❌ Deposit rejected.');
+            loadDeposits();
+            loadStats();
+        } catch (error) {
+            showNotification('❌ Error: ' + error.message);
+        }
+    };
+    
+    window.approveWithdrawal = async function(requestId) {
+        if (!confirm('Approve this withdrawal? Points will be deducted from user balance.')) return;
+        try {
+            await apiCall('/admin/approve-withdrawal', 'POST', { requestId });
+            showNotification('✅ Withdrawal approved! Send funds to user.');
+            loadWithdrawals();
+            loadStats();
+            loadUsers();
+        } catch (error) {
+            showNotification('❌ Error: ' + error.message);
+        }
+    };
+    
+    window.rejectWithdrawal = async function(requestId) {
+        const reason = prompt('Reason for rejection (optional):');
+        try {
+            await apiCall('/admin/reject-withdrawal', 'POST', { requestId, reason });
+            showNotification('❌ Withdrawal rejected.');
+            loadWithdrawals();
+            loadStats();
+        } catch (error) {
+            showNotification('❌ Error: ' + error.message);
+        }
+    };
+    
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.id === 'refreshDashboardBtn') {
+                loadDashboardData();
+                showNotification('🔄 Dashboard refreshed');
+                return;
+            }
+            
+            const tab = btn.dataset.tab;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            document.getElementById('depositsTab').style.display = tab === 'deposits' ? 'block' : 'none';
+            document.getElementById('withdrawalsTab').style.display = tab === 'withdrawals' ? 'block' : 'none';
+            document.getElementById('usersTab').style.display = tab === 'users' ? 'block' : 'none';
+        });
+    });
+    
+    document.getElementById('logoutDashboardBtn').onclick = () => {
+        sessionStorage.removeItem('adminAuthToken');
+        sessionStorage.removeItem('adminUser');
+        adminAuthToken = null;
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('dashboard').style.display = 'none';
+        document.getElementById('adminUsername').value = '';
+        document.getElementById('adminPassword').value = '';
+        showNotification('Logged out of admin dashboard');
+    };
+</script>
+</body>
+</html>
