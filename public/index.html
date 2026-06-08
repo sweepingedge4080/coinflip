@@ -423,6 +423,64 @@
             .coin { font-size: 70px; }
             .big-win-popup { font-size: 1rem; padding: 15px 20px; white-space: nowrap; }
         }
+		    /* Mobile Styles - Added without changing anything else */
+		body.mobile-mode {
+			padding: 8px;
+		}
+		body.mobile-mode .game-container {
+			padding: 16px;
+			border-radius: 28px;
+		}
+		body.mobile-mode .logo {
+			font-size: 1.2rem;
+			margin-bottom: 12px;
+		}
+		body.mobile-mode .coin {
+			font-size: 70px;
+		}
+		body.mobile-mode .choice-btn, 
+		body.mobile-mode .action-btn,
+		body.mobile-mode .flip-btn,
+		body.mobile-mode .bank-action-btn {
+			padding: 12px 8px;
+			font-size: 0.9rem;
+		}
+		body.mobile-mode .bet-input {
+			padding: 12px;
+			font-size: 1rem;
+		}
+		body.mobile-mode .balance-amount {
+			font-size: 1.2rem;
+		}
+		body.mobile-mode .stat-value {
+			font-size: 1rem;
+		}
+		body.mobile-mode .auth-input, 
+		body.mobile-mode .modal-input,
+		body.mobile-mode .modal-select {
+			padding: 10px;
+			font-size: 0.85rem;
+		}
+		body.mobile-mode .modal-content {
+			padding: 16px;
+		}
+		body.mobile-mode .qr-image {
+			width: 100px;
+			height: 100px;
+		}
+		body.mobile-mode .user-id-container {
+			padding: 4px 8px;
+		}
+		body.mobile-mode .user-info {
+			gap: 6px;
+		}
+		body.mobile-mode .balance-box {
+			padding: 8px;
+		}
+		body.mobile-mode .instructions-text,
+		body.mobile-mode .warning-text {
+			font-size: 0.65rem;
+		}
     </style>
 </head>
 <body>
@@ -793,6 +851,21 @@
     let isAdmin = false;
     let progressiveJackpot = 0;
     
+	    // ========== MOBILE DEVICE DETECTION ==========
+    function detectAndApplyMobileMode() {
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        if (isMobile) {
+            document.body.classList.add('mobile-mode');
+        } else {
+            document.body.classList.remove('mobile-mode');
+        }
+    }
+    
+    // Run on load and on resize
+    window.addEventListener('DOMContentLoaded', detectAndApplyMobileMode);
+    window.addEventListener('resize', detectAndApplyMobileMode);
+    detectAndApplyMobileMode();
+	
     // Game state
     let selectedChoice = null;
     let isFlipping = false;
