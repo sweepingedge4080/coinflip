@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>COIN FLIP CASINO | Multi-Crypto | 11% House Edge</title>
+    <title>COIN FLIP CASINO | Multi-Crypto | 11% House Edge | Progressive Mode</title>
     <style>
         * {
             user-select: none;
@@ -41,6 +41,133 @@
             background-clip: text;
             color: transparent;
             margin-bottom: 20px;
+        }
+
+        /* Progressive Panel Styles */
+        .progressive-panel {
+            background: linear-gradient(135deg, #1a2a3a, #0f1724);
+            border-radius: 32px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 2px solid #facc15;
+            position: relative;
+            overflow: hidden;
+        }
+        .progressive-panel::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(250,204,21,0.1) 0%, transparent 70%);
+            animation: pulseGlow 3s ease-in-out infinite;
+        }
+        @keyframes pulseGlow {
+            0% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+            100% { opacity: 0.3; transform: scale(1); }
+        }
+        .progressive-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+        .progressive-title {
+            font-size: 1rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #facc15, #ff8c00);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .progressive-badge {
+            background: #22c55e;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            animation: badgePulse 1s infinite;
+        }
+        @keyframes badgePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        .checkpoints-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+        .checkpoint {
+            flex: 1;
+            background: #0f1724;
+            border-radius: 16px;
+            padding: 8px 4px;
+            text-align: center;
+            transition: all 0.3s;
+            border: 1px solid #334155;
+        }
+        .checkpoint.reached {
+            background: linear-gradient(135deg, #facc15, #a855f7);
+            border-color: #facc15;
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(250,204,21,0.5);
+        }
+        .checkpoint.reached .checkpoint-multiplier {
+            color: #0f1724;
+            font-weight: bold;
+        }
+        .checkpoint.reached .checkpoint-label {
+            color: #0f1724;
+        }
+        .checkpoint-multiplier {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #facc15;
+        }
+        .checkpoint-label {
+            font-size: 0.6rem;
+            color: #94a3b8;
+        }
+        .checkpoint-prize {
+            font-size: 0.65rem;
+            color: #22c55e;
+            font-weight: bold;
+        }
+        .streak-fire {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #facc15;
+            text-shadow: 0 0 5px #ff8c00;
+            animation: flicker 0.5s ease-in-out infinite alternate;
+        }
+        @keyframes flicker {
+            from { text-shadow: 0 0 2px #facc15; }
+            to { text-shadow: 0 0 10px #ff8c00; }
+        }
+        .cashout-btn {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        .cashout-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 15px #22c55e;
         }
 
         /* Win Celebration Overlay */
@@ -423,69 +550,83 @@
             .coin { font-size: 70px; }
             .big-win-popup { font-size: 1rem; padding: 15px 20px; white-space: nowrap; }
         }
-		    /* Mobile Styles - Added without changing anything else */
-		body.mobile-mode {
-			padding: 8px;
-		}
-		body.mobile-mode .game-container {
-			padding: 16px;
-			border-radius: 28px;
-		}
-		body.mobile-mode .logo {
-			font-size: 1.2rem;
-			margin-bottom: 12px;
-		}
-		body.mobile-mode .coin {
-			font-size: 70px;
-		}
-		body.mobile-mode .choice-btn, 
-		body.mobile-mode .action-btn,
-		body.mobile-mode .flip-btn,
-		body.mobile-mode .bank-action-btn {
-			padding: 12px 8px;
-			font-size: 0.9rem;
-		}
-		body.mobile-mode .bet-input {
-			padding: 12px;
-			font-size: 1rem;
-		}
-		body.mobile-mode .balance-amount {
-			font-size: 1.2rem;
-		}
-		body.mobile-mode .stat-value {
-			font-size: 1rem;
-		}
-		body.mobile-mode .auth-input, 
-		body.mobile-mode .modal-input,
-		body.mobile-mode .modal-select {
-			padding: 10px;
-			font-size: 0.85rem;
-		}
-		body.mobile-mode .modal-content {
-			padding: 16px;
-		}
-		body.mobile-mode .qr-image {
-			width: 100px;
-			height: 100px;
-		}
-		body.mobile-mode .user-id-container {
-			padding: 4px 8px;
-		}
-		body.mobile-mode .user-info {
-			gap: 6px;
-		}
-		body.mobile-mode .balance-box {
-			padding: 8px;
-		}
-		body.mobile-mode .instructions-text,
-		body.mobile-mode .warning-text {
-			font-size: 0.65rem;
-		}
+        /* Mobile Styles - Added without changing anything else */
+        body.mobile-mode {
+            padding: 8px;
+        }
+        body.mobile-mode .game-container {
+            padding: 16px;
+            border-radius: 28px;
+        }
+        body.mobile-mode .logo {
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+        }
+        body.mobile-mode .coin {
+            font-size: 70px;
+        }
+        body.mobile-mode .choice-btn, 
+        body.mobile-mode .action-btn,
+        body.mobile-mode .flip-btn,
+        body.mobile-mode .bank-action-btn {
+            padding: 12px 8px;
+            font-size: 0.9rem;
+        }
+        body.mobile-mode .bet-input {
+            padding: 12px;
+            font-size: 1rem;
+        }
+        body.mobile-mode .balance-amount {
+            font-size: 1.2rem;
+        }
+        body.mobile-mode .stat-value {
+            font-size: 1rem;
+        }
+        body.mobile-mode .auth-input, 
+        body.mobile-mode .modal-input,
+        body.mobile-mode .modal-select {
+            padding: 10px;
+            font-size: 0.85rem;
+        }
+        body.mobile-mode .modal-content {
+            padding: 16px;
+        }
+        body.mobile-mode .qr-image {
+            width: 100px;
+            height: 100px;
+        }
+        body.mobile-mode .user-id-container {
+            padding: 4px 8px;
+        }
+        body.mobile-mode .user-info {
+            gap: 6px;
+        }
+        body.mobile-mode .balance-box {
+            padding: 8px;
+        }
+        body.mobile-mode .instructions-text,
+        body.mobile-mode .warning-text {
+            font-size: 0.65rem;
+        }
     </style>
 </head>
 <body>
 <div class="game-container">
     <div class="logo">🪙 COIN FLIP CASINO 🪙</div>
+
+    <!-- PROGRESSIVE PANEL -->
+    <div class="progressive-panel" id="progressivePanel" style="display: none;">
+        <div class="progressive-header">
+            <span class="progressive-title">🔥 PROGRESSIVE CHALLENGE 🔥</span>
+            <span class="progressive-badge" id="streakBadge">STREAK 0</span>
+        </div>
+        <div class="checkpoints-container" id="checkpointsContainer"></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px;">
+            <span class="streak-fire" id="streakFireText">⚡ MULTIPLIER: 2x ⚡</span>
+            <button id="cashoutProgressiveBtn" class="cashout-btn">💰 CASH OUT 💰</button>
+        </div>
+        <div class="info-text" style="margin-top: 8px;">💡 Reach checkpoints for BIGGER multipliers! Lose once → streak resets.</div>
+    </div>
 
     <div class="auth-panel" id="authPanel">
         <div id="authForm">
@@ -507,20 +648,7 @@
             </div>
         </div>
     </div>
-    <!-- PROGRESSIVE PANEL -->
-    <div class="progressive-panel" id="progressivePanel" style="display: none;">
-        <div class="progressive-header">
-            <span class="progressive-title">🔥 PROGRESSIVE CHALLENGE 🔥</span>
-            <span class="progressive-badge" id="streakBadge">STREAK 0</span>
-        </div>
-        <div class="checkpoints-container" id="checkpointsContainer"></div>
-        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px;">
-            <span class="streak-fire" id="streakFireText">⚡ MULTIPLIER: 2x ⚡</span>
-            <button id="cashoutProgressiveBtn" class="cashout-btn">💰 CASH OUT 💰</button>
-        </div>
-        <div class="info-text" style="margin-top: 8px;">💡 Reach checkpoints for BIGGER multipliers! Lose once → streak resets.</div>
-    </div>
-	
+
     <div class="admin-panel" id="adminPanel">
         <div class="admin-title">👑 ADMIN CONTROL PANEL 👑</div>
         <select id="adminUserSelect" class="admin-user-select"><option value="">-- Select User --</option></select>
@@ -873,9 +1001,13 @@
             div.innerHTML = `<div class="checkpoint-multiplier">${mult}x</div><div class="checkpoint-label">${idx === 0 ? 'START' : idx === PROGRESSIVE_MULTIPLIERS.length-1 ? 'JACKPOT' : 'LEVEL ' + (idx+1)}</div><div class="checkpoint-prize">$${(originalBetAmount * mult).toFixed(2)}</div>`;
             container.appendChild(div);
         });
-        document.getElementById('streakBadge').innerText = `STREAK ${currentProgressiveStreak}`;
-        let nextMult = currentProgressiveStreak >= PROGRESSIVE_MULTIPLIERS.length ? PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length-1] : PROGRESSIVE_MULTIPLIERS[currentProgressiveStreak];
-        document.getElementById('streakFireText').innerHTML = `⚡ MULTIPLIER: ${nextMult}x ⚡`;
+        const badge = document.getElementById('streakBadge');
+        if (badge) badge.innerText = `STREAK ${currentProgressiveStreak}`;
+        const fireText = document.getElementById('streakFireText');
+        if (fireText) {
+            let nextMult = currentProgressiveStreak >= PROGRESSIVE_MULTIPLIERS.length ? PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length-1] : PROGRESSIVE_MULTIPLIERS[currentProgressiveStreak];
+            fireText.innerHTML = `⚡ MULTIPLIER: ${nextMult}x ⚡`;
+        }
     }
 
     function getProgressiveMultiplier(streak) {
@@ -888,7 +1020,8 @@
         progressiveActive = true;
         currentProgressiveStreak = 1;
         originalBetAmount = bet;
-        document.getElementById('progressivePanel').style.display = 'block';
+        const panel = document.getElementById('progressivePanel');
+        if (panel) panel.style.display = 'block';
         renderCheckpoints();
         showNotification(`🔥 PROGRESSIVE MODE ACTIVE! Next win pays ${getProgressiveMultiplier(1)}x!`, 3000);
     }
@@ -900,7 +1033,8 @@
         progressiveActive = false;
         currentProgressiveStreak = 0;
         originalBetAmount = 0;
-        document.getElementById('progressivePanel').style.display = 'none';
+        const panel = document.getElementById('progressivePanel');
+        if (panel) panel.style.display = 'none';
         renderCheckpoints();
     }
 
@@ -910,7 +1044,8 @@
             progressiveActive = false;
             currentProgressiveStreak = 0;
             originalBetAmount = 0;
-            document.getElementById('progressivePanel').style.display = 'none';
+            const panel = document.getElementById('progressivePanel');
+            if (panel) panel.style.display = 'none';
             renderCheckpoints();
         }
     }
@@ -922,7 +1057,7 @@
     let isAdmin = false;
     let progressiveJackpot = 0;
     
-	    // ========== MOBILE DEVICE DETECTION ==========
+    // ========== MOBILE DEVICE DETECTION ==========
     function detectAndApplyMobileMode() {
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone/i.test(navigator.userAgent) || window.innerWidth <= 768;
         if (isMobile) {
@@ -932,11 +1067,10 @@
         }
     }
     
-    // Run on load and on resize
     window.addEventListener('DOMContentLoaded', detectAndApplyMobileMode);
     window.addEventListener('resize', detectAndApplyMobileMode);
     detectAndApplyMobileMode();
-	
+    
     // Game state
     let selectedChoice = null;
     let isFlipping = false;
@@ -1122,7 +1256,6 @@
         if (!wallet) { showNotification('Please provide your wallet address / transaction ID!'); return; }
         
         try {
-            // Send to backend API instead of email
             const result = await apiCall('/deposit/request-deposit', 'POST', {
                 amount: amount,
                 amountPoints: amount,
@@ -1135,7 +1268,6 @@
             showNotification('✅ Deposit request sent! Admin will review and add funds.');
             closeDepositModal();
             
-            // Clear form
             document.getElementById('depositAmount').value = '100';
             document.getElementById('depositWallet').value = '';
             document.getElementById('depositNote').value = '';
@@ -1156,7 +1288,6 @@
         if (!wallet) { showNotification('Please provide your wallet address!'); return; }
         
         try {
-            // Send to backend API instead of email
             const result = await apiCall('/deposit/request-withdraw', 'POST', {
                 amount: amount,
                 amountPoints: amount,
@@ -1168,7 +1299,6 @@
             showNotification('✅ Withdrawal request sent! Admin will review and process.');
             closeWithdrawModal();
             
-            // Clear form
             document.getElementById('withdrawAmount').value = '100';
             document.getElementById('withdrawWallet').value = '';
             document.getElementById('withdrawNote').value = '';
@@ -1263,6 +1393,9 @@
         currentUserData = null;
         isAdmin = false;
         selectedChoice = null;
+        progressiveActive = false;
+        const panel = document.getElementById('progressivePanel');
+        if (panel) panel.style.display = 'none';
         localStorage.removeItem('authToken');
         
         document.getElementById('authForm').style.display = 'block';
@@ -1343,7 +1476,7 @@
         }
     }
     
-        async function flipCoin() {
+    async function flipCoin() {
         if (isFlipping) return;
         if (!authToken) { showNotification('Please login first!'); return; }
         if (!selectedChoice) { showNotification('Select HEADS or TAILS first!'); return; }
@@ -1479,10 +1612,13 @@
     document.getElementById('cancelWithdrawBtn').onclick = closeWithdrawModal;
     document.getElementById('depositMethod').onchange = updateDepositQR;
     window.onclick = (e) => { if (e.target === depositModal) closeDepositModal(); if (e.target === withdrawModal) closeWithdrawModal(); };
-        document.getElementById('cashoutProgressiveBtn').onclick = () => { if(progressiveActive) cashoutProgressive(); else showNotification('No active progressive streak'); };
+    const cashoutBtn = document.getElementById('cashoutProgressiveBtn');
+    if (cashoutBtn) cashoutBtn.onclick = () => { if(progressiveActive) cashoutProgressive(); else showNotification('No active progressive streak'); };
+    
     // Initialize
     setGameEnabled(false);
     checkSession();
+    renderCheckpoints();
 </script>
 </body>
 </html>
