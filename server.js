@@ -16,12 +16,26 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Rate limiting
+// Rate limiting - PER USER: 3600 requests per hour
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    message: { error: 'Too many requests, please try again later.' }
+    windowMs: 60 * 60 * 1000,  // 1 hour
+    max: 3600,                  // 3600 requests per hour per user
+    message: { error: 'Too many requests, please try again later.' },
+    keyGenerator: (req) => {
+        // Use user ID if logged in, otherwise use IP address
+        return req.userId || req.ip;
+    },
+    skip: (req) => {
+        // Optional: Skip rate limiting for admin users (remove if you don't want this)
+        return req.user && req.user.isAdmin === true;
+    },
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false,  // Disable the `X-RateLimit-*` headers
+    skipSuccessfulRequests: false, // Count all requests (both success and error)
+    skipFailedRequests: false      // Don't skip failed requests
 });
+
+// Apply rate limiting to all API routes
 app.use('/api/', limiter);
 
 // Routes
@@ -47,4 +61,5 @@ mongoose.connect(process.env.MONGODB_URI)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📊 Rate limit: 3600 requests per hour per user`);
 });
