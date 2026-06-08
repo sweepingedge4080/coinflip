@@ -78,6 +78,45 @@
             position: relative;
             z-index: 1;
         }
+		        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-switch span:first-of-type {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #334155;
+            transition: 0.3s;
+            border-radius: 34px;
+        }
+        .toggle-switch span:last-of-type {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+        .toggle-switch input:checked + span:first-of-type {
+            background-color: #facc15;
+        }
+        .toggle-switch input:checked ~ span:last-of-type {
+            transform: translateX(26px);
+        }
         .progressive-title {
             font-size: 1rem;
             font-weight: bold;
@@ -614,19 +653,6 @@
 <div class="game-container">
     <div class="logo">🪙 COIN FLIP CASINO 🪙</div>
 
-    <!-- PROGRESSIVE PANEL -->
-    <div class="progressive-panel" id="progressivePanel" style="display: none;">
-        <div class="progressive-header">
-            <span class="progressive-title">🔥 PROGRESSIVE CHALLENGE 🔥</span>
-            <span class="progressive-badge" id="streakBadge">STREAK 0</span>
-        </div>
-        <div class="checkpoints-container" id="checkpointsContainer"></div>
-        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px;">
-            <span class="streak-fire" id="streakFireText">⚡ MULTIPLIER: 2x ⚡</span>
-            <button id="cashoutProgressiveBtn" class="cashout-btn">💰 CASH OUT 💰</button>
-        </div>
-        <div class="info-text" style="margin-top: 8px;">💡 Reach checkpoints for BIGGER multipliers! Lose once → streak resets.</div>
-    </div>
 
     <div class="auth-panel" id="authPanel">
         <div id="authForm">
@@ -953,7 +979,27 @@
             </div>
         </div>
     </div>
-
+	    <!-- PROGRESSIVE PANEL -->
+    <div class="progressive-panel" id="progressivePanel" style="display: none;">
+        <div class="progressive-header">
+            <span class="progressive-title">🔥 PROGRESSIVE CHALLENGE 🔥</span>
+            <div class="progressive-toggle" style="display: flex; align-items: center; gap: 10px; background: #0f1724; padding: 5px 12px; border-radius: 40px;">
+                <span style="font-size: 0.75rem; color: #94a3b8;">OFF</span>
+                <label class="toggle-switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                    <input type="checkbox" id="progressiveToggleCheckbox" style="opacity: 0; width: 0; height: 0;">
+                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: 0.3s; border-radius: 34px;"></span>
+                    <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: 0.3s; border-radius: 50%;"></span>
+                </label>
+                <span style="font-size: 0.75rem; color: #94a3b8;">ON</span>
+            </div>
+        </div>
+        <div class="checkpoints-container" id="checkpointsContainer"></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px;">
+            <span class="streak-fire" id="streakFireText">⚡ MULTIPLIER: 2x ⚡</span>
+            <button id="cashoutProgressiveBtn" class="cashout-btn">💰 CASH OUT 💰</button>
+        </div>
+        <div class="info-text" style="margin-top: 8px;">💡 Toggle ON to start progressive mode! Win streak increases multipliers up to 55x!</div>
+    </div>
     <!-- COIN FLIP SECTION -->
     <div class="coin-area" id="coinArea">
         <div class="coin" id="coin">🪙</div>
@@ -989,7 +1035,8 @@
     let progressiveActive = false;
     let currentProgressiveStreak = 0;
     let originalBetAmount = 0;
-
+    let progressiveModeEnabled = false;
+	
     function renderCheckpoints() {
         const container = document.getElementById('checkpointsContainer');
         if (!container) return;
@@ -1017,35 +1064,35 @@
     }
 
     function startProgressiveMode(bet) {
-        progressiveActive = true;
+        progressiveModeEnabled = true;
         currentProgressiveStreak = 1;
         originalBetAmount = bet;
-        const panel = document.getElementById('progressivePanel');
-        if (panel) panel.style.display = 'block';
+        document.getElementById('progressivePanel').style.display = 'block';
+        document.getElementById('progressiveToggleCheckbox').checked = true;
         renderCheckpoints();
         showNotification(`🔥 PROGRESSIVE MODE ACTIVE! Next win pays ${getProgressiveMultiplier(1)}x!`, 3000);
     }
 
     function cashoutProgressive() {
-        if (!progressiveActive) return;
+        if (!progressiveModeEnabled) return;
         const payout = originalBetAmount * getProgressiveMultiplier(currentProgressiveStreak);
         showNotification(`💰 CASHED OUT! Won $${payout.toFixed(2)} from ${currentProgressiveStreak} win streak! 💰`, 4000);
-        progressiveActive = false;
+        progressiveModeEnabled = false;
         currentProgressiveStreak = 0;
         originalBetAmount = 0;
-        const panel = document.getElementById('progressivePanel');
-        if (panel) panel.style.display = 'none';
+        document.getElementById('progressivePanel').style.display = 'none';
+        document.getElementById('progressiveToggleCheckbox').checked = false;
         renderCheckpoints();
     }
 
     function resetProgressiveOnLoss() {
-        if (progressiveActive) {
+        if (progressiveModeEnabled) {
             showNotification(`💀 STREAK BROKEN at ${currentProgressiveStreak} wins! Lost $${originalBetAmount.toFixed(2)}. 💀`, 3000);
-            progressiveActive = false;
+            progressiveModeEnabled = false;
             currentProgressiveStreak = 0;
             originalBetAmount = 0;
-            const panel = document.getElementById('progressivePanel');
-            if (panel) panel.style.display = 'none';
+            document.getElementById('progressivePanel').style.display = 'none';
+            document.getElementById('progressiveToggleCheckbox').checked = false;
             renderCheckpoints();
         }
     }
@@ -1511,8 +1558,7 @@
                     } else {
                         showWinCelebration(result.winnings);
                         resultEl.innerHTML = `🎉 WIN! Won $${result.winnings.toFixed(2)}! 🎉`;
-                        if (!progressiveActive && confirm(`🔥 START PROGRESSIVE MODE? Keep betting $${effectiveBet} for up to ${PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length-1]}x multiplier!`)) {
-                            startProgressiveMode(effectiveBet);
+                        
                         }
                     }
                     if (currentUserData) {
@@ -1615,6 +1661,47 @@
     const cashoutBtn = document.getElementById('cashoutProgressiveBtn');
     if (cashoutBtn) cashoutBtn.onclick = () => { if(progressiveActive) cashoutProgressive(); else showNotification('No active progressive streak'); };
     
+	    document.getElementById('progressiveToggleCheckbox').onchange = (e) => {
+        if (!authToken) {
+            showNotification('Please login first!');
+            e.target.checked = false;
+            return;
+        }
+        if (e.target.checked) {
+            let bet = parseFloat(betInput.value);
+            if (isNaN(bet) || bet <= 0) {
+                showNotification('Enter a valid bet amount first!');
+                e.target.checked = false;
+                return;
+            }
+            if (bet > currentUserData.balance) {
+                showNotification('Insufficient balance for this bet!');
+                e.target.checked = false;
+                return;
+            }
+            progressiveModeEnabled = true;
+            currentProgressiveStreak = 1;
+            originalBetAmount = bet;
+            document.getElementById('progressivePanel').style.display = 'block';
+            renderCheckpoints();
+            showNotification(`🔥 PROGRESSIVE MODE ACTIVATED! Starting with $${bet} bet! 🔥`, 3000);
+        } else {
+            if (currentProgressiveStreak > 0) {
+                if (confirm('Turn off progressive mode? Your current streak will be lost!')) {
+                    cashoutProgressive();
+                } else {
+                    e.target.checked = true;
+                    return;
+                }
+            }
+            progressiveModeEnabled = false;
+            currentProgressiveStreak = 0;
+            originalBetAmount = 0;
+            document.getElementById('progressivePanel').style.display = 'none';
+            renderCheckpoints();
+            showNotification('Progressive mode disabled');
+        }
+    };
     // Initialize
     setGameEnabled(false);
     checkSession();
