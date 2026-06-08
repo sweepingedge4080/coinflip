@@ -556,6 +556,12 @@
             font-weight: bold;
             transition: all 0.2s;
         }
+		        .toggle-switch input:checked ~ .toggle-slider {
+            background-color: #facc15;
+        }
+        .toggle-switch input:checked ~ .toggle-knob {
+            transform: translateX(26px);
+        }
         .flip-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
         .stats { display: flex; gap: 10px; }
@@ -980,7 +986,7 @@
             </div>
         </div>
     </div>
-	    <!-- PROGRESSIVE PANEL -->
+	     <!-- PROGRESSIVE PANEL -->
     <div class="progressive-panel" id="progressivePanel" style="display: none;">
         <div class="progressive-header">
             <span class="progressive-title">🔥 PROGRESSIVE CHALLENGE 🔥</span>
@@ -988,8 +994,8 @@
                 <span style="font-size: 0.75rem; color: #94a3b8;">OFF</span>
                 <label class="toggle-switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
                     <input type="checkbox" id="progressiveToggleCheckbox" style="opacity: 0; width: 0; height: 0;">
-                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: 0.3s; border-radius: 34px;"></span>
-                    <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: 0.3s; border-radius: 50%;"></span>
+                    <span class="toggle-slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: 0.3s; border-radius: 34px;"></span>
+                    <span class="toggle-knob" style="position: absolute; content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: 0.3s; border-radius: 50%;"></span>
                 </label>
                 <span style="font-size: 0.75rem; color: #94a3b8;">ON</span>
             </div>
@@ -1032,6 +1038,7 @@
 
 <script>
     // ========== PROGRESSIVE SYSTEM ==========
+	
     const PROGRESSIVE_MULTIPLIERS = [2, 3, 5, 8, 13, 21, 34, 55];
     let progressiveActive = false;
     let currentProgressiveStreak = 0;
