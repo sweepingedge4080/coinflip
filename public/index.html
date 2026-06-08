@@ -507,7 +507,20 @@
             </div>
         </div>
     </div>
-
+    <!-- PROGRESSIVE PANEL -->
+    <div class="progressive-panel" id="progressivePanel" style="display: none;">
+        <div class="progressive-header">
+            <span class="progressive-title">🔥 PROGRESSIVE CHALLENGE 🔥</span>
+            <span class="progressive-badge" id="streakBadge">STREAK 0</span>
+        </div>
+        <div class="checkpoints-container" id="checkpointsContainer"></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px;">
+            <span class="streak-fire" id="streakFireText">⚡ MULTIPLIER: 2x ⚡</span>
+            <button id="cashoutProgressiveBtn" class="cashout-btn">💰 CASH OUT 💰</button>
+        </div>
+        <div class="info-text" style="margin-top: 8px;">💡 Reach checkpoints for BIGGER multipliers! Lose once → streak resets.</div>
+    </div>
+	
     <div class="admin-panel" id="adminPanel">
         <div class="admin-title">👑 ADMIN CONTROL PANEL 👑</div>
         <select id="adminUserSelect" class="admin-user-select"><option value="">-- Select User --</option></select>
@@ -843,6 +856,64 @@
 </div>
 
 <script>
+    // ========== PROGRESSIVE SYSTEM ==========
+    const PROGRESSIVE_MULTIPLIERS = [2, 3, 5, 8, 13, 21, 34, 55];
+    let progressiveActive = false;
+    let currentProgressiveStreak = 0;
+    let originalBetAmount = 0;
+
+    function renderCheckpoints() {
+        const container = document.getElementById('checkpointsContainer');
+        if (!container) return;
+        container.innerHTML = '';
+        PROGRESSIVE_MULTIPLIERS.forEach((mult, idx) => {
+            const div = document.createElement('div');
+            div.className = 'checkpoint';
+            if (currentProgressiveStreak >= idx + 1) div.classList.add('reached');
+            div.innerHTML = `<div class="checkpoint-multiplier">${mult}x</div><div class="checkpoint-label">${idx === 0 ? 'START' : idx === PROGRESSIVE_MULTIPLIERS.length-1 ? 'JACKPOT' : 'LEVEL ' + (idx+1)}</div><div class="checkpoint-prize">$${(originalBetAmount * mult).toFixed(2)}</div>`;
+            container.appendChild(div);
+        });
+        document.getElementById('streakBadge').innerText = `STREAK ${currentProgressiveStreak}`;
+        let nextMult = currentProgressiveStreak >= PROGRESSIVE_MULTIPLIERS.length ? PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length-1] : PROGRESSIVE_MULTIPLIERS[currentProgressiveStreak];
+        document.getElementById('streakFireText').innerHTML = `⚡ MULTIPLIER: ${nextMult}x ⚡`;
+    }
+
+    function getProgressiveMultiplier(streak) {
+        if (streak <= 0) return 2;
+        if (streak > PROGRESSIVE_MULTIPLIERS.length) return PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
+        return PROGRESSIVE_MULTIPLIERS[streak - 1];
+    }
+
+    function startProgressiveMode(bet) {
+        progressiveActive = true;
+        currentProgressiveStreak = 1;
+        originalBetAmount = bet;
+        document.getElementById('progressivePanel').style.display = 'block';
+        renderCheckpoints();
+        showNotification(`🔥 PROGRESSIVE MODE ACTIVE! Next win pays ${getProgressiveMultiplier(1)}x!`, 3000);
+    }
+
+    function cashoutProgressive() {
+        if (!progressiveActive) return;
+        const payout = originalBetAmount * getProgressiveMultiplier(currentProgressiveStreak);
+        showNotification(`💰 CASHED OUT! Won $${payout.toFixed(2)} from ${currentProgressiveStreak} win streak! 💰`, 4000);
+        progressiveActive = false;
+        currentProgressiveStreak = 0;
+        originalBetAmount = 0;
+        document.getElementById('progressivePanel').style.display = 'none';
+        renderCheckpoints();
+    }
+
+    function resetProgressiveOnLoss() {
+        if (progressiveActive) {
+            showNotification(`💀 STREAK BROKEN at ${currentProgressiveStreak} wins! Lost $${originalBetAmount.toFixed(2)}. 💀`, 3000);
+            progressiveActive = false;
+            currentProgressiveStreak = 0;
+            originalBetAmount = 0;
+            document.getElementById('progressivePanel').style.display = 'none';
+            renderCheckpoints();
+        }
+    }
     // ========== API CONFIGURATION ==========
     const API_URL = '';
     let authToken = null;
@@ -1272,68 +1343,69 @@
         }
     }
     
-    async function flipCoin() {
+        async function flipCoin() {
         if (isFlipping) return;
         if (!authToken) { showNotification('Please login first!'); return; }
         if (!selectedChoice) { showNotification('Select HEADS or TAILS first!'); return; }
+        let bet = parseFloat(betInput.value);
+        if (isNaN(bet) || bet <= 0) { showNotification('Enter valid bet amount!'); return; }
+        if (bet > currentUserData.balance) { showNotification('Insufficient balance!'); return; }
         
-        const betAmount = parseFloat(betInput.value);
-        if (isNaN(betAmount) || betAmount <= 0) { showNotification('Enter a valid bet amount!'); return; }
+        let effectiveBet = bet;
+        if (progressiveActive && currentProgressiveStreak > 0) {
+            effectiveBet = originalBetAmount;
+            if (effectiveBet > currentUserData.balance) { showNotification('Cannot continue progressive streak!'); cashoutProgressive(); return; }
+        }
         
-        isFlipping = true;
-        flipBtn.disabled = true;
-        headsBtn.disabled = true;
-        tailsBtn.disabled = true;
-        
+        isFlipping = true; flipBtn.disabled = true;
         coinEl.classList.add('flipping');
         
         try {
-            const result = await apiCall('/game/flip', 'POST', { betAmount, choice: selectedChoice });
-            
-            setTimeout(() => {
+            const result = await apiCall('/game/flip', 'POST', { 
+                betAmount: effectiveBet, 
+                choice: selectedChoice,
+                progressiveStreak: progressiveActive ? currentProgressiveStreak : 0,
+                originalBet: progressiveActive ? originalBetAmount : effectiveBet
+            });
+            setTimeout(async () => {
                 coinEl.classList.remove('flipping');
-                
                 if (result.isWin) {
-                    coinEl.innerHTML = '🪙';
-                    showWinCelebration(result.winnings);
-                    resultEl.innerHTML = `🎉 WIN! ${selectedChoice.toUpperCase()}! Won ${result.winnings.toFixed(2)} points! 🎉`;
-                    resultEl.classList.add('win');
-                    showNotification(`🎉 WIN! +${result.winnings.toFixed(2)} points!`);
-                } else {
-                    coinEl.innerHTML = '🪙';
-                    resultEl.innerHTML = `💀 LOSS! Coin showed ${result.result.toUpperCase()}. Lost ${betAmount.toFixed(2)} points! 💀`;
-                    resultEl.classList.add('lose');
-                    showNotification(`💀 LOSS! -${betAmount.toFixed(2)} points!`);
-                }
-                
-                if (currentUserData) {
-                    currentUserData.balance = result.newBalance;
-                    if (result.stats) {
-                        currentUserData.wins = result.stats.wins;
-                        currentUserData.losses = result.stats.losses;
-                        currentUserData.currentStreak = result.stats.currentStreak;
-                        currentUserData.bestStreak = result.stats.bestStreak;
-                        currentUserData.totalWagered = result.stats.totalWagered;
+                    if (progressiveActive && currentProgressiveStreak > 0) {
+                        currentProgressiveStreak++;
+                        renderCheckpoints();
+                        resultEl.innerHTML = `🎲 PROGRESSIVE WIN #${currentProgressiveStreak}! 🎲<br>Multiplier: ${getProgressiveMultiplier(currentProgressiveStreak)}x`;
+                        showNotification(`🔥 STREAK: ${currentProgressiveStreak}! Next pays ${getProgressiveMultiplier(currentProgressiveStreak)}x!`, 2000);
+                    } else {
+                        showWinCelebration(result.winnings);
+                        resultEl.innerHTML = `🎉 WIN! Won $${result.winnings.toFixed(2)}! 🎉`;
+                        if (!progressiveActive && confirm(`🔥 START PROGRESSIVE MODE? Keep betting $${effectiveBet} for up to ${PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length-1]}x multiplier!`)) {
+                            startProgressiveMode(effectiveBet);
+                        }
                     }
-                    updateUI();
+                    if (currentUserData) {
+                        currentUserData.balance = result.newBalance;
+                        if (result.stats) Object.assign(currentUserData, result.stats);
+                        updateUI();
+                    }
+                } else {
+                    if (progressiveActive) {
+                        resetProgressiveOnLoss();
+                        resultEl.innerHTML = `💀 PROGRESSIVE STREAK ENDED! Lost $${effectiveBet.toFixed(2)} 💀`;
+                    } else {
+                        resultEl.innerHTML = `💀 LOSS! Lost $${effectiveBet.toFixed(2)} 💀`;
+                    }
+                    if (currentUserData) {
+                        currentUserData.balance = result.newBalance;
+                        if (result.stats) Object.assign(currentUserData, result.stats);
+                        updateUI();
+                    }
                 }
-                
-                isFlipping = false;
-                flipBtn.disabled = false;
-                headsBtn.disabled = false;
-                tailsBtn.disabled = false;
-                
-                setTimeout(() => {
-                    resultEl.classList.remove('win', 'lose');
-                }, 2000);
+                isFlipping = false; flipBtn.disabled = false;
+                setTimeout(() => { resultEl.classList.remove('win', 'lose'); }, 2000);
             });
         } catch (error) {
             showNotification(error.message);
-            isFlipping = false;
-            flipBtn.disabled = false;
-            headsBtn.disabled = false;
-            tailsBtn.disabled = false;
-            coinEl.classList.remove('flipping');
+            isFlipping = false; flipBtn.disabled = false; coinEl.classList.remove('flipping');
         }
     }
     
@@ -1407,7 +1479,7 @@
     document.getElementById('cancelWithdrawBtn').onclick = closeWithdrawModal;
     document.getElementById('depositMethod').onchange = updateDepositQR;
     window.onclick = (e) => { if (e.target === depositModal) closeDepositModal(); if (e.target === withdrawModal) closeWithdrawModal(); };
-    
+        document.getElementById('cashoutProgressiveBtn').onclick = () => { if(progressiveActive) cashoutProgressive(); else showNotification('No active progressive streak'); };
     // Initialize
     setGameEnabled(false);
     checkSession();
