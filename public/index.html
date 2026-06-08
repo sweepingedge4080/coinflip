@@ -1598,12 +1598,10 @@
                 } else {
                     if (progressiveActive) {
                         showNotification(`💀 STREAK BROKEN at ${currentProgressiveStreak} wins! Lost $${effectiveBet.toFixed(2)}. Starting new streak! 💀`, 3000);
-                        // Reset streak but keep progressive mode ACTIVE
                         currentProgressiveStreak = 0;
                         originalBetAmount = 0;
                         renderCheckpoints();
                         resultEl.innerHTML = `💀 STREAK BROKEN! Lost $${effectiveBet.toFixed(2)}. Next win starts new streak at 2x! 💀`;
-                    }
                     } else {
                         resultEl.innerHTML = `💀 LOSS! Lost $${effectiveBet.toFixed(2)} 💀`;
                     }
