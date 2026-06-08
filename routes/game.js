@@ -107,10 +107,11 @@ router.post('/flip', auth, async (req, res) => {
     }
 });
 
-// Endpoint to add progressive bonus (when frontend needs to adjust balance)
+// Endpoint to add progressive bonus when cashing out
 router.post('/add-progressive', auth, async (req, res) => {
     try {
-        const { amount } = req.body;
+        const { amount, streak } = req.body;
+        
         if (!amount || amount <= 0) {
             return res.status(400).json({ error: 'Invalid amount' });
         }
@@ -120,16 +121,20 @@ router.post('/add-progressive', auth, async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
         
+        // Add the progressive winnings to user balance
         user.balance += amount;
         await user.save();
         
+        console.log(`✅ Progressive cashout: ${user.username} cashed out $${amount.toFixed(2)} from ${streak || '?'} win streak`);
+        
         res.json({
             success: true,
-            newBalance: user.balance
+            newBalance: user.balance,
+            message: `Added $${amount.toFixed(2)} from progressive cashout`
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Server error' });
+        console.error('Add progressive error:', error);
+        res.status(500).json({ error: 'Server error: ' + error.message });
     }
 });
 
@@ -148,6 +153,7 @@ router.get('/stats', auth, async (req, res) => {
             isAdmin: user.isAdmin
         });
     } catch (error) {
+        console.error('Stats error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
