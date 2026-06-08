@@ -650,6 +650,7 @@
     </style>
 </head>
 <body>
+
 <div class="game-container">
     <div class="logo">🪙 COIN FLIP CASINO 🪙</div>
 
@@ -1036,7 +1037,13 @@
     let currentProgressiveStreak = 0;
     let originalBetAmount = 0;
     let progressiveModeEnabled = false;
-	
+    function showNotification(msg, duration = 2000) {
+        const notif = document.createElement('div');
+        notif.className = 'notification';
+        notif.innerHTML = msg;
+        document.body.appendChild(notif);
+        setTimeout(() => notif.remove(), duration);
+    }	
     function renderCheckpoints() {
         const container = document.getElementById('checkpointsContainer');
         if (!container) return;
