@@ -5,204 +5,257 @@ const DepositRequest = require('../models/DepositRequest');
 const WithdrawRequest = require('../models/WithdrawRequest');
 const router = express.Router();
 
-async function isAdmin(userId) {
-    const user = await User.findById(userId);
-    return user && user.isAdmin === true;
-}
-
-// Get all pending deposit requests
-router.get('/pending-deposits', auth, async (req, res) => {
+// Middleware to check admin
+const isAdmin = async (req, res, next) => {
     try {
-        if (!await isAdmin(req.userId)) {
+        const user = await User.findById(req.userId);
+        if (!user || !user.isAdmin) {
             return res.status(403).json({ error: 'Admin access required' });
         }
-        
-        const deposits = await DepositRequest.find({ status: 'pending' }).sort({ createdAt: -1 });
-        res.json(deposits);
+        next();
     } catch (error) {
         res.status(500).json({ error: 'Server error' });
     }
-});
+};
 
-// Get all pending withdrawal requests
-router.get('/pending-withdrawals', auth, async (req, res) => {
+// ========== GET ALL USERS ==========
+router.get('/users', auth, isAdmin, async (req, res) => {
     try {
-        if (!await isAdmin(req.userId)) {
-            return res.status(403).json({ error: 'Admin access required' });
-        }
-        
-        const withdrawals = await WithdrawRequest.find({ status: 'pending' }).sort({ createdAt: -1 });
-        res.json(withdrawals);
+        const users = await User.find({}).select('-password');
+        res.json(users);
     } catch (error) {
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ error: error.message });
     }
 });
 
-// Approve deposit (add funds to user)
-router.post('/approve-deposit', auth, async (req, res) => {
+// ========== DEPOSIT ENDPOINTS ==========
+router.get('/requests/deposits/pending', auth, isAdmin, async (req, res) => {
     try {
-        if (!await isAdmin(req.userId)) {
-            return res.status(403).json({ error: 'Admin access required' });
-        }
-        
+        const deposits = await DepositRequest.find({ status: 'pending' }).populate('userId', 'username');
+        const formatted = deposits.map(d => ({
+            _id: d._id,
+            username: d.username || d.userId?.username || 'Unknown',
+            amount: d.amountPoints || d.amount,
+            cryptoMethod: d.cryptoMethod,
+            transactionId: d.transactionId,
+            walletAddress: d.walletAddress,
+            createdAt: d.createdAt,
+            status: d.status
+        }));
+        res.json(formatted);
+    } catch (error) {
+        console.error('Error loading deposits:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.get('/requests/deposits/processed', auth, isAdmin, async (req, res) => {
+    try {
+        const deposits = await DepositRequest.find({ status: { $ne: 'pending' } })
+            .populate('userId', 'username')
+            .sort({ processedAt: -1 });
+        const formatted = deposits.map(d => ({
+            _id: d._id,
+            username: d.username || d.userId?.username || 'Unknown',
+            amount: d.amountPoints || d.amount,
+            status: d.status,
+            rejectionReason: d.adminNotes || '',
+            processedAt: d.processedAt,
+            createdAt: d.createdAt
+        }));
+        res.json(formatted);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.post('/requests/deposit/approve', auth, isAdmin, async (req, res) => {
+    try {
         const { requestId } = req.body;
+        const request = await DepositRequest.findById(requestId);
+        if (!request) return res.status(404).json({ error: 'Request not found' });
+        if (request.status !== 'pending') return res.status(400).json({ error: 'Already processed' });
         
-        const deposit = await DepositRequest.findById(requestId);
-        if (!deposit) {
-            return res.status(404).json({ error: 'Deposit request not found' });
-        }
+        const user = await User.findById(request.userId);
+        if (!user) return res.status(404).json({ error: 'User not found' });
         
-        if (deposit.status !== 'pending') {
-            return res.status(400).json({ error: 'Deposit already processed' });
-        }
-        
-        const user = await User.findById(deposit.userId);
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        
-        // Add points to user balance
-        user.balance += deposit.amountPoints;
+        // Add funds to user balance (using amountPoints)
+        const amountToAdd = request.amountPoints || request.amount;
+        user.balance += amountToAdd;
         await user.save();
         
-        deposit.status = 'confirmed';
-        deposit.processedAt = new Date();
-        await deposit.save();
+        request.status = 'confirmed';
+        request.processedAt = new Date();
+        await request.save();
         
-        res.json({ 
-            success: true, 
-            message: `Added ${deposit.amountPoints} points to ${user.username}`,
-            newBalance: user.balance
-        });
+        res.json({ success: true, message: 'Deposit approved' });
     } catch (error) {
-        res.status(500).json({ error: 'Server error' });
+        console.error('Error approving deposit:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 
-// Reject deposit
-router.post('/reject-deposit', auth, async (req, res) => {
+router.post('/requests/deposit/reject', auth, isAdmin, async (req, res) => {
     try {
-        if (!await isAdmin(req.userId)) {
-            return res.status(403).json({ error: 'Admin access required' });
-        }
-        
         const { requestId, reason } = req.body;
+        const request = await DepositRequest.findById(requestId);
+        if (!request) return res.status(404).json({ error: 'Request not found' });
+        if (request.status !== 'pending') return res.status(400).json({ error: 'Already processed' });
         
-        const deposit = await DepositRequest.findById(requestId);
-        if (!deposit) {
-            return res.status(404).json({ error: 'Deposit request not found' });
-        }
-        
-        deposit.status = 'rejected';
-        deposit.adminNotes = reason;
-        deposit.processedAt = new Date();
-        await deposit.save();
+        request.status = 'rejected';
+        request.adminNotes = reason || 'Rejected by admin';
+        request.processedAt = new Date();
+        await request.save();
         
         res.json({ success: true, message: 'Deposit rejected' });
     } catch (error) {
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ error: error.message });
     }
 });
 
-// Approve withdrawal (remove funds and process payout)
-router.post('/approve-withdrawal', auth, async (req, res) => {
+// ========== WITHDRAWAL ENDPOINTS ==========
+router.get('/requests/withdrawals/pending', auth, isAdmin, async (req, res) => {
     try {
-        if (!await isAdmin(req.userId)) {
-            return res.status(403).json({ error: 'Admin access required' });
-        }
-        
+        const withdrawals = await WithdrawRequest.find({ status: 'pending' }).populate('userId', 'username');
+        const formatted = withdrawals.map(w => ({
+            _id: w._id,
+            username: w.username || w.userId?.username || 'Unknown',
+            amount: w.amountPoints || w.amount,
+            cryptoMethod: w.cryptoMethod,
+            walletAddress: w.walletAddress,
+            createdAt: w.createdAt,
+            status: w.status
+        }));
+        res.json(formatted);
+    } catch (error) {
+        console.error('Error loading withdrawals:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.get('/requests/withdrawals/processed', auth, isAdmin, async (req, res) => {
+    try {
+        const withdrawals = await WithdrawRequest.find({ status: { $ne: 'pending' } })
+            .populate('userId', 'username')
+            .sort({ processedAt: -1 });
+        const formatted = withdrawals.map(w => ({
+            _id: w._id,
+            username: w.username || w.userId?.username || 'Unknown',
+            amount: w.amountPoints || w.amount,
+            status: w.status === 'completed' ? 'approved' : w.status,
+            rejectionReason: w.adminNotes || '',
+            processedAt: w.processedAt,
+            createdAt: w.createdAt
+        }));
+        res.json(formatted);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.post('/requests/withdrawal/approve', auth, isAdmin, async (req, res) => {
+    try {
         const { requestId } = req.body;
+        const request = await WithdrawRequest.findById(requestId);
+        if (!request) return res.status(404).json({ error: 'Request not found' });
+        if (request.status !== 'pending') return res.status(400).json({ error: 'Already processed' });
         
-        const withdrawal = await WithdrawRequest.findById(requestId);
-        if (!withdrawal) {
-            return res.status(404).json({ error: 'Withdrawal request not found' });
+        const user = await User.findById(request.userId);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        
+        const amountToDeduct = request.amountPoints || request.amount;
+        if (user.balance < amountToDeduct) {
+            request.status = 'rejected';
+            request.adminNotes = 'Insufficient balance';
+            request.processedAt = new Date();
+            await request.save();
+            return res.status(400).json({ error: 'Insufficient balance' });
         }
         
-        if (withdrawal.status !== 'pending') {
-            return res.status(400).json({ error: 'Withdrawal already processed' });
-        }
-        
-        const user = await User.findById(withdrawal.userId);
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        
-        // Remove points from user balance
-        user.balance -= withdrawal.amountPoints;
+        // Deduct funds from user balance
+        user.balance -= amountToDeduct;
         await user.save();
         
-        withdrawal.status = 'completed';
-        withdrawal.processedAt = new Date();
-        await withdrawal.save();
+        request.status = 'completed';
+        request.processedAt = new Date();
+        await request.save();
         
-        res.json({ 
-            success: true, 
-            message: `Withdrawal of ${withdrawal.amountPoints} points approved. Send ${withdrawal.amount} ${withdrawal.cryptoMethod} to ${withdrawal.walletAddress}`,
-            newBalance: user.balance
-        });
+        res.json({ success: true, message: 'Withdrawal approved' });
     } catch (error) {
-        res.status(500).json({ error: 'Server error' });
+        console.error('Error approving withdrawal:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 
-// Get all users (admin only)
-router.get('/users', auth, async (req, res) => {
+router.post('/requests/withdrawal/reject', auth, isAdmin, async (req, res) => {
     try {
-        if (!await isAdmin(req.userId)) {
-            return res.status(403).json({ error: 'Admin access required' });
-        }
+        const { requestId, reason } = req.body;
+        const request = await WithdrawRequest.findById(requestId);
+        if (!request) return res.status(404).json({ error: 'Request not found' });
+        if (request.status !== 'pending') return res.status(400).json({ error: 'Already processed' });
         
-        const users = await User.find().select('-password').sort({ createdAt: -1 });
-        res.json(users);
+        request.status = 'rejected';
+        request.adminNotes = reason || 'Rejected by admin';
+        request.processedAt = new Date();
+        await request.save();
+        
+        res.json({ success: true, message: 'Withdrawal rejected' });
     } catch (error) {
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ error: error.message });
     }
 });
 
-// Admin add/remove funds
-router.post('/add-funds', auth, async (req, res) => {
+// ========== MANUAL FUND ADJUSTMENT ==========
+router.post('/manual-add', auth, isAdmin, async (req, res) => {
     try {
-        if (!await isAdmin(req.userId)) {
-            return res.status(403).json({ error: 'Admin access required' });
+        const { userId, amount } = req.body;
+        if (!userId || !amount || amount <= 0) {
+            return res.status(400).json({ error: 'Invalid request' });
         }
         
-        const { username, amount } = req.body;
-        const user = await User.findOne({ username });
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ error: 'User not found' });
         
         user.balance += amount;
         await user.save();
         
-        res.json({ message: `Added ${amount} points to ${username}`, newBalance: user.balance });
+        res.json({ success: true, newBalance: user.balance });
     } catch (error) {
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ error: error.message });
     }
 });
 
-router.post('/remove-funds', auth, async (req, res) => {
+router.post('/manual-remove', auth, isAdmin, async (req, res) => {
     try {
-        if (!await isAdmin(req.userId)) {
-            return res.status(403).json({ error: 'Admin access required' });
+        const { userId, amount } = req.body;
+        if (!userId || !amount || amount <= 0) {
+            return res.status(400).json({ error: 'Invalid request' });
         }
         
-        const { username, amount } = req.body;
-        const user = await User.findOne({ username });
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ error: 'User not found' });
         
-        if (amount > user.balance) {
+        if (user.balance < amount) {
             return res.status(400).json({ error: 'Insufficient balance' });
         }
         
         user.balance -= amount;
         await user.save();
         
-        res.json({ message: `Removed ${amount} points from ${username}`, newBalance: user.balance });
+        res.json({ success: true, newBalance: user.balance });
     } catch (error) {
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ========== GET SINGLE USER ==========
+router.get('/user/:id', auth, isAdmin, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('-password');
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
