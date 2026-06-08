@@ -1073,15 +1073,41 @@
         showNotification(`🔥 PROGRESSIVE MODE ACTIVE! Next win pays ${getProgressiveMultiplier(1)}x!`, 3000);
     }
 
-    function cashoutProgressive() {
-        if (!progressiveModeEnabled) return;
-        const payout = originalBetAmount * getProgressiveMultiplier(currentProgressiveStreak);
-        showNotification(`💰 CASHED OUT! Won $${payout.toFixed(2)} from ${currentProgressiveStreak} win streak! 💰`, 4000);
-        progressiveModeEnabled = false;
+    async function cashoutProgressive() {
+        if (!progressiveActive) return;
+        
+        const multiplier = getProgressiveMultiplier(currentProgressiveStreak);
+        const payout = originalBetAmount * multiplier;
+        
+        // Show celebration notification
+        showNotification(`💰💰💰 CASHED OUT! Won $${payout.toFixed(2)} from ${currentProgressiveStreak} win streak! 💰💰💰`, 5000);
+        
+        try {
+            // Call backend to add the progressive winnings to balance
+            await apiCall('/game/add-progressive', 'POST', { 
+                amount: payout,
+                streak: currentProgressiveStreak
+            });
+            
+            // Update local balance
+            if (currentUserData) {
+                currentUserData.balance += payout;
+                updateUI();
+            }
+            
+            // Show win celebration
+            showWinCelebration(payout);
+            
+        } catch (error) {
+            console.error('Failed to add progressive winnings:', error);
+            showNotification('❌ Error adding winnings, but admin will credit you.');
+        }
+        
+        // Reset progressive state
+        progressiveActive = false;
         currentProgressiveStreak = 0;
         originalBetAmount = 0;
         document.getElementById('progressivePanel').style.display = 'none';
-        document.getElementById('progressiveToggleCheckbox').checked = false;
         renderCheckpoints();
     }
 
