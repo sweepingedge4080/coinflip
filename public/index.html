@@ -1076,12 +1076,12 @@
     }
 
     function resetProgressive() {
-        progressiveActive = false;
+        // Reset streak but KEEP progressive mode active
         currentProgressiveStreak = 0;
         originalBetAmount = 0;
-        document.getElementById('progressivePanel').style.display = 'none';
-        document.getElementById('progressiveToggleCheckbox').checked = false;
+        // progressiveActive stays TRUE - don't change it
         renderCheckpoints();
+        showNotification('💀 Streak broken! Starting fresh with 2x multiplier on next win!', 3000);
     }
 
     async function cashoutProgressive() {
@@ -1112,7 +1112,11 @@
             showNotification('❌ Error adding winnings.');
         }
         
-        resetProgressive();
+        // Reset streak but KEEP progressive mode active
+        currentProgressiveStreak = 0;
+        originalBetAmount = 0;
+        renderCheckpoints();
+        showNotification('💰 Cashed out! New streak starts at 2x on next win!', 3000);
     }
     // ========== API CONFIGURATION ==========
     const API_URL = '';
@@ -1593,9 +1597,13 @@
                     }
                 } else {
                     if (progressiveActive) {
-                        showNotification(`💀 STREAK BROKEN at ${currentProgressiveStreak} wins! Lost $${effectiveBet.toFixed(2)}. 💀`, 3000);
-                        resetProgressive();
-                        resultEl.innerHTML = `💀 PROGRESSIVE STREAK ENDED! Lost $${effectiveBet.toFixed(2)} 💀`;
+                        showNotification(`💀 STREAK BROKEN at ${currentProgressiveStreak} wins! Lost $${effectiveBet.toFixed(2)}. Starting new streak! 💀`, 3000);
+                        // Reset streak but keep progressive mode ACTIVE
+                        currentProgressiveStreak = 0;
+                        originalBetAmount = 0;
+                        renderCheckpoints();
+                        resultEl.innerHTML = `💀 STREAK BROKEN! Lost $${effectiveBet.toFixed(2)}. Next win starts new streak at 2x! 💀`;
+                    }
                     } else {
                         resultEl.innerHTML = `💀 LOSS! Lost $${effectiveBet.toFixed(2)} 💀`;
                     }
