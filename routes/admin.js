@@ -205,7 +205,66 @@ router.post('/requests/withdrawal/reject', auth, isAdmin, async (req, res) => {
     }
 });
 
-// ========== MANUAL FUND ADJUSTMENT ==========
+// ========== MANUAL FUND ADJUSTMENT (by USERNAME - matches frontend) ==========
+router.post('/add-funds', auth, isAdmin, async (req, res) => {
+    try {
+        const { username, amount } = req.body;
+        
+        if (!username || !amount || amount <= 0) {
+            return res.status(400).json({ error: 'Invalid username or amount' });
+        }
+        
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        user.balance += amount;
+        await user.save();
+        
+        res.json({ 
+            success: true, 
+            message: `Added $${amount} to ${username}`,
+            newBalance: user.balance 
+        });
+    } catch (error) {
+        console.error('Add funds error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+router.post('/remove-funds', auth, isAdmin, async (req, res) => {
+    try {
+        const { username, amount } = req.body;
+        
+        if (!username || !amount || amount <= 0) {
+            return res.status(400).json({ error: 'Invalid username or amount' });
+        }
+        
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        if (user.balance < amount) {
+            return res.status(400).json({ error: 'Insufficient balance' });
+        }
+        
+        user.balance -= amount;
+        await user.save();
+        
+        res.json({ 
+            success: true, 
+            message: `Removed $${amount} from ${username}`,
+            newBalance: user.balance 
+        });
+    } catch (error) {
+        console.error('Remove funds error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// ========== LEGACY MANUAL ADJUSTMENT (keep for backward compatibility) ==========
 router.post('/manual-add', auth, isAdmin, async (req, res) => {
     try {
         const { userId, amount } = req.body;
