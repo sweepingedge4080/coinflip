@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Admin Login | Coin Flip Casino</title>
+    <title>Admin Dashboard | Coin Flip Casino</title>
     <style>
         * {
             margin: 0;
@@ -165,6 +165,7 @@
             border-radius: 40px;
             cursor: pointer;
             font-family: monospace;
+            width: auto;
         }
 
         .tab-btn.active {
@@ -203,6 +204,7 @@
             border-radius: 20px;
             cursor: pointer;
             margin-right: 5px;
+            width: auto;
         }
 
         .reject-btn {
@@ -212,6 +214,7 @@
             padding: 6px 12px;
             border-radius: 20px;
             cursor: pointer;
+            width: auto;
         }
 
         .notification {
@@ -243,6 +246,34 @@
             padding: 40px;
             color: #94a3b8;
         }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        .status-pending { background: #facc15; color: #0f1724; }
+        .status-approved { background: #22c55e; color: white; }
+        .status-rejected { background: #ef4444; color: white; }
+        
+        .add-funds-section {
+            background: #1e2a3a;
+            border-radius: 28px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .manual-add {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .manual-add select, .manual-add input {
+            flex: 1;
+            min-width: 150px;
+        }
     </style>
 </head>
 <body>
@@ -262,7 +293,7 @@
     <div class="back-link"><a href="/">← Back to Game</a></div>
 </div>
 
-<!-- DASHBOARD (hidden until login) -->
+<!-- DASHBOARD -->
 <div id="dashboard" class="dashboard">
     <div class="admin-header">
         <div class="logo">🪙 COIN FLIP CASINO | ADMIN DASHBOARD</div>
@@ -279,7 +310,7 @@
         </div>
         <div class="stat-card">
             <div class="stat-value" id="totalVolume">0</div>
-            <div class="stat-label">Total Wagered</div>
+            <div class="stat-label">Total Wagered ($)</div>
         </div>
         <div class="stat-card">
             <div class="stat-value" id="pendingDeposits">0</div>
@@ -295,6 +326,7 @@
         <button class="tab-btn active" data-tab="deposits">💵 Pending Deposits</button>
         <button class="tab-btn" data-tab="withdrawals">💰 Pending Withdrawals</button>
         <button class="tab-btn" data-tab="users">👥 All Users</button>
+        <button class="tab-btn" data-tab="history">📜 Request History</button>
         <button class="tab-btn" id="refreshDashboardBtn">🔄 Refresh</button>
     </div>
 
@@ -312,6 +344,21 @@
         <h3 style="margin-bottom: 15px; color: #facc15;">👥 All Users</h3>
         <div id="usersList">Loading...</div>
     </div>
+    
+    <div id="historyTab" class="requests-table" style="display: none;">
+        <h3 style="margin-bottom: 15px; color: #facc15;">📜 Processed Request History</h3>
+        <div id="historyList">Loading...</div>
+    </div>
+    
+    <div class="add-funds-section">
+        <h3 style="color: #facc15; margin-bottom: 15px;">💸 Manual Fund Adjustment</h3>
+        <div class="manual-add">
+            <select id="manualUserSelect"></select>
+            <input type="number" id="manualAmount" placeholder="Amount ($)" step="0.01">
+            <button id="manualAddBtn" class="approve-btn" style="background: #22c55e;">➕ ADD FUNDS</button>
+            <button id="manualRemoveBtn" class="reject-btn" style="background: #ef4444;">➖ REMOVE FUNDS</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -319,7 +366,6 @@
     let adminAuthToken = null;
     let adminUserData = null;
 
-    // Check if already logged in (session storage)
     const savedToken = sessionStorage.getItem('adminAuthToken');
     if (savedToken) {
         adminAuthToken = savedToken;
@@ -340,7 +386,6 @@
         document.getElementById('adminLoginBtn').innerText = 'Logging in...';
         
         try {
-            // First, login to get token
             const loginResponse = await fetch(`${API_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -352,7 +397,6 @@
             
             const token = loginData.token;
             
-            // Now check if user is admin
             const meResponse = await fetch(`${API_URL}/api/auth/me`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -364,19 +408,17 @@
                 throw new Error('User is not an administrator. Access denied.');
             }
             
-            // Success - store token and show dashboard
             adminAuthToken = token;
             adminUserData = userData;
             sessionStorage.setItem('adminAuthToken', token);
             sessionStorage.setItem('adminUser', JSON.stringify(userData));
             
-            // Show dashboard
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
             document.getElementById('adminUserDisplay').innerText = userData.username.toUpperCase();
             
-            // Load dashboard data
             loadDashboardData();
+            loadUserSelect();
             
         } catch (error) {
             document.getElementById('loginError').innerText = error.message;
@@ -402,6 +444,7 @@
             document.getElementById('dashboard').style.display = 'block';
             document.getElementById('adminUserDisplay').innerText = userData.username.toUpperCase();
             loadDashboardData();
+            loadUserSelect();
             
         } catch (error) {
             sessionStorage.removeItem('adminAuthToken');
@@ -439,15 +482,32 @@
             loadDeposits(),
             loadWithdrawals(),
             loadUsers(),
+            loadHistory(),
             loadStats()
         ]);
+    }
+    
+    async function loadUserSelect() {
+        try {
+            const users = await apiCall('/admin/users');
+            const select = document.getElementById('manualUserSelect');
+            select.innerHTML = '<option value="">-- Select User --</option>';
+            for (const user of users) {
+                const option = document.createElement('option');
+                option.value = user._id;
+                option.textContent = `${user.username} - Balance: $${user.balance.toFixed(2)}`;
+                select.appendChild(option);
+            }
+        } catch (error) {
+            console.error('Failed to load users for select:', error);
+        }
     }
     
     async function loadStats() {
         try {
             const users = await apiCall('/admin/users');
-            const deposits = await apiCall('/admin/pending-deposits');
-            const withdrawals = await apiCall('/admin/pending-withdrawals');
+            const deposits = await apiCall('/admin/requests/deposits/pending');
+            const withdrawals = await apiCall('/admin/requests/withdrawals/pending');
             
             document.getElementById('totalUsers').innerText = users.length;
             document.getElementById('pendingDeposits').innerText = deposits.length;
@@ -462,7 +522,7 @@
     
     async function loadDeposits() {
         try {
-            const deposits = await apiCall('/admin/pending-deposits');
+            const deposits = await apiCall('/admin/requests/deposits/pending');
             const container = document.getElementById('depositsList');
             
             if (deposits.length === 0) {
@@ -470,15 +530,15 @@
                 return;
             }
             
-            let html = '<table><thead><tr><th>Date</th><th>User</th><th>Amount</th><th>Crypto</th><th>TXID</th><th>Actions</th></tr></thead><tbody>';
+            let html = '<table><thead><tr><th>Date</th><th>User</th><th>Amount ($)</th><th>Crypto</th><th>TXID / Wallet</th><th>Actions</th></tr></thead><tbody>';
             
             for (const deposit of deposits) {
                 html += `<tr>
                     <td>${new Date(deposit.createdAt).toLocaleString()}</td>
-                    <td>${deposit.username}</td>
-                    <td>${deposit.amountPoints} points</td>
-                    <td>${deposit.cryptoMethod}</td>
-                    <td style="font-size:0.7rem;max-width:200px;word-break:break-all;">${deposit.transactionId}</td>
+                    <td>${deposit.username || 'Unknown'}</td>
+                    <td style="color:#22c55e;">$${deposit.amount.toFixed(2)}</td>
+                    <td>${deposit.cryptoMethod || 'N/A'}</td>
+                    <td style="font-size:0.7rem;max-width:200px;word-break:break-all;">${deposit.transactionId || deposit.walletAddress || 'N/A'}</td>
                     <td class="action-buttons">
                         <button class="approve-btn" onclick="approveDeposit('${deposit._id}')">✅ Approve</button>
                         <button class="reject-btn" onclick="rejectDeposit('${deposit._id}')">❌ Reject</button>
@@ -494,7 +554,7 @@
     
     async function loadWithdrawals() {
         try {
-            const withdrawals = await apiCall('/admin/pending-withdrawals');
+            const withdrawals = await apiCall('/admin/requests/withdrawals/pending');
             const container = document.getElementById('withdrawalsList');
             
             if (withdrawals.length === 0) {
@@ -502,15 +562,15 @@
                 return;
             }
             
-            let html = '<tr><thead><tr><th>Date</th><th>User</th><th>Amount</th><th>Crypto</th><th>Wallet Address</th><th>Actions</th></tr></thead><tbody>';
+            let html = '<table><thead><tr><th>Date</th><th>User</th><th>Amount ($)</th><th>Crypto</th><th>Wallet Address</th><th>Actions</th></tr></thead><tbody>';
             
             for (const withdrawal of withdrawals) {
                 html += `<tr>
                     <td>${new Date(withdrawal.createdAt).toLocaleString()}</td>
-                    <td>${withdrawal.username}</td>
-                    <td>${withdrawal.amountPoints} points</td>
-                    <td>${withdrawal.cryptoMethod}</td>
-                    <td style="font-size:0.7rem;max-width:200px;word-break:break-all;">${withdrawal.walletAddress}</td>
+                    <td>${withdrawal.username || 'Unknown'}</td>
+                    <td style="color:#facc15;">$${withdrawal.amount.toFixed(2)}</td>
+                    <td>${withdrawal.cryptoMethod || 'N/A'}</td>
+                    <td style="font-size:0.7rem;max-width:200px;word-break:break-all;">${withdrawal.walletAddress || 'N/A'}</td>
                     <td class="action-buttons">
                         <button class="approve-btn" onclick="approveWithdrawal('${withdrawal._id}')">✅ Approve</button>
                         <button class="reject-btn" onclick="rejectWithdrawal('${withdrawal._id}')">❌ Reject</button>
@@ -529,17 +589,17 @@
             const users = await apiCall('/admin/users');
             const container = document.getElementById('usersList');
             
-            let html = '<table><thead><tr><th>Username</th><th>Balance</th><th>Wins/Losses</th><th>Win Rate</th><th>Total Wagered</th><th>Joined</th></tr></thead><tbody>';
+            let html = '<table><thead><tr><th>Username</th><th>Balance ($)</th><th>Wins/Losses</th><th>Win Rate</th><th>Total Wagered ($)</th><th>Joined</th></tr></thead><tbody>';
             
             for (const user of users) {
-                const total = user.wins + user.losses;
+                const total = (user.wins || 0) + (user.losses || 0);
                 const winRate = total > 0 ? ((user.wins / total) * 100).toFixed(1) : 0;
                 html += `<tr>
                     <td>${user.username} ${user.isAdmin ? '👑' : ''}</td>
-                    <td style="color:#facc15;">${user.balance.toFixed(2)}</td>
-                    <td>${user.wins} / ${user.losses}</td>
+                    <td style="color:#facc15;">$${user.balance.toFixed(2)}</td>
+                    <td>${user.wins || 0} / ${user.losses || 0}</td>
                     <td>${winRate}%</td>
-                    <td>${(user.totalWagered || 0).toFixed(2)}</td>
+                    <td>$${(user.totalWagered || 0).toFixed(2)}</td>
                     <td>${new Date(user.createdAt).toLocaleDateString()}</td>
                 </tr>`;
             }
@@ -550,14 +610,49 @@
         }
     }
     
+    async function loadHistory() {
+        try {
+            const [deposits, withdrawals] = await Promise.all([
+                apiCall('/admin/requests/deposits/processed'),
+                apiCall('/admin/requests/withdrawals/processed')
+            ]);
+            const container = document.getElementById('historyList');
+            const allRequests = [...deposits.map(d => ({ ...d, type: 'deposit' })), ...withdrawals.map(w => ({ ...w, type: 'withdrawal' }))];
+            allRequests.sort((a, b) => new Date(b.processedAt) - new Date(a.processedAt));
+            
+            if (allRequests.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:40px;">📭 No processed requests</div>';
+                return;
+            }
+            
+            let html = '<table><thead><tr><th>Date</th><th>Type</th><th>User</th><th>Amount ($)</th><th>Status</th><th>Reason</th></tr></thead><tbody>';
+            
+            for (const req of allRequests) {
+                const statusClass = req.status === 'approved' ? 'status-approved' : 'status-rejected';
+                const statusText = req.status === 'approved' ? '✅ Approved' : '❌ Rejected';
+                html += `<tr>
+                    <td>${new Date(req.processedAt || req.createdAt).toLocaleString()}</td>
+                    <td>${req.type === 'deposit' ? '💵 Deposit' : '💰 Withdrawal'}</td>
+                    <td>${req.username || 'Unknown'}</td>
+                    <td style="color:${req.type === 'deposit' ? '#22c55e' : '#facc15'};">$${req.amount.toFixed(2)}</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td style="font-size:0.7rem;">${req.rejectionReason || '-'}</td>
+                </tr>`;
+            }
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        } catch (error) {
+            document.getElementById('historyList').innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;">❌ Failed to load history</div>';
+        }
+    }
+    
+    // Admin Actions
     window.approveDeposit = async function(requestId) {
         if (!confirm('Approve this deposit? Funds will be added to user balance.')) return;
         try {
-            await apiCall('/admin/approve-deposit', 'POST', { requestId });
+            await apiCall('/admin/requests/deposit/approve', 'POST', { requestId });
             showNotification('✅ Deposit approved! Funds added.');
-            loadDeposits();
-            loadStats();
-            loadUsers();
+            loadDashboardData();
         } catch (error) {
             showNotification('❌ Error: ' + error.message);
         }
@@ -566,23 +661,20 @@
     window.rejectDeposit = async function(requestId) {
         const reason = prompt('Reason for rejection (optional):');
         try {
-            await apiCall('/admin/reject-deposit', 'POST', { requestId, reason });
+            await apiCall('/admin/requests/deposit/reject', 'POST', { requestId, reason });
             showNotification('❌ Deposit rejected.');
-            loadDeposits();
-            loadStats();
+            loadDashboardData();
         } catch (error) {
             showNotification('❌ Error: ' + error.message);
         }
     };
     
     window.approveWithdrawal = async function(requestId) {
-        if (!confirm('Approve this withdrawal? Points will be deducted from user balance.')) return;
+        if (!confirm('Approve this withdrawal? Funds will be deducted from user balance.')) return;
         try {
-            await apiCall('/admin/approve-withdrawal', 'POST', { requestId });
-            showNotification('✅ Withdrawal approved! Send funds to user.');
-            loadWithdrawals();
-            loadStats();
-            loadUsers();
+            await apiCall('/admin/requests/withdrawal/approve', 'POST', { requestId });
+            showNotification('✅ Withdrawal approved! Funds deducted. Send crypto to user.');
+            loadDashboardData();
         } catch (error) {
             showNotification('❌ Error: ' + error.message);
         }
@@ -591,10 +683,44 @@
     window.rejectWithdrawal = async function(requestId) {
         const reason = prompt('Reason for rejection (optional):');
         try {
-            await apiCall('/admin/reject-withdrawal', 'POST', { requestId, reason });
+            await apiCall('/admin/requests/withdrawal/reject', 'POST', { requestId, reason });
             showNotification('❌ Withdrawal rejected.');
-            loadWithdrawals();
-            loadStats();
+            loadDashboardData();
+        } catch (error) {
+            showNotification('❌ Error: ' + error.message);
+        }
+    };
+    
+    // Manual fund adjustment
+    document.getElementById('manualAddBtn').onclick = async () => {
+        const userId = document.getElementById('manualUserSelect').value;
+        const amount = parseFloat(document.getElementById('manualAmount').value);
+        if (!userId) { showNotification('Select a user'); return; }
+        if (!amount || amount <= 0) { showNotification('Enter a valid amount'); return; }
+        if (!confirm(`Add $${amount.toFixed(2)} to selected user?`)) return;
+        try {
+            await apiCall('/admin/manual-add', 'POST', { userId, amount });
+            showNotification(`✅ Added $${amount.toFixed(2)} to user`);
+            loadDashboardData();
+            loadUserSelect();
+            document.getElementById('manualAmount').value = '';
+        } catch (error) {
+            showNotification('❌ Error: ' + error.message);
+        }
+    };
+    
+    document.getElementById('manualRemoveBtn').onclick = async () => {
+        const userId = document.getElementById('manualUserSelect').value;
+        const amount = parseFloat(document.getElementById('manualAmount').value);
+        if (!userId) { showNotification('Select a user'); return; }
+        if (!amount || amount <= 0) { showNotification('Enter a valid amount'); return; }
+        if (!confirm(`Remove $${amount.toFixed(2)} from selected user?`)) return;
+        try {
+            await apiCall('/admin/manual-remove', 'POST', { userId, amount });
+            showNotification(`✅ Removed $${amount.toFixed(2)} from user`);
+            loadDashboardData();
+            loadUserSelect();
+            document.getElementById('manualAmount').value = '';
         } catch (error) {
             showNotification('❌ Error: ' + error.message);
         }
@@ -616,6 +742,7 @@
             document.getElementById('depositsTab').style.display = tab === 'deposits' ? 'block' : 'none';
             document.getElementById('withdrawalsTab').style.display = tab === 'withdrawals' ? 'block' : 'none';
             document.getElementById('usersTab').style.display = tab === 'users' ? 'block' : 'none';
+            document.getElementById('historyTab').style.display = tab === 'history' ? 'block' : 'none';
         });
     });
     
