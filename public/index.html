@@ -1719,7 +1719,6 @@
                 progressiveActive = true;
                 currentProgressiveStreak = 1;
                 originalBetAmount = bet;
-                document.getElementById('progressivePanel').style.display = 'block';
                 renderCheckpoints();
                 showNotification(`🔥 PROGRESSIVE MODE ACTIVATED! Starting with $${bet} bet! First win pays 2x! 🔥`, 3000);
             } else {
@@ -1734,7 +1733,6 @@
                 progressiveActive = false;
                 currentProgressiveStreak = 0;
                 originalBetAmount = 0;
-                document.getElementById('progressivePanel').style.display = 'none';
                 renderCheckpoints();
                 showNotification('Progressive mode disabled');
             }
