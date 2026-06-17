@@ -1510,7 +1510,57 @@ function setGameEnabled(enabled) {
     }
 }
 
-function openDepositModal() { if (!currentUser) { showNotification('Please login first!'); return; } depositModal.style.display = 'flex'; }
+// ============================================================
+//  QR CODE SWITCHER - FIXES DEPOSIT WINDOW
+// ============================================================
+function updateDepositQR() {
+    const method = document.getElementById('depositMethod').value;
+    
+    // Map of method names to QR div IDs
+    const qrMap = {
+        'Bitcoin (BTC)': 'qr-btc',
+        'Ethereum (ETH)': 'qr-eth',
+        'USDT (ERC20)': 'qr-usdt-erc20',
+        'USDT (BEP20)': 'qr-usdt-bep20',
+        'USDT (TRC20)': 'qr-usdt-trc20',
+        'USDC (ERC20)': 'qr-usdc-erc20',
+        'USDC (BEP20)': 'qr-usdc-bep20',
+        'USDC (TRC20)': 'qr-usdc-trc20',
+        'BNB (BSC)': 'qr-bnb',
+        'Litecoin (LTC)': 'qr-ltc',
+        'Solana (SOL)': 'qr-sol',
+        'Dogecoin (DOGE)': 'qr-doge',
+        'Ripple (XRP)': 'qr-xrp',
+        'Cardano (ADA)': 'qr-ada',
+        'Polkadot (DOT)': 'qr-dot',
+        'Polygon (MATIC)': 'qr-matic',
+        'Avalanche (AVAX)': 'qr-avax',
+        'TRON (TRX)': 'qr-trx',
+        'Monero (XMR)': 'qr-xmr',
+        'TONCOIN (TON)': 'qr-ton',
+        'Shiba Inu (SHIB)': 'qr-shib'
+    };
+    
+    // Hide all QR divs
+    document.querySelectorAll('.qr-placeholder').forEach(el => {
+        el.style.display = 'none';
+    });
+    
+    // Show the selected one
+    const selectedId = qrMap[method];
+    if (selectedId) {
+        const selected = document.getElementById(selectedId);
+        if (selected) {
+            selected.style.display = 'flex';
+        }
+    }
+}
+
+function openDepositModal() { 
+    if (!currentUser) { showNotification('Please login first!'); return; } 
+    depositModal.style.display = 'flex'; 
+    updateDepositQR();
+}
 function closeDepositModal() { depositModal.style.display = 'none'; }
 function openWithdrawModal() { if (!currentUser) { showNotification('Please login first!'); return; } if (currentUserData.balance < 10) { showNotification('Minimum balance for withdrawal is 10 points!'); return; } withdrawModal.style.display = 'flex'; }
 function closeWithdrawModal() { withdrawModal.style.display = 'none'; }
@@ -1908,6 +1958,11 @@ document.getElementById('confirmDepositBtn').onclick = confirmDeposit;
 document.getElementById('cancelDepositBtn').onclick = closeDepositModal;
 document.getElementById('confirmWithdrawBtn').onclick = confirmWithdraw;
 document.getElementById('cancelWithdrawBtn').onclick = closeWithdrawModal;
+
+// QR Code switcher when deposit method changes
+document.getElementById('depositMethod').onchange = function() {
+    updateDepositQR();
+};
 
 toggleProgressiveBtn.onclick = function() {
     if (progressiveActive) {
