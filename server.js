@@ -1,5 +1,5 @@
 // ============================================================
-//  server.js - Secure Version with Environment Variables
+//  server.js - Fixed: Admin Endpoints + $0 Starting Balance
 // ============================================================
 
 require('dotenv').config();
@@ -23,23 +23,17 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // ============================================================
-//  MONGODB CONNECTION - USING ENVIRONMENT VARIABLE (SECURE)
+//  MONGODB CONNECTION
 // ============================================================
-
-// ✅ SECURE: Read from environment variable
 const MONGO_URI = process.env.MONGODB_URI;
 
-// Check if MONGO_URI is set
 if (!MONGO_URI) {
     console.error('❌ CRITICAL ERROR: MONGODB_URI is not set in environment variables!');
-    console.error('💡 Please set MONGODB_URI in Render Environment Variables');
-    console.error('💡 Or create a .env file locally for development');
-    process.exit(1); // Exit if no connection string
+    process.exit(1);
 }
 
 console.log('🔍 Attempting to connect to MongoDB...');
 
-// Connection options
 const connectOptions = {
     serverSelectionTimeoutMS: 10000,
     socketTimeoutMS: 45000,
@@ -53,19 +47,12 @@ async function connectToMongoDB() {
         return true;
     } catch (error) {
         console.error('❌ MongoDB connection error:', error.message);
-        console.error('💡 Check:');
-        console.error('   1. MongoDB Atlas cluster is running');
-        console.error('   2. IP whitelist allows Render IPs');
-        console.error('   3. Username and password are correct');
-        console.error('   4. MONGODB_URI is set correctly in environment variables');
         return false;
     }
 }
 
-// Connect immediately
 connectToMongoDB();
 
-// Handle connection events
 mongoose.connection.on('error', (err) => {
     console.error('❌ MongoDB connection error:', err);
 });
@@ -76,12 +63,12 @@ mongoose.connection.on('disconnected', () => {
 });
 
 // ============================================================
-//  USER SCHEMA
+//  USER SCHEMA - NEW PLAYERS START WITH $0
 // ============================================================
 const UserSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    balance: { type: Number, default: 100.00 },
+    balance: { type: Number, default: 0 },  // ✅ CHANGED: $0 starting balance
     isAdmin: { type: Boolean, default: false },
     wins: { type: Number, default: 0 },
     losses: { type: Number, default: 0 },
@@ -108,6 +95,8 @@ const DepositRequestSchema = new mongoose.Schema({
     transactionId: { type: String },
     note: { type: String },
     status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+    processedBy: { type: String },
+    processedAt: { type: Date },
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -168,6 +157,20 @@ const auth = (req, res, next) => {
     }
 };
 
+// Admin middleware
+const isAdmin = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.userId);
+        if (!user || !user.isAdmin) {
+            return res.status(403).json({ error: 'Admin access required' });
+        }
+        req.adminUser = user;
+        next();
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 // ============================================================
 //  AUTH ROUTES
 // ============================================================
@@ -191,7 +194,7 @@ app.post('/api/auth/signup', async (req, res) => {
         }
 
         const hashed = await bcrypt.hash(password, 10);
-        const user = new User({ username, password: hashed });
+        const user = new User({ username, password: hashed }); // ✅ Balance defaults to 0
         await user.save();
 
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || 'secretkey');
@@ -428,83 +431,6 @@ app.post('/api/game/flip', auth, async (req, res) => {
 });
 
 // ============================================================
-//  ADMIN ROUTES
-// ============================================================
-
-// Get all users - /api/admin/users
-app.get('/api/admin/users', auth, async (req, res) => {
-    try {
-        const admin = await User.findById(req.userId);
-        if (!admin || !admin.isAdmin) {
-            return res.status(403).json({ error: 'Admin access required' });
-        }
-
-        const users = await User.find().select('-password').sort({ balance: -1 });
-        res.json(users);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Add funds - /api/admin/add-funds
-app.post('/api/admin/add-funds', auth, async (req, res) => {
-    try {
-        const admin = await User.findById(req.userId);
-        if (!admin || !admin.isAdmin) {
-            return res.status(403).json({ error: 'Admin access required' });
-        }
-
-        const { username, amount } = req.body;
-        if (!username || !amount || amount <= 0) {
-            return res.status(400).json({ error: 'Invalid request' });
-        }
-
-        const user = await User.findOne({ username });
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        user.balance += amount;
-        await user.save();
-
-        res.json({ success: true, newBalance: user.balance });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Remove funds - /api/admin/remove-funds
-app.post('/api/admin/remove-funds', auth, async (req, res) => {
-    try {
-        const admin = await User.findById(req.userId);
-        if (!admin || !admin.isAdmin) {
-            return res.status(403).json({ error: 'Admin access required' });
-        }
-
-        const { username, amount } = req.body;
-        if (!username || !amount || amount <= 0) {
-            return res.status(400).json({ error: 'Invalid request' });
-        }
-
-        const user = await User.findOne({ username });
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        if (user.balance < amount) {
-            return res.status(400).json({ error: 'Insufficient balance' });
-        }
-
-        user.balance -= amount;
-        await user.save();
-
-        res.json({ success: true, newBalance: user.balance });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// ============================================================
 //  DEPOSIT / WITHDRAW ROUTES
 // ============================================================
 
@@ -568,7 +494,187 @@ app.post('/api/deposit/request-withdraw', auth, async (req, res) => {
 });
 
 // ============================================================
-//  HEALTH CHECK (for Render monitoring)
+//  ADMIN ROUTES - FIXED & EXPANDED
+// ============================================================
+
+// Get all users - /api/admin/users
+app.get('/api/admin/users', auth, isAdmin, async (req, res) => {
+    try {
+        const users = await User.find().select('-password').sort({ balance: -1 });
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ✅ NEW: Get pending deposit requests - /api/admin/requests/deposits/pending
+app.get('/api/admin/requests/deposits/pending', auth, isAdmin, async (req, res) => {
+    try {
+        const requests = await DepositRequest.find({ 
+            type: 'deposit', 
+            status: 'pending' 
+        }).sort({ createdAt: -1 });
+        res.json(requests);
+    } catch (err) {
+        console.error('❌ Admin deposits pending error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ✅ NEW: Get processed deposit requests - /api/admin/requests/deposits/processed
+app.get('/api/admin/requests/deposits/processed', auth, isAdmin, async (req, res) => {
+    try {
+        const requests = await DepositRequest.find({ 
+            type: 'deposit', 
+            status: { $in: ['approved', 'rejected'] } 
+        }).sort({ processedAt: -1 }).limit(100);
+        res.json(requests);
+    } catch (err) {
+        console.error('❌ Admin deposits processed error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ✅ NEW: Get pending withdrawal requests - /api/admin/requests/withdrawals/pending
+app.get('/api/admin/requests/withdrawals/pending', auth, isAdmin, async (req, res) => {
+    try {
+        const requests = await DepositRequest.find({ 
+            type: 'withdraw', 
+            status: 'pending' 
+        }).sort({ createdAt: -1 });
+        res.json(requests);
+    } catch (err) {
+        console.error('❌ Admin withdrawals pending error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ✅ NEW: Get processed withdrawal requests - /api/admin/requests/withdrawals/processed
+app.get('/api/admin/requests/withdrawals/processed', auth, isAdmin, async (req, res) => {
+    try {
+        const requests = await DepositRequest.find({ 
+            type: 'withdraw', 
+            status: { $in: ['approved', 'rejected'] } 
+        }).sort({ processedAt: -1 }).limit(100);
+        res.json(requests);
+    } catch (err) {
+        console.error('❌ Admin withdrawals processed error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ✅ NEW: Process (approve/reject) a deposit/withdraw request - /api/admin/process-request
+app.post('/api/admin/process-request', auth, isAdmin, async (req, res) => {
+    try {
+        const { requestId, action, adminNote } = req.body;
+        
+        if (!['approve', 'reject'].includes(action)) {
+            return res.status(400).json({ error: 'Invalid action. Must be "approve" or "reject"' });
+        }
+
+        const request = await DepositRequest.findById(requestId);
+        if (!request) {
+            return res.status(404).json({ error: 'Request not found' });
+        }
+
+        if (request.status !== 'pending') {
+            return res.status(400).json({ error: 'Request already processed' });
+        }
+
+        const user = await User.findById(request.userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Get admin user info
+        const admin = await User.findById(req.userId);
+
+        if (action === 'approve') {
+            if (request.type === 'deposit') {
+                user.balance += request.amount;
+                await user.save();
+                console.log(`✅ Deposit approved: ${user.username} +$${request.amount} by ${admin.username}`);
+            } else {
+                // Withdraw - deduct from balance
+                if (user.balance < request.amount) {
+                    return res.status(400).json({ error: 'Insufficient balance' });
+                }
+                user.balance -= request.amount;
+                await user.save();
+                console.log(`✅ Withdraw approved: ${user.username} -$${request.amount} by ${admin.username}`);
+            }
+        } else {
+            console.log(`❌ Request rejected: ${request.type} - ${user.username} - $${request.amount} by ${admin.username}`);
+        }
+
+        request.status = action === 'approve' ? 'approved' : 'rejected';
+        request.processedBy = admin.username;
+        request.processedAt = new Date();
+        if (adminNote) request.note = adminNote;
+        await request.save();
+
+        res.json({
+            success: true,
+            message: `Request ${action}d successfully`,
+            newBalance: user.balance,
+            request: request
+        });
+    } catch (err) {
+        console.error('❌ Process request error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Add funds - /api/admin/add-funds
+app.post('/api/admin/add-funds', auth, isAdmin, async (req, res) => {
+    try {
+        const { username, amount } = req.body;
+        if (!username || !amount || amount <= 0) {
+            return res.status(400).json({ error: 'Invalid request' });
+        }
+
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        user.balance += amount;
+        await user.save();
+
+        res.json({ success: true, newBalance: user.balance });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Remove funds - /api/admin/remove-funds
+app.post('/api/admin/remove-funds', auth, isAdmin, async (req, res) => {
+    try {
+        const { username, amount } = req.body;
+        if (!username || !amount || amount <= 0) {
+            return res.status(400).json({ error: 'Invalid request' });
+        }
+
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        if (user.balance < amount) {
+            return res.status(400).json({ error: 'Insufficient balance' });
+        }
+
+        user.balance -= amount;
+        await user.save();
+
+        res.json({ success: true, newBalance: user.balance });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
+//  HEALTH CHECK
 // ============================================================
 app.get('/api/health', (req, res) => {
     const dbState = mongoose.connection.readyState;
@@ -599,4 +705,12 @@ app.listen(PORT, () => {
     console.log('   POST /api/game/flip - Flip coin');
     console.log('   POST /api/deposit/request-deposit - Deposit');
     console.log('   POST /api/deposit/request-withdraw - Withdraw');
+    console.log('   GET  /api/admin/users - Admin users');
+    console.log('   GET  /api/admin/requests/deposits/pending - Admin pending deposits');
+    console.log('   GET  /api/admin/requests/deposits/processed - Admin processed deposits');
+    console.log('   GET  /api/admin/requests/withdrawals/pending - Admin pending withdrawals');
+    console.log('   GET  /api/admin/requests/withdrawals/processed - Admin processed withdrawals');
+    console.log('   POST /api/admin/process-request - Admin process request');
+    console.log('   POST /api/admin/add-funds - Add funds');
+    console.log('   POST /api/admin/remove-funds - Remove funds');
 });
