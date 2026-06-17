@@ -1,5 +1,5 @@
 // ============================================================
-//  server.js - Complete with MongoDB URI Hardcoded
+//  server.js - Secure Version with Environment Variables
 // ============================================================
 
 require('dotenv').config();
@@ -23,11 +23,19 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // ============================================================
-//  MONGODB CONNECTION - HARDCODED URI
+//  MONGODB CONNECTION - USING ENVIRONMENT VARIABLE (SECURE)
 // ============================================================
 
-// YOUR MONGODB URI - Hardcoded for Render deployment
-const MONGO_URI = 'mongodb+srv://yujigraphics_db_user:14142135624@coinflip.ec7vquf.mongodb.net/coinflip_casino?retryWrites=true&w=majority&appName=coinflip';
+// ✅ SECURE: Read from environment variable
+const MONGO_URI = process.env.MONGODB_URI;
+
+// Check if MONGO_URI is set
+if (!MONGO_URI) {
+    console.error('❌ CRITICAL ERROR: MONGODB_URI is not set in environment variables!');
+    console.error('💡 Please set MONGODB_URI in Render Environment Variables');
+    console.error('💡 Or create a .env file locally for development');
+    process.exit(1); // Exit if no connection string
+}
 
 console.log('🔍 Attempting to connect to MongoDB...');
 
@@ -41,14 +49,15 @@ const connectOptions = {
 async function connectToMongoDB() {
     try {
         await mongoose.connect(MONGO_URI, connectOptions);
-        console.log('✅ MongoDB connected successfully to coinflip_casino!');
+        console.log('✅ MongoDB connected successfully!');
         return true;
     } catch (error) {
         console.error('❌ MongoDB connection error:', error.message);
         console.error('💡 Check:');
         console.error('   1. MongoDB Atlas cluster is running');
-        console.error('   2. IP whitelist allows all IPs (0.0.0.0/0)');
+        console.error('   2. IP whitelist allows Render IPs');
         console.error('   3. Username and password are correct');
+        console.error('   4. MONGODB_URI is set correctly in environment variables');
         return false;
     }
 }
