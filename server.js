@@ -494,7 +494,7 @@ app.post('/api/deposit/request-withdraw', auth, async (req, res) => {
 });
 
 // ============================================================
-//  ADMIN ROUTES - COMPLETE (All Endpoints)
+//  ADMIN ROUTES - COMPLETE (All Endpoints Working)
 // ============================================================
 
 // Get all users - /api/admin/users
@@ -528,7 +528,25 @@ app.get('/api/admin/requests/deposits/processed', auth, isAdmin, async (req, res
             type: 'deposit', 
             status: { $in: ['approved', 'rejected'] } 
         }).sort({ processedAt: -1 }).limit(100);
-        res.json(requests);
+        
+        // Format the response with clear status
+        const formattedRequests = requests.map(req => ({
+            id: req._id,
+            userId: req.userId,
+            username: req.username,
+            type: req.type,
+            amount: req.amount,
+            cryptoMethod: req.cryptoMethod,
+            walletAddress: req.walletAddress,
+            transactionId: req.transactionId,
+            note: req.note,
+            status: req.status,
+            processedBy: req.processedBy,
+            processedAt: req.processedAt,
+            createdAt: req.createdAt
+        }));
+        
+        res.json(formattedRequests);
     } catch (err) {
         console.error('❌ Admin deposits processed error:', err);
         res.status(500).json({ error: err.message });
@@ -556,7 +574,25 @@ app.get('/api/admin/requests/withdrawals/processed', auth, isAdmin, async (req, 
             type: 'withdraw', 
             status: { $in: ['approved', 'rejected'] } 
         }).sort({ processedAt: -1 }).limit(100);
-        res.json(requests);
+        
+        // Format the response with clear status
+        const formattedRequests = requests.map(req => ({
+            id: req._id,
+            userId: req.userId,
+            username: req.username,
+            type: req.type,
+            amount: req.amount,
+            cryptoMethod: req.cryptoMethod,
+            walletAddress: req.walletAddress,
+            transactionId: req.transactionId,
+            note: req.note,
+            status: req.status,
+            processedBy: req.processedBy,
+            processedAt: req.processedAt,
+            createdAt: req.createdAt
+        }));
+        
+        res.json(formattedRequests);
     } catch (err) {
         console.error('❌ Admin withdrawals processed error:', err);
         res.status(500).json({ error: err.message });
@@ -587,9 +623,11 @@ app.post('/api/admin/requests/deposit/approve', auth, isAdmin, async (req, res) 
             return res.status(404).json({ error: 'User not found' });
         }
 
+        // Add funds to user balance
         user.balance += request.amount;
         await user.save();
 
+        // Update request status
         request.status = 'approved';
         request.processedBy = req.adminUser.username;
         request.processedAt = new Date();
@@ -597,11 +635,26 @@ app.post('/api/admin/requests/deposit/approve', auth, isAdmin, async (req, res) 
 
         console.log(`✅ Deposit approved: ${user.username} +$${request.amount} by ${req.adminUser.username}`);
 
+        // Return the updated request with all fields
         res.json({
             success: true,
             message: 'Deposit approved successfully',
-            newBalance: user.balance,
-            request: request
+            request: {
+                id: request._id,
+                userId: request.userId,
+                username: request.username,
+                type: request.type,
+                amount: request.amount,
+                cryptoMethod: request.cryptoMethod,
+                walletAddress: request.walletAddress,
+                transactionId: request.transactionId,
+                note: request.note,
+                status: request.status,
+                processedBy: request.processedBy,
+                processedAt: request.processedAt,
+                createdAt: request.createdAt
+            },
+            newBalance: user.balance
         });
     } catch (err) {
         console.error('❌ Approve deposit error:', err);
@@ -628,6 +681,7 @@ app.post('/api/admin/requests/deposit/reject', auth, isAdmin, async (req, res) =
             return res.status(400).json({ error: 'Request already processed' });
         }
 
+        // Update request status
         request.status = 'rejected';
         request.processedBy = req.adminUser.username;
         request.processedAt = new Date();
@@ -635,10 +689,25 @@ app.post('/api/admin/requests/deposit/reject', auth, isAdmin, async (req, res) =
 
         console.log(`❌ Deposit rejected: ${request.username} - $${request.amount} by ${req.adminUser.username}`);
 
+        // Return the updated request with all fields
         res.json({
             success: true,
             message: 'Deposit rejected',
-            request: request
+            request: {
+                id: request._id,
+                userId: request.userId,
+                username: request.username,
+                type: request.type,
+                amount: request.amount,
+                cryptoMethod: request.cryptoMethod,
+                walletAddress: request.walletAddress,
+                transactionId: request.transactionId,
+                note: request.note,
+                status: request.status,
+                processedBy: request.processedBy,
+                processedAt: request.processedAt,
+                createdAt: request.createdAt
+            }
         });
     } catch (err) {
         console.error('❌ Reject deposit error:', err);
@@ -674,9 +743,11 @@ app.post('/api/admin/requests/withdraw/approve', auth, isAdmin, async (req, res)
             return res.status(400).json({ error: 'Insufficient balance' });
         }
 
+        // Deduct funds from user balance
         user.balance -= request.amount;
         await user.save();
 
+        // Update request status
         request.status = 'approved';
         request.processedBy = req.adminUser.username;
         request.processedAt = new Date();
@@ -684,11 +755,26 @@ app.post('/api/admin/requests/withdraw/approve', auth, isAdmin, async (req, res)
 
         console.log(`✅ Withdrawal approved: ${user.username} -$${request.amount} by ${req.adminUser.username}`);
 
+        // Return the updated request with all fields
         res.json({
             success: true,
             message: 'Withdrawal approved successfully',
-            newBalance: user.balance,
-            request: request
+            request: {
+                id: request._id,
+                userId: request.userId,
+                username: request.username,
+                type: request.type,
+                amount: request.amount,
+                cryptoMethod: request.cryptoMethod,
+                walletAddress: request.walletAddress,
+                transactionId: request.transactionId,
+                note: request.note,
+                status: request.status,
+                processedBy: request.processedBy,
+                processedAt: request.processedAt,
+                createdAt: request.createdAt
+            },
+            newBalance: user.balance
         });
     } catch (err) {
         console.error('❌ Approve withdrawal error:', err);
@@ -715,6 +801,7 @@ app.post('/api/admin/requests/withdraw/reject', auth, isAdmin, async (req, res) 
             return res.status(400).json({ error: 'Request already processed' });
         }
 
+        // Update request status
         request.status = 'rejected';
         request.processedBy = req.adminUser.username;
         request.processedAt = new Date();
@@ -722,10 +809,25 @@ app.post('/api/admin/requests/withdraw/reject', auth, isAdmin, async (req, res) 
 
         console.log(`❌ Withdrawal rejected: ${request.username} - $${request.amount} by ${req.adminUser.username}`);
 
+        // Return the updated request with all fields
         res.json({
             success: true,
             message: 'Withdrawal rejected',
-            request: request
+            request: {
+                id: request._id,
+                userId: request.userId,
+                username: request.username,
+                type: request.type,
+                amount: request.amount,
+                cryptoMethod: request.cryptoMethod,
+                walletAddress: request.walletAddress,
+                transactionId: request.transactionId,
+                note: request.note,
+                status: request.status,
+                processedBy: request.processedBy,
+                processedAt: request.processedAt,
+                createdAt: request.createdAt
+            }
         });
     } catch (err) {
         console.error('❌ Reject withdrawal error:', err);
