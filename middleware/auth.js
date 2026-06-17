@@ -8,7 +8,7 @@ module.exports = async (req, res, next) => {
     }
     
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secretkey');
         req.userId = decoded.userId;
         req.username = decoded.username;
         req.isAdmin = decoded.isAdmin || false;
