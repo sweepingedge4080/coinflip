@@ -1,5 +1,5 @@
 // ============================================================
-//  server.js - Fixed: Admin Endpoints + $0 Starting Balance
+//  server.js - Complete Production Version
 // ============================================================
 
 require('dotenv').config();
@@ -68,7 +68,7 @@ mongoose.connection.on('disconnected', () => {
 const UserSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    balance: { type: Number, default: 0 },  // ✅ CHANGED: $0 starting balance
+    balance: { type: Number, default: 0 },
     isAdmin: { type: Boolean, default: false },
     wins: { type: Number, default: 0 },
     losses: { type: Number, default: 0 },
@@ -194,7 +194,7 @@ app.post('/api/auth/signup', async (req, res) => {
         }
 
         const hashed = await bcrypt.hash(password, 10);
-        const user = new User({ username, password: hashed }); // ✅ Balance defaults to 0
+        const user = new User({ username, password: hashed });
         await user.save();
 
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || 'secretkey');
@@ -494,7 +494,7 @@ app.post('/api/deposit/request-withdraw', auth, async (req, res) => {
 });
 
 // ============================================================
-//  ADMIN ROUTES - FIXED & EXPANDED
+//  ADMIN ROUTES - COMPLETE (All Endpoints)
 // ============================================================
 
 // Get all users - /api/admin/users
@@ -507,7 +507,7 @@ app.get('/api/admin/users', auth, isAdmin, async (req, res) => {
     }
 });
 
-// ✅ NEW: Get pending deposit requests - /api/admin/requests/deposits/pending
+// Get pending deposit requests - /api/admin/requests/deposits/pending
 app.get('/api/admin/requests/deposits/pending', auth, isAdmin, async (req, res) => {
     try {
         const requests = await DepositRequest.find({ 
@@ -521,7 +521,7 @@ app.get('/api/admin/requests/deposits/pending', auth, isAdmin, async (req, res) 
     }
 });
 
-// ✅ NEW: Get processed deposit requests - /api/admin/requests/deposits/processed
+// Get processed deposit requests - /api/admin/requests/deposits/processed
 app.get('/api/admin/requests/deposits/processed', auth, isAdmin, async (req, res) => {
     try {
         const requests = await DepositRequest.find({ 
@@ -535,7 +535,7 @@ app.get('/api/admin/requests/deposits/processed', auth, isAdmin, async (req, res
     }
 });
 
-// ✅ NEW: Get pending withdrawal requests - /api/admin/requests/withdrawals/pending
+// Get pending withdrawal requests - /api/admin/requests/withdrawals/pending
 app.get('/api/admin/requests/withdrawals/pending', auth, isAdmin, async (req, res) => {
     try {
         const requests = await DepositRequest.find({ 
@@ -549,7 +549,7 @@ app.get('/api/admin/requests/withdrawals/pending', auth, isAdmin, async (req, re
     }
 });
 
-// ✅ NEW: Get processed withdrawal requests - /api/admin/requests/withdrawals/processed
+// Get processed withdrawal requests - /api/admin/requests/withdrawals/processed
 app.get('/api/admin/requests/withdrawals/processed', auth, isAdmin, async (req, res) => {
     try {
         const requests = await DepositRequest.find({ 
@@ -563,20 +563,21 @@ app.get('/api/admin/requests/withdrawals/processed', auth, isAdmin, async (req, 
     }
 });
 
-// ✅ NEW: Process (approve/reject) a deposit/withdraw request - /api/admin/process-request
-app.post('/api/admin/process-request', auth, isAdmin, async (req, res) => {
+// Approve a deposit - /api/admin/requests/deposit/approve
+app.post('/api/admin/requests/deposit/approve', auth, isAdmin, async (req, res) => {
     try {
-        const { requestId, action, adminNote } = req.body;
-        
-        if (!['approve', 'reject'].includes(action)) {
-            return res.status(400).json({ error: 'Invalid action. Must be "approve" or "reject"' });
+        const { requestId } = req.body;
+        if (!requestId) {
+            return res.status(400).json({ error: 'Request ID required' });
         }
 
         const request = await DepositRequest.findById(requestId);
         if (!request) {
             return res.status(404).json({ error: 'Request not found' });
         }
-
+        if (request.type !== 'deposit') {
+            return res.status(400).json({ error: 'Not a deposit request' });
+        }
         if (request.status !== 'pending') {
             return res.status(400).json({ error: 'Request already processed' });
         }
@@ -586,41 +587,148 @@ app.post('/api/admin/process-request', auth, isAdmin, async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Get admin user info
-        const admin = await User.findById(req.userId);
+        user.balance += request.amount;
+        await user.save();
 
-        if (action === 'approve') {
-            if (request.type === 'deposit') {
-                user.balance += request.amount;
-                await user.save();
-                console.log(`✅ Deposit approved: ${user.username} +$${request.amount} by ${admin.username}`);
-            } else {
-                // Withdraw - deduct from balance
-                if (user.balance < request.amount) {
-                    return res.status(400).json({ error: 'Insufficient balance' });
-                }
-                user.balance -= request.amount;
-                await user.save();
-                console.log(`✅ Withdraw approved: ${user.username} -$${request.amount} by ${admin.username}`);
-            }
-        } else {
-            console.log(`❌ Request rejected: ${request.type} - ${user.username} - $${request.amount} by ${admin.username}`);
-        }
-
-        request.status = action === 'approve' ? 'approved' : 'rejected';
-        request.processedBy = admin.username;
+        request.status = 'approved';
+        request.processedBy = req.adminUser.username;
         request.processedAt = new Date();
-        if (adminNote) request.note = adminNote;
         await request.save();
+
+        console.log(`✅ Deposit approved: ${user.username} +$${request.amount} by ${req.adminUser.username}`);
 
         res.json({
             success: true,
-            message: `Request ${action}d successfully`,
+            message: 'Deposit approved successfully',
             newBalance: user.balance,
             request: request
         });
     } catch (err) {
-        console.error('❌ Process request error:', err);
+        console.error('❌ Approve deposit error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Reject a deposit - /api/admin/requests/deposit/reject
+app.post('/api/admin/requests/deposit/reject', auth, isAdmin, async (req, res) => {
+    try {
+        const { requestId } = req.body;
+        if (!requestId) {
+            return res.status(400).json({ error: 'Request ID required' });
+        }
+
+        const request = await DepositRequest.findById(requestId);
+        if (!request) {
+            return res.status(404).json({ error: 'Request not found' });
+        }
+        if (request.type !== 'deposit') {
+            return res.status(400).json({ error: 'Not a deposit request' });
+        }
+        if (request.status !== 'pending') {
+            return res.status(400).json({ error: 'Request already processed' });
+        }
+
+        request.status = 'rejected';
+        request.processedBy = req.adminUser.username;
+        request.processedAt = new Date();
+        await request.save();
+
+        console.log(`❌ Deposit rejected: ${request.username} - $${request.amount} by ${req.adminUser.username}`);
+
+        res.json({
+            success: true,
+            message: 'Deposit rejected',
+            request: request
+        });
+    } catch (err) {
+        console.error('❌ Reject deposit error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Approve a withdrawal - /api/admin/requests/withdraw/approve
+app.post('/api/admin/requests/withdraw/approve', auth, isAdmin, async (req, res) => {
+    try {
+        const { requestId } = req.body;
+        if (!requestId) {
+            return res.status(400).json({ error: 'Request ID required' });
+        }
+
+        const request = await DepositRequest.findById(requestId);
+        if (!request) {
+            return res.status(404).json({ error: 'Request not found' });
+        }
+        if (request.type !== 'withdraw') {
+            return res.status(400).json({ error: 'Not a withdrawal request' });
+        }
+        if (request.status !== 'pending') {
+            return res.status(400).json({ error: 'Request already processed' });
+        }
+
+        const user = await User.findById(request.userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        if (user.balance < request.amount) {
+            return res.status(400).json({ error: 'Insufficient balance' });
+        }
+
+        user.balance -= request.amount;
+        await user.save();
+
+        request.status = 'approved';
+        request.processedBy = req.adminUser.username;
+        request.processedAt = new Date();
+        await request.save();
+
+        console.log(`✅ Withdrawal approved: ${user.username} -$${request.amount} by ${req.adminUser.username}`);
+
+        res.json({
+            success: true,
+            message: 'Withdrawal approved successfully',
+            newBalance: user.balance,
+            request: request
+        });
+    } catch (err) {
+        console.error('❌ Approve withdrawal error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Reject a withdrawal - /api/admin/requests/withdraw/reject
+app.post('/api/admin/requests/withdraw/reject', auth, isAdmin, async (req, res) => {
+    try {
+        const { requestId } = req.body;
+        if (!requestId) {
+            return res.status(400).json({ error: 'Request ID required' });
+        }
+
+        const request = await DepositRequest.findById(requestId);
+        if (!request) {
+            return res.status(404).json({ error: 'Request not found' });
+        }
+        if (request.type !== 'withdraw') {
+            return res.status(400).json({ error: 'Not a withdrawal request' });
+        }
+        if (request.status !== 'pending') {
+            return res.status(400).json({ error: 'Request already processed' });
+        }
+
+        request.status = 'rejected';
+        request.processedBy = req.adminUser.username;
+        request.processedAt = new Date();
+        await request.save();
+
+        console.log(`❌ Withdrawal rejected: ${request.username} - $${request.amount} by ${req.adminUser.username}`);
+
+        res.json({
+            success: true,
+            message: 'Withdrawal rejected',
+            request: request
+        });
+    } catch (err) {
+        console.error('❌ Reject withdrawal error:', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -710,7 +818,10 @@ app.listen(PORT, () => {
     console.log('   GET  /api/admin/requests/deposits/processed - Admin processed deposits');
     console.log('   GET  /api/admin/requests/withdrawals/pending - Admin pending withdrawals');
     console.log('   GET  /api/admin/requests/withdrawals/processed - Admin processed withdrawals');
-    console.log('   POST /api/admin/process-request - Admin process request');
+    console.log('   POST /api/admin/requests/deposit/approve - Approve deposit');
+    console.log('   POST /api/admin/requests/deposit/reject - Reject deposit');
+    console.log('   POST /api/admin/requests/withdraw/approve - Approve withdrawal');
+    console.log('   POST /api/admin/requests/withdraw/reject - Reject withdrawal');
     console.log('   POST /api/admin/add-funds - Add funds');
     console.log('   POST /api/admin/remove-funds - Remove funds');
 });
