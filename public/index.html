@@ -43,7 +43,6 @@
             margin-bottom: 20px;
         }
 
-        /* ===== PROGRESSIVE PANEL ===== */
         .progressive-panel {
             background: linear-gradient(135deg, #1a2a3a, #0f1724);
             border-radius: 32px;
@@ -182,7 +181,7 @@
             transition: all 0.2s;
             font-family: monospace;
         }
-        .progressive-controls button:hover {
+        .progressive-controls button:hover:not(:disabled) {
             transform: scale(1.02);
         }
         .cashout-btn {
@@ -195,24 +194,10 @@
             cursor: not-allowed;
             transform: none;
         }
-        .continue-btn {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
-        }
-        .continue-btn:disabled {
-            background: #334155;
-            color: #94a3b8;
-            cursor: not-allowed;
-            transform: none;
-        }
-        .reset-btn {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-        }
         .toggle-progressive-btn {
             background: #334155;
             color: white;
-            padding: 8px 20px;
+            padding: 10px 20px;
             border: none;
             border-radius: 40px;
             font-weight: bold;
@@ -224,8 +209,10 @@
             background: #facc15;
             color: #0f1724;
         }
+        .toggle-progressive-btn:hover:not(:disabled) {
+            transform: scale(1.02);
+        }
 
-        /* ===== AUTH PANEL ===== */
         .auth-panel {
             background: linear-gradient(135deg, #0f1724, #0a0f1e);
             border-radius: 32px;
@@ -291,7 +278,6 @@
         .user-id-value { font-size: 1rem; font-weight: bold; color: #facc15; font-family: monospace; }
         .copy-id-btn { background: #3b82f6; border: none; color: white; padding: 2px 8px; border-radius: 20px; cursor: pointer; font-size: 0.6rem; }
 
-        /* ===== ADMIN PANEL ===== */
         .admin-panel {
             background: linear-gradient(135deg, #1a0a2a, #0f0a1e);
             border-radius: 32px;
@@ -317,7 +303,6 @@
         .admin-add-btn { background: #22c55e; color: white; flex: 1; }
         .admin-remove-btn { background: #ef4444; color: white; flex: 1; }
 
-        /* ===== BANKING PANEL ===== */
         .banking-panel {
             background: linear-gradient(135deg, #0f1724, #0a0f1e);
             border-radius: 32px;
@@ -347,7 +332,6 @@
         .deposit-action-btn { background: #22c55e; color: white; }
         .withdraw-action-btn { background: #ef4444; color: white; }
 
-        /* ===== MODAL ===== */
         .modal {
             display: none;
             position: fixed;
@@ -434,7 +418,6 @@
         .modal-confirm { flex: 1; background: #22c55e; color: white; padding: 12px; border: none; border-radius: 60px; cursor: pointer; font-weight: bold; }
         .modal-cancel { flex: 1; background: #ef4444; color: white; padding: 12px; border: none; border-radius: 60px; cursor: pointer; font-weight: bold; }
 
-        /* ===== COIN AREA ===== */
         .coin-area {
             background: #0f1724;
             border-radius: 40px;
@@ -458,15 +441,10 @@
             100% { transform: rotateY(360deg) scale(1); }
         }
         .result { font-size: 1rem; margin-top: 15px; color: #94a3b8; min-height: 3rem; }
-        .result.win { color: #22c55e; font-size: 1.2rem; font-weight: bold; animation: winPulse 0.5s ease-out; }
+        .result.win { color: #22c55e; font-size: 1.2rem; font-weight: bold; }
         .result.lose { color: #ef4444; font-size: 1.1rem; font-weight: bold; }
         .result.progressive-win { color: #facc15; font-size: 1.3rem; font-weight: bold; }
-        @keyframes winPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
 
-        /* ===== BET PANEL ===== */
         .bet-panel {
             background: #0f1724;
             border-radius: 40px;
@@ -562,13 +540,11 @@
             transform: none;
         }
 
-        /* ===== STATS ===== */
         .stats { display: flex; gap: 10px; }
         .stat-box { flex: 1; background: #0f1724; border-radius: 30px; padding: 12px; text-align: center; }
         .stat-label { font-size: 0.7rem; color: #94a3b8; }
         .stat-value { font-size: 1.2rem; color: #facc15; font-weight: bold; }
 
-        /* ===== NOTIFICATIONS ===== */
         .notification {
             position: fixed;
             top: 20px;
@@ -587,7 +563,6 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
-        /* ===== LEVEL UP OVERLAY ===== */
         .level-up-overlay {
             position: fixed;
             top: 0;
@@ -622,7 +597,8 @@
             font-size: 2rem;
             background: linear-gradient(135deg, #facc15, #ff8c00);
             -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
             margin-bottom: 6px;
         }
         .level-up-overlay .card .level-number {
@@ -683,7 +659,6 @@
             100% { opacity: 1; }
         }
 
-        /* ===== BIG LOSS OVERLAY ===== */
         .big-loss-overlay {
             position: fixed;
             top: 0;
@@ -746,7 +721,12 @@
             background: #475569;
         }
 
-        /* ===== MOBILE ===== */
+        .info-text {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            margin-top: 10px;
+        }
+
         @media (max-width: 750px) {
             .deposit-two-columns { flex-direction: column; }
             .game-container { padding: 20px; }
@@ -758,6 +738,7 @@
             .level-up-overlay .card .button-group { flex-direction: column; }
             .big-loss-overlay .card { padding: 25px; }
             .progressive-level-display { font-size: 1.5rem; }
+            .progressive-controls { flex-direction: column; }
         }
         body.mobile-mode .game-container { padding: 16px; border-radius: 28px; }
         body.mobile-mode .logo { font-size: 1.2rem; margin-bottom: 12px; }
@@ -773,7 +754,6 @@
         body.mobile-mode .user-info { gap: 6px; }
         body.mobile-mode .balance-box { padding: 8px; }
         body.mobile-mode .instructions-text, .warning-text { font-size: 0.65rem; }
-        body.mobile-mode .progressive-controls { flex-direction: column; }
         body.mobile-mode .checkpoints-container { gap: 4px; }
         body.mobile-mode .checkpoint { min-width: 25px; }
     </style>
@@ -783,7 +763,7 @@
 <div class="game-container">
     <div class="logo">🪙 COIN FLIP CASINO 🪙</div>
 
-    <!-- ===== AUTH PANEL ===== -->
+    <!-- AUTH PANEL -->
     <div class="auth-panel" id="authPanel">
         <div id="authForm">
             <input type="text" id="loginUsername" class="auth-input" placeholder="Username">
@@ -805,7 +785,7 @@
         </div>
     </div>
 
-    <!-- ===== ADMIN PANEL ===== -->
+    <!-- ADMIN PANEL -->
     <div class="admin-panel" id="adminPanel">
         <div class="admin-title">👑 ADMIN CONTROL PANEL 👑</div>
         <select id="adminUserSelect" class="admin-user-select"><option value="">-- Select User --</option></select>
@@ -817,7 +797,7 @@
         <div class="info-text">💡 Admin: Manually add/remove funds based on email requests</div>
     </div>
 
-    <!-- ===== BANKING PANEL ===== -->
+    <!-- BANKING PANEL -->
     <div class="banking-panel">
         <div class="balance-row">
             <div class="balance-box"><div class="balance-label">💰 BALANCE</div><div class="balance-amount" id="balance">0.00</div></div>
@@ -831,7 +811,7 @@
         <div class="info-text">💡 Deposits/Withdrawals are sent to admin for manual processing</div>
     </div>
 
-    <!-- ===== DEPOSIT MODAL ===== -->
+    <!-- DEPOSIT MODAL -->
     <div id="depositModal" class="modal">
         <div class="modal-content">
             <h3>💵 DEPOSIT REQUEST</h3>
@@ -866,118 +846,141 @@
                             <option value="Shiba Inu (SHIB)">Shiba Inu (SHIB) - ERC20</option>
                         </optgroup>
                     </select>
+                    
                     <div class="qr-section" id="depositQRSection">
-                        <!-- QR sections kept for brevity - same as original -->
+                        <!-- BTC -->
                         <div id="qr-btc" class="qr-placeholder" style="display: flex;">
                             <div class="qr-title">💎 Bitcoin (BTC) Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=16Hv2ngy7qy6ZEAxfga2mRDdMhzqgryXUC">
                             <div class="wallet-address-container"><span class="wallet-address" id="btcAddress">16Hv2ngy7qy6ZEAxfga2mRDdMhzqgryXUC</span><button class="copy-btn" onclick="copyToClipboard('btcAddress')">📋 COPY</button></div>
                         </div>
+                        <!-- ETH -->
                         <div id="qr-eth" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Ethereum (ETH) Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
                             <div class="wallet-address-container"><span class="wallet-address" id="ethAddress">0x524b351129D5bC89eFA657f5266155297F398344</span><button class="copy-btn" onclick="copyToClipboard('ethAddress')">📋 COPY</button></div>
                         </div>
+                        <!-- USDT ERC20 -->
                         <div id="qr-usdt-erc20" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 USDT (ERC20) - Ethereum Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
                             <div class="wallet-address-container"><span class="wallet-address" id="usdtErc20Address">0x524b351129D5bC89eFA657f5266155297F398344</span><button class="copy-btn" onclick="copyToClipboard('usdtErc20Address')">📋 COPY</button></div>
                         </div>
+                        <!-- USDT BEP20 -->
                         <div id="qr-usdt-bep20" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 USDT (BEP20) - BNB Chain Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
                             <div class="wallet-address-container"><span class="wallet-address" id="usdtBep20Address">0x524b351129D5bC89eFA657f5266155297F398344</span><button class="copy-btn" onclick="copyToClipboard('usdtBep20Address')">📋 COPY</button></div>
                         </div>
+                        <!-- USDT TRC20 -->
                         <div id="qr-usdt-trc20" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 USDT (TRC20) - TRON Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN">
                             <div class="wallet-address-container"><span class="wallet-address" id="usdtTrc20Address">TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN</span><button class="copy-btn" onclick="copyToClipboard('usdtTrc20Address')">📋 COPY</button></div>
                         </div>
+                        <!-- USDC ERC20 -->
                         <div id="qr-usdc-erc20" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 USDC (ERC20) - Ethereum Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
                             <div class="wallet-address-container"><span class="wallet-address" id="usdcErc20Address">0x524b351129D5bC89eFA657f5266155297F398344</span><button class="copy-btn" onclick="copyToClipboard('usdcErc20Address')">📋 COPY</button></div>
                         </div>
+                        <!-- USDC BEP20 -->
                         <div id="qr-usdc-bep20" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 USDC (BEP20) - BNB Chain Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
                             <div class="wallet-address-container"><span class="wallet-address" id="usdcBep20Address">0x524b351129D5bC89eFA657f5266155297F398344</span><button class="copy-btn" onclick="copyToClipboard('usdcBep20Address')">📋 COPY</button></div>
                         </div>
+                        <!-- USDC TRC20 -->
                         <div id="qr-usdc-trc20" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 USDC (TRC20) - TRON Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN">
                             <div class="wallet-address-container"><span class="wallet-address" id="usdcTrc20Address">TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN</span><button class="copy-btn" onclick="copyToClipboard('usdcTrc20Address')">📋 COPY</button></div>
                         </div>
+                        <!-- BNB -->
                         <div id="qr-bnb" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 BNB (BSC) - Binance Coin Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
                             <div class="wallet-address-container"><span class="wallet-address" id="bnbAddress">0x524b351129D5bC89eFA657f5266155297F398344</span><button class="copy-btn" onclick="copyToClipboard('bnbAddress')">📋 COPY</button></div>
                         </div>
+                        <!-- LTC -->
                         <div id="qr-ltc" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Litecoin (LTC) Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=LLVjH9nxPjGLNrGQA7TXyUx2eexKL4Yuxn">
                             <div class="wallet-address-container"><span class="wallet-address" id="ltcAddress">LLVjH9nxPjGLNrGQA7TXyUx2eexKL4Yuxn</span><button class="copy-btn" onclick="copyToClipboard('ltcAddress')">📋 COPY</button></div>
                         </div>
+                        <!-- SOL -->
                         <div id="qr-sol" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Solana (SOL) Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=6RFV3E4jSuEnATwi9NMTBfqE9yfNAz3Nh9Ad2ZPpFeE">
                             <div class="wallet-address-container"><span class="wallet-address" id="solAddress">6RFV3E4jSuEnATwi9NMTBfqE9yfNAz3Nh9Ad2ZPpFeE</span><button class="copy-btn" onclick="copyToClipboard('solAddress')">📋 COPY</button></div>
                         </div>
+                        <!-- DOGE -->
                         <div id="qr-doge" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Dogecoin (DOGE) Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=DUBtSMnvRWKJks8GvRSGtKkusmFsWdgzWK">
                             <div class="wallet-address-container"><span class="wallet-address" id="dogeAddress">DUBtSMnvRWKJks8GvRSGtKkusmFsWdgzWK</span><button class="copy-btn" onclick="copyToClipboard('dogeAddress')">📋 COPY</button></div>
                         </div>
+                        <!-- XRP -->
                         <div id="qr-xrp" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Ripple (XRP) Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=rG3SL9GntFomLeFxJMP1tvs5fdQwogZttG">
                             <div class="wallet-address-container"><span class="wallet-address" id="xrpAddress">rG3SL9GntFomLeFxJMP1tvs5fdQwogZttG</span><button class="copy-btn" onclick="copyToClipboard('xrpAddress')">📋 COPY</button></div>
                         </div>
+                        <!-- ADA -->
                         <div id="qr-ada" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Cardano (ADA) Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=addr1q8nalkryt3j43zz2cl4c6vwmcp3smugvr5jvj7l0hmkjgn7szeu32fljmxyhtksdsdh8gue73qtgkh0q875tthemh0lq2phz4v">
                             <div class="wallet-address-container"><span class="wallet-address" id="adaAddress">addr1q8nalkryt3j43zz2cl4c6vwmcp3smugvr5jvj7l0hmkjgn7szeu32fljmxyhtksdsdh8gue73qtgkh0q875tthemh0lq2phz4v</span><button class="copy-btn" onclick="copyToClipboard('adaAddress')">📋 COPY</button></div>
                         </div>
+                        <!-- DOT -->
                         <div id="qr-dot" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Polkadot (DOT) Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=14mDXE2j5HbzXdGEXKj5xR3kJSRLyyDH94TjtDk3F1kVS2Ub">
                             <div class="wallet-address-container"><span class="wallet-address" id="dotAddress">14mDXE2j5HbzXdGEXKj5xR3kJSRLyyDH94TjtDk3F1kVS2Ub</span><button class="copy-btn" onclick="copyToClipboard('dotAddress')">📋 COPY</button></div>
                         </div>
+                        <!-- MATIC -->
                         <div id="qr-matic" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Polygon (MATIC) Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
                             <div class="wallet-address-container"><span class="wallet-address" id="maticAddress">0x524b351129D5bC89eFA657f5266155297F398344</span><button class="copy-btn" onclick="copyToClipboard('maticAddress')">📋 COPY</button></div>
                         </div>
+                        <!-- AVAX -->
                         <div id="qr-avax" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Avalanche (AVAX) Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
                             <div class="wallet-address-container"><span class="wallet-address" id="avaxAddress">0x524b351129D5bC89eFA657f5266155297F398344</span><button class="copy-btn" onclick="copyToClipboard('avaxAddress')">📋 COPY</button></div>
                         </div>
+                        <!-- TRX -->
                         <div id="qr-trx" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 TRON (TRX) Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN">
                             <div class="wallet-address-container"><span class="wallet-address" id="trxAddress">TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN</span><button class="copy-btn" onclick="copyToClipboard('trxAddress')">📋 COPY</button></div>
                         </div>
+                        <!-- XMR -->
                         <div id="qr-xmr" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Monero (XMR) Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=46ujpgsAHhW325Hq2qTfm7FFDE2adKwum65TvMS83oMkbt7Ezn5oCH5TaCer3Hn7adcvewixcm9MR4X4pNTtSuxNCeKErjU">
                             <div class="wallet-address-container"><span class="wallet-address" id="xmrAddress">46ujpgsAHhW325Hq2qTfm7FFDE2adKwum65TvMS83oMkbt7Ezn5oCH5TaCer3Hn7adcvewixcm9MR4X4pNTtSuxNCeKErjU</span><button class="copy-btn" onclick="copyToClipboard('xmrAddress')">📋 COPY</button></div>
                         </div>
+                        <!-- TON -->
                         <div id="qr-ton" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 TONCOIN (TON) Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=EQBJHKaLTccsEmxP8Tc0B-1yzSeHksP7O9fbbO5jrABdZPBU">
                             <div class="wallet-address-container"><span class="wallet-address" id="tonAddress">EQBJHKaLTccsEmxP8Tc0B-1yzSeHksP7O9fbbO5jrABdZPBU</span><button class="copy-btn" onclick="copyToClipboard('tonAddress')">📋 COPY</button></div>
                         </div>
+                        <!-- SHIB -->
                         <div id="qr-shib" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Shiba Inu (SHIB) - ERC20 Wallet</div>
                             <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
                             <div class="wallet-address-container"><span class="wallet-address" id="shibAddress">0x524b351129D5bC89eFA657f5266155297F398344</span><button class="copy-btn" onclick="copyToClipboard('shibAddress')">📋 COPY</button></div>
                         </div>
                     </div>
+                    
                     <input type="number" step="0.01" id="depositAmount" class="modal-input" placeholder="Amount (min 10 points)" value="100">
                     <input type="text" id="depositWallet" class="modal-input" placeholder="Your Wallet Address / Transaction ID / Hash *REQUIRED*">
                     <textarea id="depositNote" class="modal-textarea" placeholder="Additional notes (optional)"></textarea>
                 </div>
+                
                 <div class="deposit-right-column">
                     <div class="instructions-box">
                         <div class="instructions-title">📋 DEPOSIT INSTRUCTIONS</div>
@@ -1013,6 +1016,7 @@
                     </div>
                 </div>
             </div>
+            
             <div class="modal-buttons">
                 <button id="confirmDepositBtn" class="modal-confirm">📧 SEND REQUEST</button>
                 <button id="cancelDepositBtn" class="modal-cancel">❌ CANCEL</button>
@@ -1020,7 +1024,7 @@
         </div>
     </div>
 
-    <!-- ===== WITHDRAW MODAL ===== -->
+    <!-- WITHDRAW MODAL -->
     <div id="withdrawModal" class="modal">
         <div class="modal-content">
             <h3>💰 WITHDRAW REQUEST</h3>
@@ -1059,6 +1063,7 @@
                     <input type="text" id="withdrawWallet" class="modal-input" placeholder="Your Wallet Address *REQUIRED*">
                     <textarea id="withdrawNote" class="modal-textarea" placeholder="Additional notes (optional)"></textarea>
                 </div>
+                
                 <div class="deposit-right-column">
                     <div class="instructions-box">
                         <div class="instructions-title">📋 WITHDRAW INSTRUCTIONS</div>
@@ -1079,6 +1084,7 @@
                     </div>
                 </div>
             </div>
+            
             <div class="modal-buttons">
                 <button id="confirmWithdrawBtn" class="modal-confirm">📧 SEND REQUEST</button>
                 <button id="cancelWithdrawBtn" class="modal-cancel">❌ CANCEL</button>
@@ -1086,7 +1092,7 @@
         </div>
     </div>
 
-    <!-- ===== PROGRESSIVE PANEL ===== -->
+    <!-- PROGRESSIVE PANEL -->
     <div class="progressive-panel" id="progressivePanel">
         <div class="progressive-header">
             <span class="progressive-title">🔥 PROGRESSIVE MODE 🔥</span>
@@ -1104,13 +1110,13 @@
         <div class="info-text" style="margin-top: 8px; position: relative; z-index: 1;">💡 Win to advance! Cash out anytime or risk it all for bigger multipliers!</div>
     </div>
 
-    <!-- ===== COIN AREA ===== -->
+    <!-- COIN AREA -->
     <div class="coin-area" id="coinArea">
         <div class="coin" id="coin">🪙</div>
         <div class="result" id="result">Login to start playing!</div>
     </div>
 
-    <!-- ===== BET PANEL ===== -->
+    <!-- BET PANEL -->
     <div class="bet-panel">
         <input type="number" step="0.01" id="betAmount" class="bet-input" placeholder="BET AMOUNT" value="100" disabled>
         <div class="bet-locked-info" id="betLockedInfo">🔒 Bet locked at $<span id="lockedBetDisplay">0.00</span> for progressive run</div>
@@ -1126,7 +1132,7 @@
         <button id="flipBtn" class="flip-btn" disabled>🔄 FLIP COIN 🔄</button>
     </div>
 
-    <!-- ===== STATS ===== -->
+    <!-- STATS -->
     <div class="stats">
         <div class="stat-box"><div class="stat-label">WINS</div><div class="stat-value" id="winsCount">0</div></div>
         <div class="stat-box"><div class="stat-label">LOSSES</div><div class="stat-value" id="lossesCount">0</div></div>
@@ -1137,944 +1143,810 @@
 </div>
 
 <script>
-    // ============================================================
-    //  PROGRESSIVE SYSTEM CONFIGURATION
-    // ============================================================
-    const PROGRESSIVE_MULTIPLIERS = [2, 3, 5, 8, 13, 21, 34, 55];
-    const HOUSE_EDGE = 0.11; // 11% house edge
-    const WIN_CHANCE = 0.5 * (1 - HOUSE_EDGE); // ~44.5% win chance
+// ============================================================
+//  PROGRESSIVE SYSTEM CONFIGURATION
+// ============================================================
+const PROGRESSIVE_MULTIPLIERS = [2, 3, 5, 8, 13, 21, 34, 55];
+const HOUSE_EDGE = 0.11;
+const WIN_CHANCE = 0.5 * (1 - HOUSE_EDGE);
 
-    // ============================================================
-    //  PROGRESSIVE STATE
-    // ============================================================
-    let progressiveActive = false;
-    let progressiveLevel = 0;
-    let progressiveBet = 0;
-    let progressivePot = 0;
-    let isInProgressiveRun = false;
-    let pendingLevelUp = false;
+// ============================================================
+//  PROGRESSIVE STATE
+// ============================================================
+let progressiveActive = false;
+let progressiveLevel = 0;
+let progressiveBet = 0;
+let progressivePot = 0;
+let isInProgressiveRun = false;
+let pendingLevelUp = false;
 
-    // ============================================================
-    //  API CONFIGURATION
-    // ============================================================
-    const API_URL = '';
-    let authToken = null;
-    let currentUser = null;
-    let currentUserData = null;
-    let isAdmin = false;
-    let progressiveJackpot = 0;
+// ============================================================
+//  API CONFIGURATION
+// ============================================================
+let authToken = null;
+let currentUser = null;
+let currentUserData = null;
+let isAdmin = false;
 
-    // ============================================================
-    //  MOBILE DETECTION
-    // ============================================================
-    function detectAndApplyMobileMode() {
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone/i.test(navigator.userAgent) || window.innerWidth <= 768;
-        if (isMobile) {
-            document.body.classList.add('mobile-mode');
-        } else {
-            document.body.classList.remove('mobile-mode');
-        }
-    }
-    window.addEventListener('DOMContentLoaded', detectAndApplyMobileMode);
-    window.addEventListener('resize', detectAndApplyMobileMode);
-    detectAndApplyMobileMode();
+// ============================================================
+//  DOM ELEMENTS
+// ============================================================
+const balanceEl = document.getElementById('balance');
+const bestStreakEl = document.getElementById('bestStreak');
+const totalWageredEl = document.getElementById('totalWagered');
+const coinEl = document.getElementById('coin');
+const resultEl = document.getElementById('result');
+const betInput = document.getElementById('betAmount');
+const headsBtn = document.getElementById('headsBtn');
+const tailsBtn = document.getElementById('tailsBtn');
+const flipBtn = document.getElementById('flipBtn');
+const halfBtn = document.getElementById('halfBtn');
+const doubleBtn = document.getElementById('doubleBtn');
+const maxBtn = document.getElementById('maxBtn');
+const depositBtn = document.getElementById('depositBtn');
+const withdrawBtn = document.getElementById('withdrawBtn');
+const winsCountEl = document.getElementById('winsCount');
+const lossesCountEl = document.getElementById('lossesCount');
+const winRateEl = document.getElementById('winRate');
+const currentStreakEl = document.getElementById('currentStreak');
+const adminPanel = document.getElementById('adminPanel');
+const adminUserSelect = document.getElementById('adminUserSelect');
+const adminAmount = document.getElementById('adminAmount');
+const adminAddBtn = document.getElementById('adminAddBtn');
+const adminRemoveBtn = document.getElementById('adminRemoveBtn');
+const adminBadge = document.getElementById('adminBadge');
+const currentUserDisplay = document.getElementById('currentUserDisplay');
+const userIdDisplay = document.getElementById('userIdDisplay');
+const progressiveStatus = document.getElementById('progressiveStatus');
+const currentLevelDisplay = document.getElementById('currentLevelDisplay');
+const currentPotDisplay = document.getElementById('currentPotDisplay');
+const checkpointsContainer = document.getElementById('checkpointsContainer');
+const toggleProgressiveBtn = document.getElementById('toggleProgressiveBtn');
+const cashoutProgressiveBtn = document.getElementById('cashoutProgressiveBtn');
+const betLockedInfo = document.getElementById('betLockedInfo');
+const lockedBetDisplay = document.getElementById('lockedBetDisplay');
+const depositModal = document.getElementById('depositModal');
+const withdrawModal = document.getElementById('withdrawModal');
 
-    // ============================================================
-    //  DOM ELEMENTS
-    // ============================================================
-    const balanceEl = document.getElementById('balance');
-    const bestStreakEl = document.getElementById('bestStreak');
-    const totalWageredEl = document.getElementById('totalWagered');
-    const coinEl = document.getElementById('coin');
-    const resultEl = document.getElementById('result');
-    const betInput = document.getElementById('betAmount');
-    const headsBtn = document.getElementById('headsBtn');
-    const tailsBtn = document.getElementById('tailsBtn');
-    const flipBtn = document.getElementById('flipBtn');
-    const halfBtn = document.getElementById('halfBtn');
-    const doubleBtn = document.getElementById('doubleBtn');
-    const maxBtn = document.getElementById('maxBtn');
-    const depositBtn = document.getElementById('depositBtn');
-    const withdrawBtn = document.getElementById('withdrawBtn');
-    const winsCountEl = document.getElementById('winsCount');
-    const lossesCountEl = document.getElementById('lossesCount');
-    const winRateEl = document.getElementById('winRate');
-    const currentStreakEl = document.getElementById('currentStreak');
-    const adminPanel = document.getElementById('adminPanel');
-    const adminUserSelect = document.getElementById('adminUserSelect');
-    const adminAmount = document.getElementById('adminAmount');
-    const adminAddBtn = document.getElementById('adminAddBtn');
-    const adminRemoveBtn = document.getElementById('adminRemoveBtn');
-    const adminBadge = document.getElementById('adminBadge');
-    const currentUserDisplay = document.getElementById('currentUserDisplay');
-    const userIdDisplay = document.getElementById('userIdDisplay');
-    const jackpotDisplay = document.getElementById('jackpotAmount');
-    const progressiveStatus = document.getElementById('progressiveStatus');
-    const currentLevelDisplay = document.getElementById('currentLevelDisplay');
-    const currentPotDisplay = document.getElementById('currentPotDisplay');
-    const checkpointsContainer = document.getElementById('checkpointsContainer');
-    const toggleProgressiveBtn = document.getElementById('toggleProgressiveBtn');
-    const cashoutProgressiveBtn = document.getElementById('cashoutProgressiveBtn');
-    const betLockedInfo = document.getElementById('betLockedInfo');
-    const lockedBetDisplay = document.getElementById('lockedBetDisplay');
+// ============================================================
+//  GAME STATE
+// ============================================================
+let selectedChoice = null;
+let isFlipping = false;
 
-    const depositModal = document.getElementById('depositModal');
-    const withdrawModal = document.getElementById('withdrawModal');
-
-    // QR elements mapping (same as before)
-    const qrElements = {
-        'Bitcoin (BTC)': 'qr-btc',
-        'Ethereum (ETH)': 'qr-eth',
-        'USDT (ERC20)': 'qr-usdt-erc20',
-        'USDT (BEP20)': 'qr-usdt-bep20',
-        'USDT (TRC20)': 'qr-usdt-trc20',
-        'USDC (ERC20)': 'qr-usdc-erc20',
-        'USDC (BEP20)': 'qr-usdc-bep20',
-        'USDC (TRC20)': 'qr-usdc-trc20',
-        'BNB (BSC)': 'qr-bnb',
-        'Litecoin (LTC)': 'qr-ltc',
-        'Solana (SOL)': 'qr-sol',
-        'Dogecoin (DOGE)': 'qr-doge',
-        'Ripple (XRP)': 'qr-xrp',
-        'Cardano (ADA)': 'qr-ada',
-        'Polkadot (DOT)': 'qr-dot',
-        'Polygon (MATIC)': 'qr-matic',
-        'Avalanche (AVAX)': 'qr-avax',
-        'TRON (TRX)': 'qr-trx',
-        'Monero (XMR)': 'qr-xmr',
-        'TONCOIN (TON)': 'qr-ton',
-        'Shiba Inu (SHIB)': 'qr-shib'
+// ============================================================
+//  API CALL FUNCTION
+// ============================================================
+async function apiCall(endpoint, method = 'GET', data = null) {
+    const headers = {
+        'Content-Type': 'application/json'
     };
-
-    // ============================================================
-    //  GAME STATE
-    // ============================================================
-    let selectedChoice = null;
-    let isFlipping = false;
-
-    // ============================================================
-    //  API CALL FUNCTION
-    // ============================================================
-    async function apiCall(endpoint, method = 'GET', data = null) {
-        const headers = {
-            'Content-Type': 'application/json'
-        };
-        if (authToken) {
-            headers['Authorization'] = `Bearer ${authToken}`;
-        }
-        const options = { method, headers };
-        if (data) options.body = JSON.stringify(data);
-        const response = await fetch(`/api${endpoint}`, options);
-        const result = await response.json();
-        if (!response.ok) {
-            throw new Error(result.error || 'API error');
-        }
-        return result;
+    if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
     }
-
-    // ============================================================
-    //  NOTIFICATION SYSTEM
-    // ============================================================
-    function showNotification(msg, duration = 3000) {
-        const notif = document.createElement('div');
-        notif.className = 'notification';
-        notif.innerHTML = msg;
-        document.body.appendChild(notif);
-        setTimeout(() => notif.remove(), duration);
+    const options = { method, headers };
+    if (data) options.body = JSON.stringify(data);
+    const response = await fetch(`/api${endpoint}`, options);
+    const result = await response.json();
+    if (!response.ok) {
+        throw new Error(result.error || 'API error');
     }
+    return result;
+}
 
-    // ============================================================
-    //  PROGRESSIVE UI FUNCTIONS
-    // ============================================================
-    function renderCheckpoints() {
-        checkpointsContainer.innerHTML = '';
-        const maxLevel = PROGRESSIVE_MULTIPLIERS.length;
-        for (let i = 0; i < maxLevel; i++) {
-            const div = document.createElement('div');
-            div.className = 'checkpoint';
-            if (i < progressiveLevel) div.classList.add('reached');
-            if (i === progressiveLevel && progressiveActive && progressiveLevel < maxLevel) div.classList.add('current');
-            const mult = PROGRESSIVE_MULTIPLIERS[i];
-            const prize = progressiveBet * mult;
-            div.innerHTML = `
-                <div class="checkpoint-multiplier">${mult}x</div>
-                <div class="checkpoint-label">${i === 0 ? 'START' : i === maxLevel-1 ? '🏆MAX' : 'Lv' + (i+1)}</div>
-                <div class="checkpoint-prize">$${prize.toFixed(2)}</div>
-            `;
-            checkpointsContainer.appendChild(div);
-        }
-        // Update level display
-        const displayLevel = progressiveActive ? progressiveLevel : 0;
-        currentLevelDisplay.textContent = `Level ${displayLevel}`;
-        const currentMultiplier = progressiveActive && progressiveLevel < PROGRESSIVE_MULTIPLIERS.length 
-            ? PROGRESSIVE_MULTIPLIERS[progressiveLevel] 
-            : PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
-        currentPotDisplay.textContent = `💰 $${(progressiveBet * currentMultiplier).toFixed(2)}`;
-        
-        // Update status
-        if (progressiveActive && progressiveLevel > 0) {
-            progressiveStatus.className = 'progressive-status active';
-            progressiveStatus.textContent = `🔥 LEVEL ${progressiveLevel}`;
-        } else if (progressiveActive) {
-            progressiveStatus.className = 'progressive-status active';
-            progressiveStatus.textContent = '⏳ WAITING';
-        } else {
-            progressiveStatus.className = 'progressive-status inactive';
-            progressiveStatus.textContent = '⏸ INACTIVE';
-        }
-        
-        // Update button states
-        cashoutProgressiveBtn.disabled = !(progressiveActive && progressiveLevel > 0);
+// ============================================================
+//  NOTIFICATION SYSTEM
+// ============================================================
+function showNotification(msg, duration = 3000) {
+    const notif = document.createElement('div');
+    notif.className = 'notification';
+    notif.innerHTML = msg;
+    document.body.appendChild(notif);
+    setTimeout(() => notif.remove(), duration);
+}
+
+// ============================================================
+//  PROGRESSIVE UI FUNCTIONS
+// ============================================================
+function renderCheckpoints() {
+    checkpointsContainer.innerHTML = '';
+    const maxLevel = PROGRESSIVE_MULTIPLIERS.length;
+    for (let i = 0; i < maxLevel; i++) {
+        const div = document.createElement('div');
+        div.className = 'checkpoint';
+        if (i < progressiveLevel) div.classList.add('reached');
+        if (i === progressiveLevel && progressiveActive && progressiveLevel < maxLevel) div.classList.add('current');
+        const mult = PROGRESSIVE_MULTIPLIERS[i];
+        const prize = progressiveBet * mult;
+        div.innerHTML = `
+            <div class="checkpoint-multiplier">${mult}x</div>
+            <div class="checkpoint-label">${i === 0 ? 'START' : i === maxLevel-1 ? '🏆MAX' : 'Lv' + (i+1)}</div>
+            <div class="checkpoint-prize">$${prize.toFixed(2)}</div>
+        `;
+        checkpointsContainer.appendChild(div);
     }
+    const displayLevel = progressiveActive ? progressiveLevel : 0;
+    currentLevelDisplay.textContent = `Level ${displayLevel}`;
+    const currentMultiplier = progressiveActive && progressiveLevel < PROGRESSIVE_MULTIPLIERS.length 
+        ? PROGRESSIVE_MULTIPLIERS[progressiveLevel] 
+        : PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
+    currentPotDisplay.textContent = `💰 $${(progressiveBet * currentMultiplier).toFixed(2)}`;
+    
+    if (progressiveActive && progressiveLevel > 0) {
+        progressiveStatus.className = 'progressive-status active';
+        progressiveStatus.textContent = `🔥 LEVEL ${progressiveLevel}`;
+    } else if (progressiveActive) {
+        progressiveStatus.className = 'progressive-status active';
+        progressiveStatus.textContent = '⏳ WAITING';
+    } else {
+        progressiveStatus.className = 'progressive-status inactive';
+        progressiveStatus.textContent = '⏸ INACTIVE';
+    }
+    cashoutProgressiveBtn.disabled = !(progressiveActive && progressiveLevel > 0);
+}
 
-    function resetProgressiveRun() {
-        progressiveActive = false;
-        progressiveLevel = 0;
-        progressiveBet = 0;
-        progressivePot = 0;
-        isInProgressiveRun = false;
+function resetProgressiveRun() {
+    progressiveActive = false;
+    progressiveLevel = 0;
+    progressiveBet = 0;
+    progressivePot = 0;
+    isInProgressiveRun = false;
+    pendingLevelUp = false;
+    betLockedInfo.classList.remove('visible');
+    betInput.disabled = false;
+    toggleProgressiveBtn.textContent = '▶ START PROGRESSIVE';
+    toggleProgressiveBtn.classList.remove('active');
+    renderCheckpoints();
+}
+
+function startProgressiveRun() {
+    if (!authToken) {
+        showNotification('Please login first!');
+        return;
+    }
+    const bet = parseFloat(betInput.value);
+    if (isNaN(bet) || bet <= 0) {
+        showNotification('Enter a valid bet amount!');
+        return;
+    }
+    if (bet > currentUserData.balance) {
+        showNotification('Insufficient balance!');
+        return;
+    }
+    
+    progressiveActive = true;
+    progressiveLevel = 0;
+    progressiveBet = bet;
+    progressivePot = 0;
+    isInProgressiveRun = true;
+    pendingLevelUp = false;
+    
+    betInput.disabled = true;
+    lockedBetDisplay.textContent = bet.toFixed(2);
+    betLockedInfo.classList.add('visible');
+    toggleProgressiveBtn.textContent = '⏳ IN RUN';
+    toggleProgressiveBtn.classList.add('active');
+    
+    if (!selectedChoice) {
+        selectedChoice = 'heads';
+        updateSelectedButton();
+    }
+    
+    renderCheckpoints();
+    showNotification(`🔥 Progressive run started with $${bet.toFixed(2)}! Win to advance!`);
+    resultEl.innerHTML = '🔥 Progressive run started! Win to advance to Level 1!';
+    resultEl.className = 'result progressive-win';
+}
+
+function cashoutProgressive() {
+    if (!progressiveActive || progressiveLevel === 0) {
+        showNotification('No winnings to cash out!');
+        return;
+    }
+    
+    const multiplier = progressiveLevel <= PROGRESSIVE_MULTIPLIERS.length 
+        ? PROGRESSIVE_MULTIPLIERS[progressiveLevel - 1] 
+        : PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
+    const winnings = progressiveBet * multiplier;
+    
+    if (currentUserData) {
+        currentUserData.balance += winnings;
+        updateUI();
+    }
+    
+    showNotification(`💰💰💰 CASHED OUT! Won $${winnings.toFixed(2)} at ${multiplier}x multiplier! 💰💰💰`, 5000);
+    showWinCelebration(winnings);
+    
+    const bet = progressiveBet;
+    resetProgressiveRun();
+    betInput.value = bet.toFixed(2);
+    betInput.disabled = false;
+    showNotification(`💰 Cashed out! Starting new run available.`, 3000);
+}
+
+function showWinCelebration(amount) {
+    const flash = document.createElement('div');
+    flash.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle,rgba(250,204,21,0.3) 0%,rgba(168,85,247,0.1) 100%);animation:flashAnim 0.5s ease-out;pointer-events:none;z-index:99998;';
+    const style = document.createElement('style');
+    style.textContent = '@keyframes flashAnim{0%{opacity:1}100%{opacity:0}}';
+    document.head.appendChild(style);
+    document.body.appendChild(flash);
+    setTimeout(() => { flash.remove(); style.remove(); }, 500);
+    
+    const coinArea = document.getElementById('coinArea');
+    coinArea.classList.add('win-glow');
+    setTimeout(() => coinArea.classList.remove('win-glow'), 800);
+    showNotification(`🎉 WIN! Won ${amount.toFixed(2)}! 🎉`);
+}
+
+function showLossCelebration(amount) {
+    const coinArea = document.getElementById('coinArea');
+    coinArea.classList.add('lose-glow');
+    setTimeout(() => coinArea.classList.remove('lose-glow'), 800);
+    showNotification(`💀 LOSS! Lost ${amount.toFixed(2)}! 💀`);
+}
+
+function showLevelUpOverlay(level, pot, nextMultiplier) {
+    document.querySelectorAll('.level-up-overlay, .big-loss-overlay').forEach(el => el.remove());
+    
+    const overlay = document.createElement('div');
+    overlay.className = 'level-up-overlay';
+    overlay.id = 'levelUpOverlay';
+    overlay.innerHTML = `
+        <div class="card">
+            <span class="emoji">🎉</span>
+            <h2>LEVEL UP!</h2>
+            <div class="level-number">Level ${level}</div>
+            <div class="prize-amount">💰 $${pot.toFixed(2)}</div>
+            <div class="next-multiplier">Next win pays ${nextMultiplier}x! Risk it or take the money?</div>
+            <div class="button-group">
+                <button class="cashout-btn-overlay" id="overlayCashoutBtn">💰 CASH OUT $${pot.toFixed(2)}</button>
+                <button class="continue-btn-overlay" id="overlayContinueBtn">🔥 CONTINUE (${nextMultiplier}x)</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    document.getElementById('overlayCashoutBtn').onclick = function() {
+        document.getElementById('levelUpOverlay').remove();
+        cashoutProgressive();
+    };
+    
+    document.getElementById('overlayContinueBtn').onclick = function() {
+        document.getElementById('levelUpOverlay').remove();
         pendingLevelUp = false;
-        betLockedInfo.classList.remove('visible');
-        betInput.disabled = false;
-        toggleProgressiveBtn.textContent = '▶ START PROGRESSIVE';
-        toggleProgressiveBtn.classList.remove('active');
-        renderCheckpoints();
-        showNotification('Progressive mode reset');
-    }
-
-    function startProgressiveRun() {
-        if (!authToken) {
-            showNotification('Please login first!');
-            return;
-        }
-        const bet = parseFloat(betInput.value);
-        if (isNaN(bet) || bet <= 0) {
-            showNotification('Enter a valid bet amount!');
-            return;
-        }
-        if (bet > currentUserData.balance) {
-            showNotification('Insufficient balance!');
-            return;
-        }
-        
-        progressiveActive = true;
-        progressiveLevel = 0;
-        progressiveBet = bet;
-        progressivePot = 0;
-        isInProgressiveRun = true;
-        pendingLevelUp = false;
-        
-        // Lock the bet
-        betInput.disabled = true;
-        lockedBetDisplay.textContent = bet.toFixed(2);
-        betLockedInfo.classList.add('visible');
-        
-        toggleProgressiveBtn.textContent = '⏳ IN RUN';
-        toggleProgressiveBtn.classList.add('active');
-        
-        // Make sure a choice is selected
-        if (!selectedChoice) {
-            selectedChoice = 'heads';
-            updateSelectedButton();
-        }
-        
-        renderCheckpoints();
-        showNotification(`🔥 Progressive run started with $${bet.toFixed(2)}! Win to advance!`);
-        resultEl.innerHTML = '🔥 Progressive run started! Win to advance to Level 1!';
+        resultEl.innerHTML = `🔥 Continuing to Level ${progressiveLevel + 1}! Good luck!`;
         resultEl.className = 'result progressive-win';
-    }
+        renderCheckpoints();
+        showNotification(`🔥 Moving to Level ${progressiveLevel + 1}!`, 2000);
+    };
+}
 
-    // ============================================================
-    //  CASHOUT
-    // ============================================================
-    function cashoutProgressive() {
-        if (!progressiveActive || progressiveLevel === 0) {
-            showNotification('No winnings to cash out!');
-            return;
-        }
-        
-        const multiplier = progressiveLevel <= PROGRESSIVE_MULTIPLIERS.length 
-            ? PROGRESSIVE_MULTIPLIERS[progressiveLevel - 1] 
-            : PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
-        const winnings = progressiveBet * multiplier;
-        
-        // Add to balance
-        if (currentUserData) {
-            currentUserData.balance += winnings;
-            updateUI();
-        }
-        
-        showNotification(`💰💰💰 CASHED OUT! Won $${winnings.toFixed(2)} at ${multiplier}x multiplier! 💰💰💰`, 5000);
-        showWinCelebration(winnings);
-        
-        // Reset progressive
+function showBigLossOverlay(level, lostAmount) {
+    document.querySelectorAll('.level-up-overlay, .big-loss-overlay').forEach(el => el.remove());
+    
+    const overlay = document.createElement('div');
+    overlay.className = 'big-loss-overlay';
+    overlay.innerHTML = `
+        <div class="card">
+            <span class="emoji">💀</span>
+            <h2>BUSTED!</h2>
+            <div class="lost-amount">Lost $${lostAmount.toFixed(2)}</div>
+            <div class="lost-details">You reached Level ${level} before losing it all.</div>
+            <button id="lossOverlayOkBtn">😔 START AGAIN</button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    document.getElementById('lossOverlayOkBtn').onclick = function() {
+        document.querySelectorAll('.big-loss-overlay').forEach(el => el.remove());
         const bet = progressiveBet;
         resetProgressiveRun();
-        // Restore bet input
         betInput.value = bet.toFixed(2);
         betInput.disabled = false;
-        showNotification(`💰 Cashed out! Starting new run available.`, 3000);
-    }
+        resultEl.innerHTML = '💀 Busted! Start a new run when ready.';
+        resultEl.className = 'result lose';
+    };
+}
 
-    // ============================================================
-    //  CELEBRATION FUNCTIONS
-    // ============================================================
-    function showWinCelebration(amount) {
-        const flash = document.createElement('div');
-        flash.className = 'flash';
-        document.body.appendChild(flash);
-        setTimeout(() => flash.remove(), 500);
-        
-        const coinArea = document.getElementById('coinArea');
-        coinArea.classList.add('win-glow');
-        setTimeout(() => coinArea.classList.remove('win-glow'), 800);
-        
-        showNotification(`🎉 WIN! Won ${amount.toFixed(2)}! 🎉`);
-    }
+function copyToClipboard(elementId) {
+    const text = document.getElementById(elementId).innerText;
+    navigator.clipboard.writeText(text).then(() => showNotification(`📋 Copied: ${text.substring(0, 20)}...`));
+}
+function copyUserId() {
+    const userId = document.getElementById('userIdDisplay').innerText;
+    if (userId && userId !== '-') navigator.clipboard.writeText(userId).then(() => showNotification(`📋 User ID copied: ${userId}`));
+}
+window.copyToClipboard = copyToClipboard;
+window.copyUserId = copyUserId;
 
-    function showLossCelebration(amount) {
-        const coinArea = document.getElementById('coinArea');
-        coinArea.classList.add('lose-glow');
-        setTimeout(() => coinArea.classList.remove('lose-glow'), 800);
-        showNotification(`💀 LOSS! Lost ${amount.toFixed(2)}! 💀`);
+function updateUI() {
+    if (!currentUserData) return;
+    balanceEl.innerText = currentUserData.balance.toFixed(2);
+    bestStreakEl.innerText = currentUserData.bestStreak || 0;
+    totalWageredEl.innerText = (currentUserData.totalWagered || 0).toFixed(2);
+    winsCountEl.innerText = currentUserData.wins || 0;
+    lossesCountEl.innerText = currentUserData.losses || 0;
+    const total = (currentUserData.wins || 0) + (currentUserData.losses || 0);
+    const winRate = total > 0 ? Math.round(((currentUserData.wins || 0) / total) * 100) : 0;
+    winRateEl.innerText = winRate + '%';
+    currentStreakEl.innerText = currentUserData.currentStreak || 0;
+    if (!progressiveActive || progressiveLevel === 0) {
+        betInput.max = currentUserData.balance;
     }
+    userIdDisplay.innerText = currentUserData.id || currentUserData._id;
+}
 
-    // ============================================================
-    //  LEVEL UP OVERLAY
-    // ============================================================
-    function showLevelUpOverlay(level, multiplier, pot, nextMultiplier) {
-        // Remove any existing overlays
-        document.querySelectorAll('.level-up-overlay, .big-loss-overlay').forEach(el => el.remove());
-        
-        const overlay = document.createElement('div');
-        overlay.className = 'level-up-overlay';
-        overlay.id = 'levelUpOverlay';
-        overlay.innerHTML = `
-            <div class="card">
-                <span class="emoji">🎉</span>
-                <h2>LEVEL UP!</h2>
-                <div class="level-number">Level ${level}</div>
-                <div class="prize-amount">💰 $${pot.toFixed(2)}</div>
-                <div class="next-multiplier">Next win pays ${nextMultiplier}x! Risk it or take the money?</div>
-                <div class="button-group">
-                    <button class="cashout-btn-overlay" id="overlayCashoutBtn">💰 CASH OUT $${pot.toFixed(2)}</button>
-                    <button class="continue-btn-overlay" id="overlayContinueBtn">🔥 CONTINUE (${nextMultiplier}x)</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(overlay);
-        
-        // Event listeners
-        document.getElementById('overlayCashoutBtn').onclick = () => {
-            document.getElementById('levelUpOverlay').remove();
-            // Cash out immediately
-            cashoutProgressive();
-        };
-        
-        document.getElementById('overlayContinueBtn').onclick = () => {
-            document.getElementById('levelUpOverlay').remove();
-            // Continue - just close overlay, game continues
-            pendingLevelUp = false;
-            resultEl.innerHTML = `🔥 Continuing to Level ${progressiveLevel + 1}! Good luck!`;
-            resultEl.className = 'result progressive-win';
-            renderCheckpoints();
-            showNotification(`🔥 Moving to Level ${progressiveLevel + 1}!`, 2000);
-        };
-    }
+function updateSelectedButton() {
+    headsBtn.classList.remove('selected');
+    tailsBtn.classList.remove('selected');
+    if (selectedChoice === 'heads') headsBtn.classList.add('selected');
+    if (selectedChoice === 'tails') tailsBtn.classList.add('selected');
+}
 
-    // ============================================================
-    //  BIG LOSS OVERLAY
-    // ============================================================
-    function showBigLossOverlay(level, lostAmount) {
-        document.querySelectorAll('.level-up-overlay, .big-loss-overlay').forEach(el => el.remove());
-        
-        const overlay = document.createElement('div');
-        overlay.className = 'big-loss-overlay';
-        overlay.innerHTML = `
-            <div class="card">
-                <span class="emoji">💀</span>
-                <h2>BUSTED!</h2>
-                <div class="lost-amount">Lost $${lostAmount.toFixed(2)}</div>
-                <div class="lost-details">You reached Level ${level} before losing it all.</div>
-                <button id="lossOverlayOkBtn">😔 START AGAIN</button>
-            </div>
-        `;
-        document.body.appendChild(overlay);
-        
-        document.getElementById('lossOverlayOkBtn').onclick = () => {
-            document.querySelectorAll('.big-loss-overlay').forEach(el => el.remove());
-            // Reset progressive
-            const bet = progressiveBet;
-            resetProgressiveRun();
-            betInput.value = bet.toFixed(2);
-            betInput.disabled = false;
-            resultEl.innerHTML = '💀 Busted! Start a new run when ready.';
-            resultEl.className = 'result lose';
-        };
+function setGameEnabled(enabled) {
+    if (!enabled) {
+        betInput.disabled = true;
+        headsBtn.disabled = true;
+        tailsBtn.disabled = true;
+        halfBtn.disabled = true;
+        doubleBtn.disabled = true;
+        maxBtn.disabled = true;
+        flipBtn.disabled = true;
+        depositBtn.disabled = true;
+        withdrawBtn.disabled = true;
+        resultEl.innerHTML = 'Login to start playing!';
+    } else {
+        betInput.disabled = progressiveActive;
+        headsBtn.disabled = false;
+        tailsBtn.disabled = false;
+        halfBtn.disabled = progressiveActive;
+        doubleBtn.disabled = progressiveActive;
+        maxBtn.disabled = progressiveActive;
+        flipBtn.disabled = false;
+        depositBtn.disabled = false;
+        withdrawBtn.disabled = false;
+        resultEl.innerHTML = 'Select HEADS or TAILS to start';
     }
+}
 
-    // ============================================================
-    //  COPY FUNCTIONS
-    // ============================================================
-    function copyToClipboard(elementId) {
-        const text = document.getElementById(elementId).innerText;
-        navigator.clipboard.writeText(text).then(() => showNotification(`📋 Copied: ${text.substring(0, 20)}...`));
-    }
-    function copyUserId() {
-        const userId = document.getElementById('userIdDisplay').innerText;
-        if (userId && userId !== '-') navigator.clipboard.writeText(userId).then(() => showNotification(`📋 User ID copied: ${userId}`));
-    }
-    window.copyToClipboard = copyToClipboard;
-    window.copyUserId = copyUserId;
+function openDepositModal() { if (!currentUser) { showNotification('Please login first!'); return; } depositModal.style.display = 'flex'; }
+function closeDepositModal() { depositModal.style.display = 'none'; }
+function openWithdrawModal() { if (!currentUser) { showNotification('Please login first!'); return; } if (currentUserData.balance < 10) { showNotification('Minimum balance for withdrawal is 10 points!'); return; } withdrawModal.style.display = 'flex'; }
+function closeWithdrawModal() { withdrawModal.style.display = 'none'; }
 
-    // ============================================================
-    //  UI UPDATE FUNCTIONS
-    // ============================================================
-    function updateUI() {
-        if (!currentUserData) return;
-        balanceEl.innerText = currentUserData.balance.toFixed(2);
-        bestStreakEl.innerText = currentUserData.bestStreak || 0;
-        totalWageredEl.innerText = (currentUserData.totalWagered || 0).toFixed(2);
-        winsCountEl.innerText = currentUserData.wins || 0;
-        lossesCountEl.innerText = currentUserData.losses || 0;
-        const total = (currentUserData.wins || 0) + (currentUserData.losses || 0);
-        const winRate = total > 0 ? Math.round(((currentUserData.wins || 0) / total) * 100) : 0;
-        winRateEl.innerText = winRate + '%';
-        currentStreakEl.innerText = currentUserData.currentStreak || 0;
-        if (!progressiveActive || progressiveLevel === 0) {
-            betInput.max = currentUserData.balance;
+// ============================================================
+//  AUTH FUNCTIONS
+// ============================================================
+async function signup(username, password) {
+    try {
+        const data = await apiCall('/auth/signup', 'POST', { username, password });
+        authToken = data.token;
+        currentUser = data.user;
+        currentUserData = data.user;
+        isAdmin = currentUser.isAdmin || false;
+        localStorage.setItem('authToken', authToken);
+        document.getElementById('authForm').style.display = 'none';
+        document.getElementById('userInfo').style.display = 'block';
+        document.getElementById('currentUserDisplay').innerText = currentUser.username;
+        userIdDisplay.innerText = currentUser.id;
+        if (isAdmin) { adminBadge.style.display = 'inline-block'; adminPanel.style.display = 'block'; loadAdminUsers(); }
+        setGameEnabled(true);
+        updateUI();
+        showNotification(`Welcome ${currentUser.username}!`);
+        return true;
+    } catch (error) {
+        alert(error.message);
+        return false;
+    }
+}
+
+async function login(username, password) {
+    try {
+        const data = await apiCall('/auth/login', 'POST', { username, password });
+        authToken = data.token;
+        currentUser = data.user;
+        currentUserData = data.user;
+        isAdmin = currentUser.isAdmin || false;
+        localStorage.setItem('authToken', authToken);
+        document.getElementById('authForm').style.display = 'none';
+        document.getElementById('userInfo').style.display = 'block';
+        document.getElementById('currentUserDisplay').innerText = currentUser.username;
+        userIdDisplay.innerText = currentUser.id;
+        if (isAdmin) { adminBadge.style.display = 'inline-block'; adminPanel.style.display = 'block'; loadAdminUsers(); }
+        setGameEnabled(true);
+        updateUI();
+        showNotification(`Welcome back ${currentUser.username}!`);
+        return true;
+    } catch (error) {
+        alert(error.message);
+        return false;
+    }
+}
+
+function logout() {
+    authToken = null;
+    currentUser = null;
+    currentUserData = null;
+    isAdmin = false;
+    selectedChoice = null;
+    resetProgressiveRun();
+    localStorage.removeItem('authToken');
+    document.getElementById('authForm').style.display = 'block';
+    document.getElementById('userInfo').style.display = 'none';
+    adminPanel.style.display = 'none';
+    setGameEnabled(false);
+    updateSelectedButton();
+    balanceEl.innerText = '0.00';
+    showNotification('Logged out');
+}
+
+// ============================================================
+//  ADMIN FUNCTIONS
+// ============================================================
+async function loadAdminUsers() {
+    if (!isAdmin) return;
+    try {
+        const users = await apiCall('/admin/users');
+        adminUserSelect.innerHTML = '<option value="">-- Select User --</option>';
+        for (const user of users) {
+            const option = document.createElement('option');
+            option.value = user.username;
+            option.textContent = `${user.username} - Balance: ${user.balance.toFixed(2)}`;
+            adminUserSelect.appendChild(option);
         }
-        userIdDisplay.innerText = currentUserData.id || currentUserData._id;
+    } catch (error) {
+        console.error('Failed to load users:', error);
     }
+}
 
-    function updateSelectedButton() {
-        headsBtn.classList.remove('selected');
-        tailsBtn.classList.remove('selected');
-        if (selectedChoice === 'heads') headsBtn.classList.add('selected');
-        if (selectedChoice === 'tails') tailsBtn.classList.add('selected');
-    }
-
-    function setGameEnabled(enabled) {
-        if (!enabled) {
-            betInput.disabled = true;
-            headsBtn.disabled = true;
-            tailsBtn.disabled = true;
-            halfBtn.disabled = true;
-            doubleBtn.disabled = true;
-            maxBtn.disabled = true;
-            flipBtn.disabled = true;
-            depositBtn.disabled = true;
-            withdrawBtn.disabled = true;
-            resultEl.innerHTML = 'Login to start playing!';
-        } else {
-            betInput.disabled = progressiveActive;
-            headsBtn.disabled = false;
-            tailsBtn.disabled = false;
-            halfBtn.disabled = progressiveActive;
-            doubleBtn.disabled = progressiveActive;
-            maxBtn.disabled = progressiveActive;
-            flipBtn.disabled = false;
-            depositBtn.disabled = false;
-            withdrawBtn.disabled = false;
-            resultEl.innerHTML = 'Select HEADS or TAILS to start';
-        }
-    }
-
-    // ============================================================
-    //  DEPOSIT/QR FUNCTIONS
-    // ============================================================
-    function updateDepositQR() {
-        const method = document.getElementById('depositMethod').value;
-        for (let id in qrElements) {
-            const element = document.getElementById(qrElements[id]);
-            if (element) element.style.display = 'none';
-        }
-        if (qrElements[method]) {
-            const selected = document.getElementById(qrElements[method]);
-            if (selected) selected.style.display = 'flex';
-        }
-    }
-
-    function openDepositModal() { if (!currentUser) { showNotification('Please login first!'); return; } updateDepositQR(); depositModal.style.display = 'flex'; }
-    function closeDepositModal() { depositModal.style.display = 'none'; document.getElementById('depositMethod').value = 'Bitcoin (BTC)'; document.getElementById('depositAmount').value = '100'; document.getElementById('depositWallet').value = ''; document.getElementById('depositNote').value = ''; updateDepositQR(); }
-    function openWithdrawModal() { if (!currentUser) { showNotification('Please login first!'); return; } if (currentUserData.balance < 10) { showNotification('Minimum balance for withdrawal is 10 points!'); return; } withdrawModal.style.display = 'flex'; }
-    function closeWithdrawModal() { withdrawModal.style.display = 'none'; document.getElementById('withdrawMethod').value = 'Bitcoin (BTC)'; document.getElementById('withdrawAmount').value = '100'; document.getElementById('withdrawWallet').value = ''; document.getElementById('withdrawNote').value = ''; }
-
-    // ============================================================
-    //  AUTH FUNCTIONS
-    // ============================================================
-    async function signup(username, password) {
-        try {
-            const data = await apiCall('/auth/signup', 'POST', { username, password });
-            authToken = data.token;
-            currentUser = data.user;
-            currentUserData = data.user;
-            isAdmin = currentUser.isAdmin || false;
-            localStorage.setItem('authToken', authToken);
-            document.getElementById('authForm').style.display = 'none';
-            document.getElementById('userInfo').style.display = 'block';
-            document.getElementById('currentUserDisplay').innerText = currentUser.username;
-            userIdDisplay.innerText = currentUser.id;
-            if (isAdmin) { adminBadge.style.display = 'inline-block'; adminPanel.style.display = 'block'; loadAdminUsers(); }
-            setGameEnabled(true);
-            updateUI();
-            showNotification(`Welcome ${currentUser.username}!`);
-            return true;
-        } catch (error) {
-            alert(error.message);
-            return false;
-        }
-    }
-
-    async function login(username, password) {
-        try {
-            const data = await apiCall('/auth/login', 'POST', { username, password });
-            authToken = data.token;
-            currentUser = data.user;
-            currentUserData = data.user;
-            isAdmin = currentUser.isAdmin || false;
-            localStorage.setItem('authToken', authToken);
-            document.getElementById('authForm').style.display = 'none';
-            document.getElementById('userInfo').style.display = 'block';
-            document.getElementById('currentUserDisplay').innerText = currentUser.username;
-            userIdDisplay.innerText = currentUser.id;
-            if (isAdmin) { adminBadge.style.display = 'inline-block'; adminPanel.style.display = 'block'; loadAdminUsers(); }
-            setGameEnabled(true);
-            updateUI();
-            showNotification(`Welcome back ${currentUser.username}!`);
-            return true;
-        } catch (error) {
-            alert(error.message);
-            return false;
-        }
-    }
-
-    function logout() {
-        authToken = null;
-        currentUser = null;
-        currentUserData = null;
-        isAdmin = false;
-        selectedChoice = null;
-        resetProgressiveRun();
-        localStorage.removeItem('authToken');
-        document.getElementById('authForm').style.display = 'block';
-        document.getElementById('userInfo').style.display = 'none';
-        adminPanel.style.display = 'none';
-        setGameEnabled(false);
-        updateSelectedButton();
-        balanceEl.innerText = '0.00';
-        showNotification('Logged out');
-    }
-
-    // ============================================================
-    //  ADMIN FUNCTIONS
-    // ============================================================
-    async function loadAdminUsers() {
-        if (!isAdmin) return;
-        try {
-            const users = await apiCall('/admin/users');
-            adminUserSelect.innerHTML = '<option value="">-- Select User --</option>';
-            for (const user of users) {
-                const option = document.createElement('option');
-                option.value = user.username;
-                option.textContent = `${user.username} - Balance: ${user.balance.toFixed(2)}`;
-                adminUserSelect.appendChild(option);
-            }
-        } catch (error) {
-            console.error('Failed to load users:', error);
-        }
-    }
-
-    async function adminAddFunds() {
-        if (!isAdmin) { showNotification('❌ Admin access required!'); return; }
-        const username = adminUserSelect.value;
-        const amount = parseFloat(adminAmount.value);
-        if (!username) { showNotification('Select a user first!'); return; }
-        if (isNaN(amount) || amount <= 0) { showNotification('Enter a valid amount!'); return; }
-        try {
-            await apiCall('/admin/add-funds', 'POST', { username, amount });
-            showNotification(`✅ Added ${amount.toFixed(2)} points to ${username}`);
-            loadAdminUsers();
-            if (currentUser && currentUser.username === username) {
-                const stats = await apiCall('/game/stats');
-                currentUserData = stats;
-                updateUI();
-            }
-        } catch (error) {
-            showNotification(error.message);
-        }
-    }
-
-    async function adminRemoveFunds() {
-        if (!isAdmin) { showNotification('❌ Admin access required!'); return; }
-        const username = adminUserSelect.value;
-        const amount = parseFloat(adminAmount.value);
-        if (!username) { showNotification('Select a user first!'); return; }
-        if (isNaN(amount) || amount <= 0) { showNotification('Enter a valid amount!'); return; }
-        try {
-            await apiCall('/admin/remove-funds', 'POST', { username, amount });
-            showNotification(`✅ Removed ${amount.toFixed(2)} points from ${username}`);
-            loadAdminUsers();
-            if (currentUser && currentUser.username === username) {
-                const stats = await apiCall('/game/stats');
-                currentUserData = stats;
-                updateUI();
-            }
-        } catch (error) {
-            showNotification(error.message);
-        }
-    }
-
-    // ============================================================
-    //  DEPOSIT/WITHDRAW CONFIRM
-    // ============================================================
-    async function confirmDeposit() {
-        const amount = parseFloat(document.getElementById('depositAmount').value);
-        const method = document.getElementById('depositMethod').value;
-        const wallet = document.getElementById('depositWallet').value;
-        const note = document.getElementById('depositNote').value;
-        if (!amount || amount < 10) { showNotification('Minimum deposit is 10 points!'); return; }
-        if (!wallet) { showNotification('Please provide your wallet address / transaction ID!'); return; }
-        try {
-            await apiCall('/deposit/request-deposit', 'POST', {
-                amount: amount,
-                amountPoints: amount,
-                cryptoMethod: method,
-                walletAddress: wallet,
-                transactionId: wallet,
-                note: note
-            });
-            showNotification('✅ Deposit request sent! Admin will review and add funds.');
-            closeDepositModal();
-            document.getElementById('depositAmount').value = '100';
-            document.getElementById('depositWallet').value = '';
-            document.getElementById('depositNote').value = '';
-        } catch (error) {
-            showNotification('❌ Error: ' + error.message);
-        }
-    }
-
-    async function confirmWithdraw() {
-        const amount = parseFloat(document.getElementById('withdrawAmount').value);
-        const method = document.getElementById('withdrawMethod').value;
-        const wallet = document.getElementById('withdrawWallet').value;
-        const note = document.getElementById('withdrawNote').value;
-        if (!amount || amount < 10) { showNotification('Minimum withdrawal is 10 points!'); return; }
-        if (amount > currentUserData.balance) { showNotification('Insufficient balance!'); return; }
-        if (!wallet) { showNotification('Please provide your wallet address!'); return; }
-        try {
-            await apiCall('/deposit/request-withdraw', 'POST', {
-                amount: amount,
-                amountPoints: amount,
-                cryptoMethod: method,
-                walletAddress: wallet,
-                note: note
-            });
-            showNotification('✅ Withdrawal request sent! Admin will review and process.');
-            closeWithdrawModal();
-            document.getElementById('withdrawAmount').value = '100';
-            document.getElementById('withdrawWallet').value = '';
-            document.getElementById('withdrawNote').value = '';
-        } catch (error) {
-            showNotification('❌ Error: ' + error.message);
-        }
-    }
-
-    // ============================================================
-    //  GAME FUNCTIONS
-    // ============================================================
-    async function loadGameStats() {
-        if (!authToken) return;
-        try {
+async function adminAddFunds() {
+    if (!isAdmin) { showNotification('❌ Admin access required!'); return; }
+    const username = adminUserSelect.value;
+    const amount = parseFloat(adminAmount.value);
+    if (!username) { showNotification('Select a user first!'); return; }
+    if (isNaN(amount) || amount <= 0) { showNotification('Enter a valid amount!'); return; }
+    try {
+        await apiCall('/admin/add-funds', 'POST', { username, amount });
+        showNotification(`✅ Added ${amount.toFixed(2)} points to ${username}`);
+        loadAdminUsers();
+        if (currentUser && currentUser.username === username) {
             const stats = await apiCall('/game/stats');
             currentUserData = stats;
             updateUI();
-        } catch (error) {
-            console.error('Failed to load stats:', error);
         }
+    } catch (error) {
+        showNotification(error.message);
     }
+}
 
-    function halfBet() {
-        if (!currentUserData || progressiveActive) return;
-        let currentBet = parseFloat(betInput.value);
-        if (isNaN(currentBet)) currentBet = 100;
-        let newBet = currentBet / 2;
-        if (newBet < 0.01) newBet = 0.01;
-        betInput.value = newBet.toFixed(2);
-        showNotification(`Bet halved to ${newBet.toFixed(2)}`);
-    }
-
-    function doubleBet() {
-        if (!currentUserData || progressiveActive) return;
-        let currentBet = parseFloat(betInput.value);
-        if (isNaN(currentBet)) currentBet = 100;
-        let newBet = currentBet * 2;
-        if (newBet > currentUserData.balance) newBet = currentUserData.balance;
-        betInput.value = newBet.toFixed(2);
-        showNotification(`Bet doubled to ${newBet.toFixed(2)}`);
-    }
-
-    function maxBet() {
-        if (!currentUserData || progressiveActive) return;
-        betInput.value = currentUserData.balance.toFixed(2);
-        showNotification(`Max bet: ${currentUserData.balance.toFixed(2)}`);
-    }
-
-    // ============================================================
-    //  MAIN FLIP FUNCTION
-    // ============================================================
-    async function flipCoin() {
-        if (isFlipping) return;
-        if (!authToken) { showNotification('Please login first!'); return; }
-        if (!selectedChoice) { showNotification('Select HEADS or TAILS first!'); return; }
-
-        let bet;
-        let isProgressiveFlip = false;
-
-        if (progressiveActive && progressiveLevel > 0) {
-            // Continuing a progressive run - bet is locked
-            bet = progressiveBet;
-            isProgressiveFlip = true;
-        } else if (progressiveActive && progressiveLevel === 0) {
-            // First flip of progressive run - bet is already set
-            bet = progressiveBet;
-            isProgressiveFlip = true;
-        } else {
-            // Normal flip
-            bet = parseFloat(betInput.value);
-            if (isNaN(bet) || bet <= 0) { showNotification('Enter valid bet amount!'); return; }
-            if (bet > currentUserData.balance) { showNotification('Insufficient balance!'); return; }
-        }
-
-        // Deduct bet from balance
-        if (!isProgressiveFlip || progressiveLevel === 0) {
-            currentUserData.balance -= bet;
+async function adminRemoveFunds() {
+    if (!isAdmin) { showNotification('❌ Admin access required!'); return; }
+    const username = adminUserSelect.value;
+    const amount = parseFloat(adminAmount.value);
+    if (!username) { showNotification('Select a user first!'); return; }
+    if (isNaN(amount) || amount <= 0) { showNotification('Enter a valid amount!'); return; }
+    try {
+        await apiCall('/admin/remove-funds', 'POST', { username, amount });
+        showNotification(`✅ Removed ${amount.toFixed(2)} points from ${username}`);
+        loadAdminUsers();
+        if (currentUser && currentUser.username === username) {
+            const stats = await apiCall('/game/stats');
+            currentUserData = stats;
             updateUI();
         }
+    } catch (error) {
+        showNotification(error.message);
+    }
+}
 
-        isFlipping = true;
-        flipBtn.disabled = true;
-        coinEl.classList.add('flipping');
-        resultEl.innerHTML = '🔄 Flipping...';
-        resultEl.className = 'result';
+// ============================================================
+//  DEPOSIT/WITHDRAW CONFIRM
+// ============================================================
+async function confirmDeposit() {
+    const amount = parseFloat(document.getElementById('depositAmount').value);
+    const method = document.getElementById('depositMethod').value;
+    const wallet = document.getElementById('depositWallet').value;
+    const note = document.getElementById('depositNote').value;
+    if (!amount || amount < 10) { showNotification('Minimum deposit is 10 points!'); return; }
+    if (!wallet) { showNotification('Please provide your wallet address / transaction ID!'); return; }
+    try {
+        await apiCall('/deposit/request-deposit', 'POST', {
+            amount: amount,
+            amountPoints: amount,
+            cryptoMethod: method,
+            walletAddress: wallet,
+            transactionId: wallet,
+            note: note
+        });
+        showNotification('✅ Deposit request sent! Admin will review and add funds.');
+        closeDepositModal();
+    } catch (error) {
+        showNotification('❌ Error: ' + error.message);
+    }
+}
 
-        // Determine win (44.5% win chance due to 11% house edge)
-        const win = Math.random() < WIN_CHANCE;
+async function confirmWithdraw() {
+    const amount = parseFloat(document.getElementById('withdrawAmount').value);
+    const method = document.getElementById('withdrawMethod').value;
+    const wallet = document.getElementById('withdrawWallet').value;
+    const note = document.getElementById('withdrawNote').value;
+    if (!amount || amount < 10) { showNotification('Minimum withdrawal is 10 points!'); return; }
+    if (amount > currentUserData.balance) { showNotification('Insufficient balance!'); return; }
+    if (!wallet) { showNotification('Please provide your wallet address!'); return; }
+    try {
+        await apiCall('/deposit/request-withdraw', 'POST', {
+            amount: amount,
+            amountPoints: amount,
+            cryptoMethod: method,
+            walletAddress: wallet,
+            note: note
+        });
+        showNotification('✅ Withdrawal request sent! Admin will review and process.');
+        closeWithdrawModal();
+    } catch (error) {
+        showNotification('❌ Error: ' + error.message);
+    }
+}
 
-        setTimeout(() => {
-            coinEl.classList.remove('flipping');
-            coinEl.textContent = win ? '🪙' : '🪙';
-            // Slight visual difference
-            coinEl.style.filter = win ? 'none' : 'grayscale(0.5)';
+// ============================================================
+//  GAME FUNCTIONS
+// ============================================================
+function halfBet() {
+    if (!currentUserData || progressiveActive) return;
+    let currentBet = parseFloat(betInput.value);
+    if (isNaN(currentBet)) currentBet = 100;
+    let newBet = currentBet / 2;
+    if (newBet < 0.01) newBet = 0.01;
+    betInput.value = newBet.toFixed(2);
+    showNotification(`Bet halved to ${newBet.toFixed(2)}`);
+}
 
-            if (win) {
-                if (isProgressiveFlip || progressiveActive) {
-                    // PROGRESSIVE WIN
-                    progressiveLevel++;
-                    const multiplier = progressiveLevel <= PROGRESSIVE_MULTIPLIERS.length 
-                        ? PROGRESSIVE_MULTIPLIERS[progressiveLevel - 1] 
-                        : PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
-                    const pot = progressiveBet * multiplier;
-                    progressivePot = pot;
+function doubleBet() {
+    if (!currentUserData || progressiveActive) return;
+    let currentBet = parseFloat(betInput.value);
+    if (isNaN(currentBet)) currentBet = 100;
+    let newBet = currentBet * 2;
+    if (newBet > currentUserData.balance) newBet = currentUserData.balance;
+    betInput.value = newBet.toFixed(2);
+    showNotification(`Bet doubled to ${newBet.toFixed(2)}`);
+}
 
-                    // Update result
-                    resultEl.innerHTML = `🎉 LEVEL ${progressiveLevel} REACHED! 🎉<br>💰 Current Pot: $${pot.toFixed(2)} (${multiplier}x)`;
-                    resultEl.className = 'result progressive-win';
-                    showNotification(`🔥 Level ${progressiveLevel}! Pot: $${pot.toFixed(2)}`, 2000);
+function maxBet() {
+    if (!currentUserData || progressiveActive) return;
+    betInput.value = currentUserData.balance.toFixed(2);
+    showNotification(`Max bet: ${currentUserData.balance.toFixed(2)}`);
+}
 
-                    // Check if max level reached
-                    if (progressiveLevel >= PROGRESSIVE_MULTIPLIERS.length) {
-                        // MAX LEVEL - Auto cashout
-                        const finalPot = progressiveBet * PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
-                        currentUserData.balance += finalPot;
-                        updateUI();
-                        showNotification(`🏆 MAX LEVEL REACHED! Won $${finalPot.toFixed(2)}! 🏆`, 5000);
-                        showWinCelebration(finalPot);
-                        resetProgressiveRun();
-                        betInput.value = bet.toFixed(2);
-                        betInput.disabled = false;
-                        resultEl.innerHTML = `🏆 MAX LEVEL! Won $${finalPot.toFixed(2)}! 🏆`;
-                        resultEl.className = 'result win';
-                        isFlipping = false;
-                        flipBtn.disabled = false;
-                        renderCheckpoints();
-                        return;
-                    }
+// ============================================================
+//  MAIN FLIP FUNCTION
+// ============================================================
+async function flipCoin() {
+    if (isFlipping) return;
+    if (!authToken) { showNotification('Please login first!'); return; }
+    if (!selectedChoice) { showNotification('Select HEADS or TAILS first!'); return; }
 
-                    // Show level up overlay
-                    const nextMultiplier = progressiveLevel < PROGRESSIVE_MULTIPLIERS.length 
-                        ? PROGRESSIVE_MULTIPLIERS[progressiveLevel] 
-                        : PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
-                    showLevelUpOverlay(progressiveLevel, pot, nextMultiplier);
-                    renderCheckpoints();
+    let bet;
+    let isProgressiveFlip = false;
 
-                    // Update locked bet display
-                    lockedBetDisplay.textContent = progressiveBet.toFixed(2);
+    if (progressiveActive && progressiveLevel > 0) {
+        bet = progressiveBet;
+        isProgressiveFlip = true;
+    } else if (progressiveActive && progressiveLevel === 0) {
+        bet = progressiveBet;
+        isProgressiveFlip = true;
+    } else {
+        bet = parseFloat(betInput.value);
+        if (isNaN(bet) || bet <= 0) { showNotification('Enter valid bet amount!'); return; }
+        if (bet > currentUserData.balance) { showNotification('Insufficient balance!'); return; }
+    }
 
-                } else {
-                    // NORMAL WIN
-                    const winnings = bet * 2;
-                    currentUserData.balance += winnings;
+    if (!isProgressiveFlip || progressiveLevel === 0) {
+        currentUserData.balance -= bet;
+        updateUI();
+    }
+
+    isFlipping = true;
+    flipBtn.disabled = true;
+    coinEl.classList.add('flipping');
+    resultEl.innerHTML = '🔄 Flipping...';
+    resultEl.className = 'result';
+
+    const win = Math.random() < WIN_CHANCE;
+
+    setTimeout(() => {
+        coinEl.classList.remove('flipping');
+        coinEl.textContent = '🪙';
+        coinEl.style.filter = win ? 'none' : 'grayscale(0.5)';
+
+        if (win) {
+            if (isProgressiveFlip || progressiveActive) {
+                progressiveLevel++;
+                const multiplier = progressiveLevel <= PROGRESSIVE_MULTIPLIERS.length 
+                    ? PROGRESSIVE_MULTIPLIERS[progressiveLevel - 1] 
+                    : PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
+                const pot = progressiveBet * multiplier;
+                progressivePot = pot;
+
+                resultEl.innerHTML = `🎉 LEVEL ${progressiveLevel} REACHED! 🎉<br>💰 Current Pot: $${pot.toFixed(2)} (${multiplier}x)`;
+                resultEl.className = 'result progressive-win';
+                showNotification(`🔥 Level ${progressiveLevel}! Pot: $${pot.toFixed(2)}`, 2000);
+
+                if (progressiveLevel >= PROGRESSIVE_MULTIPLIERS.length) {
+                    const finalPot = progressiveBet * PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
+                    currentUserData.balance += finalPot;
                     updateUI();
-                    resultEl.innerHTML = `🎉 WIN! Won $${winnings.toFixed(2)}! 🎉`;
-                    resultEl.className = 'result win';
-                    showWinCelebration(winnings);
-                    showNotification(`🎉 Won $${winnings.toFixed(2)}!`);
-                }
-            } else {
-                // LOSS
-                if (isProgressiveFlip || progressiveActive) {
-                    // PROGRESSIVE LOSS - Lose everything
-                    const lostAmount = progressiveBet * (progressiveLevel > 0 ? PROGRESSIVE_MULTIPLIERS[progressiveLevel - 1] : 1);
-                    const levelReached = progressiveLevel;
-                    
-                    resultEl.innerHTML = `💀 BUSTED! Lost $${lostAmount.toFixed(2)} at Level ${levelReached}! 💀`;
-                    resultEl.className = 'result lose';
-                    showLossCelebration(lostAmount);
-                    
-                    // Show big loss overlay
-                    showBigLossOverlay(levelReached, lostAmount);
-                    
-                    // Reset progressive but keep bet amount
+                    showNotification(`🏆 MAX LEVEL REACHED! Won $${finalPot.toFixed(2)}! 🏆`, 5000);
+                    showWinCelebration(finalPot);
                     const savedBet = progressiveBet;
                     resetProgressiveRun();
                     betInput.value = savedBet.toFixed(2);
                     betInput.disabled = false;
-                    
-                    // Update balance (already deducted)
-                    updateUI();
-                    
-                } else {
-                    // NORMAL LOSS
-                    resultEl.innerHTML = `💀 LOSS! Lost $${bet.toFixed(2)} 💀`;
-                    resultEl.className = 'result lose';
-                    showLossCelebration(bet);
-                    updateUI();
+                    resultEl.innerHTML = `🏆 MAX LEVEL! Won $${finalPot.toFixed(2)}! 🏆`;
+                    resultEl.className = 'result win';
+                    isFlipping = false;
+                    flipBtn.disabled = false;
+                    renderCheckpoints();
+                    return;
                 }
-            }
 
-            // Update stats
-            if (!isProgressiveFlip || progressiveLevel === 0) {
-                // Only update stats on normal flips or first progressive flip
-                if (win) {
-                    currentUserData.wins = (currentUserData.wins || 0) + 1;
-                } else {
-                    currentUserData.losses = (currentUserData.losses || 0) + 1;
-                }
-                updateUI();
-            }
+                const nextMultiplier = progressiveLevel < PROGRESSIVE_MULTIPLIERS.length 
+                    ? PROGRESSIVE_MULTIPLIERS[progressiveLevel] 
+                    : PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
+                showLevelUpOverlay(progressiveLevel, pot, nextMultiplier);
+                renderCheckpoints();
+                lockedBetDisplay.textContent = progressiveBet.toFixed(2);
 
-            isFlipping = false;
-            flipBtn.disabled = false;
-            
-            // Re-enable bet input if not in progressive run
-            if (!progressiveActive) {
-                betInput.disabled = false;
-            }
-
-            coinEl.style.filter = 'none';
-        }, 600);
-    }
-
-    // ============================================================
-    //  CHECK SESSION
-    // ============================================================
-    async function checkSession() {
-        const savedToken = localStorage.getItem('authToken');
-        if (savedToken) {
-            authToken = savedToken;
-            try {
-                const user = await apiCall('/auth/me');
-                currentUser = user;
-                currentUserData = user;
-                isAdmin = user.isAdmin || false;
-                document.getElementById('authForm').style.display = 'none';
-                document.getElementById('userInfo').style.display = 'block';
-                document.getElementById('currentUserDisplay').innerText = currentUser.username;
-                userIdDisplay.innerText = currentUser.id || currentUser._id;
-                if (isAdmin) {
-                    adminBadge.style.display = 'inline-block';
-                    adminPanel.style.display = 'block';
-                    loadAdminUsers();
-                }
-                setGameEnabled(true);
-                updateUI();
-                showNotification(`Welcome back ${currentUser.username}!`);
-            } catch (error) {
-                logout();
-            }
-        }
-    }
-
-    // ============================================================
-    //  EVENT LISTENERS
-    // ============================================================
-    document.getElementById('loginBtn').onclick = () => login(document.getElementById('loginUsername').value, document.getElementById('loginPassword').value);
-    document.getElementById('signupBtn').onclick = () => signup(document.getElementById('loginUsername').value, document.getElementById('loginPassword').value);
-    document.getElementById('logoutBtn').onclick = logout;
-
-    headsBtn.onclick = () => { selectedChoice = 'heads'; updateSelectedButton(); showNotification('Selected: HEADS'); };
-    tailsBtn.onclick = () => { selectedChoice = 'tails'; updateSelectedButton(); showNotification('Selected: TAILS'); };
-
-    flipBtn.onclick = flipCoin;
-    halfBtn.onclick = halfBet;
-    doubleBtn.onclick = doubleBet;
-    maxBtn.onclick = maxBet;
-
-    depositBtn.onclick = openDepositModal;
-    withdrawBtn.onclick = openWithdrawModal;
-
-    adminAddBtn.onclick = adminAddFunds;
-    adminRemoveBtn.onclick = adminRemoveFunds;
-
-    document.getElementById('confirmDepositBtn').onclick = confirmDeposit;
-    document.getElementById('cancelDepositBtn').onclick = closeDepositModal;
-    document.getElementById('confirmWithdrawBtn').onclick = confirmWithdraw;
-    document.getElementById('cancelWithdrawBtn').onclick = closeWithdrawModal;
-    document.getElementById('depositMethod').onchange = updateDepositQR;
-
-    // Toggle Progressive Button
-    toggleProgressiveBtn.onclick = () => {
-        if (progressiveActive) {
-            if (progressiveLevel > 0) {
-                if (confirm('End progressive run? You will lose your current winnings!')) {
-                    resetProgressiveRun();
-                    betInput.disabled = false;
-                    showNotification('Progressive run ended');
-                }
             } else {
-                resetProgressiveRun();
-                betInput.disabled = false;
-                showNotification('Progressive mode disabled');
+                const winnings = bet * 2;
+                currentUserData.balance += winnings;
+                updateUI();
+                resultEl.innerHTML = `🎉 WIN! Won $${winnings.toFixed(2)}! 🎉`;
+                resultEl.className = 'result win';
+                showWinCelebration(winnings);
+                showNotification(`🎉 Won $${winnings.toFixed(2)}!`);
             }
         } else {
-            startProgressiveRun();
+            if (isProgressiveFlip || progressiveActive) {
+                const lostAmount = progressiveBet * (progressiveLevel > 0 ? PROGRESSIVE_MULTIPLIERS[progressiveLevel - 1] : 1);
+                const levelReached = progressiveLevel;
+                
+                resultEl.innerHTML = `💀 BUSTED! Lost $${lostAmount.toFixed(2)} at Level ${levelReached}! 💀`;
+                resultEl.className = 'result lose';
+                showLossCelebration(lostAmount);
+                showBigLossOverlay(levelReached, lostAmount);
+                
+                const savedBet = progressiveBet;
+                resetProgressiveRun();
+                betInput.value = savedBet.toFixed(2);
+                betInput.disabled = false;
+                updateUI();
+            } else {
+                resultEl.innerHTML = `💀 LOSS! Lost $${bet.toFixed(2)} 💀`;
+                resultEl.className = 'result lose';
+                showLossCelebration(bet);
+                updateUI();
+            }
         }
-    };
 
-    // Cashout Button
-    cashoutProgressiveBtn.onclick = cashoutProgressive;
+        if (!isProgressiveFlip || progressiveLevel === 0) {
+            if (win) {
+                currentUserData.wins = (currentUserData.wins || 0) + 1;
+            } else {
+                currentUserData.losses = (currentUserData.losses || 0) + 1;
+            }
+            updateUI();
+        }
 
-    // Close modals on background click
-    window.onclick = (e) => {
-        if (e.target === depositModal) closeDepositModal();
-        if (e.target === withdrawModal) closeWithdrawModal();
-    };
+        isFlipping = false;
+        flipBtn.disabled = false;
+        
+        if (!progressiveActive) {
+            betInput.disabled = false;
+        }
 
-    // Enter key on bet input triggers flip    betInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !progressiveActive) flipCoin();
-    });
+        coinEl.style.filter = 'none';
+    }, 600);
+}
 
-    // ============================================================
-    //  INIT
-    // ============================================================
-    setGameEnabled(false);
-    checkSession();
-    renderCheckpoints();
+// ============================================================
+//  CHECK SESSION
+// ============================================================
+async function checkSession() {
+    const savedToken = localStorage.getItem('authToken');
+    if (savedToken) {
+        authToken = savedToken;
+        try {
+            const user = await apiCall('/auth/me');
+            currentUser = user;
+            currentUserData = user;
+            isAdmin = user.isAdmin || false;
+            document.getElementById('authForm').style.display = 'none';
+            document.getElementById('userInfo').style.display = 'block';
+            document.getElementById('currentUserDisplay').innerText = currentUser.username;
+            userIdDisplay.innerText = currentUser.id || currentUser._id;
+            if (isAdmin) {
+                adminBadge.style.display = 'inline-block';
+                adminPanel.style.display = 'block';
+                loadAdminUsers();
+            }
+            setGameEnabled(true);
+            updateUI();
+            showNotification(`Welcome back ${currentUser.username}!`);
+        } catch (error) {
+            logout();
+        }
+    }
+}
 
-    console.log('🪙 CoinFlip Casino loaded with Progressive Mode!');
-    console.log(`📊 Win Chance: ${(WIN_CHANCE * 100).toFixed(1)}% (11% house edge)`);
-    console.log('📈 Multipliers:', PROGRESSIVE_MULTIPLIERS.join('x, ') + 'x');
+// ============================================================
+//  EVENT LISTENERS
+// ============================================================
+document.getElementById('loginBtn').onclick = function() {
+    login(document.getElementById('loginUsername').value, document.getElementById('loginPassword').value);
+};
+document.getElementById('signupBtn').onclick = function() {
+    signup(document.getElementById('loginUsername').value, document.getElementById('loginPassword').value);
+};
+document.getElementById('logoutBtn').onclick = logout;
+
+headsBtn.onclick = function() { selectedChoice = 'heads'; updateSelectedButton(); showNotification('Selected: HEADS'); };
+tailsBtn.onclick = function() { selectedChoice = 'tails'; updateSelectedButton(); showNotification('Selected: TAILS'); };
+
+flipBtn.onclick = flipCoin;
+halfBtn.onclick = halfBet;
+doubleBtn.onclick = doubleBet;
+maxBtn.onclick = maxBet;
+
+depositBtn.onclick = openDepositModal;
+withdrawBtn.onclick = openWithdrawModal;
+
+adminAddBtn.onclick = adminAddFunds;
+adminRemoveBtn.onclick = adminRemoveFunds;
+
+document.getElementById('confirmDepositBtn').onclick = confirmDeposit;
+document.getElementById('cancelDepositBtn').onclick = closeDepositModal;
+document.getElementById('confirmWithdrawBtn').onclick = confirmWithdraw;
+document.getElementById('cancelWithdrawBtn').onclick = closeWithdrawModal;
+
+toggleProgressiveBtn.onclick = function() {
+    if (progressiveActive) {
+        if (progressiveLevel > 0) {
+            if (confirm('End progressive run? You will lose your current winnings!')) {
+                resetProgressiveRun();
+                betInput.disabled = false;
+                showNotification('Progressive run ended');
+            }
+        } else {
+            resetProgressiveRun();
+            betInput.disabled = false;
+            showNotification('Progressive mode disabled');
+        }
+    } else {
+        startProgressiveRun();
+    }
+};
+
+cashoutProgressiveBtn.onclick = cashoutProgressive;
+
+window.onclick = function(e) {
+    if (e.target === depositModal) closeDepositModal();
+    if (e.target === withdrawModal) closeWithdrawModal();
+};
+
+betInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !progressiveActive) flipCoin();
+});
+
+// ============================================================
+//  INIT
+// ============================================================
+setGameEnabled(false);
+checkSession();
+renderCheckpoints();
+
+console.log('🪙 CoinFlip Casino loaded with Progressive Mode!');
+console.log('📊 Win Chance: ' + (WIN_CHANCE * 100).toFixed(1) + '% (11% house edge)');
 </script>
 </body>
 </html>
