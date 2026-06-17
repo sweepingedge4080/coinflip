@@ -1,8 +1,12 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const auth = require('../middleware/auth');
 const router = express.Router();
 
+// ============================================================
+//  SIGNUP
+// ============================================================
 router.post('/signup', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -10,8 +14,8 @@ router.post('/signup', async (req, res) => {
         if (!username || username.length < 3) {
             return res.status(400).json({ error: 'Username must be at least 3 characters' });
         }
-        if (!password || password.length < 3) {
-            return res.status(400).json({ error: 'Password must be at least 3 characters' });
+        if (!password || password.length < 4) {
+            return res.status(400).json({ error: 'Password must be at least 4 characters' });
         }
         
         const existingUser = await User.findOne({ username });
@@ -24,7 +28,7 @@ router.post('/signup', async (req, res) => {
         
         const token = jwt.sign(
             { userId: user._id, username: user.username, isAdmin: user.isAdmin },
-            process.env.JWT_SECRET,
+            process.env.JWT_SECRET || 'secretkey',
             { expiresIn: '7d' }
         );
         
@@ -34,15 +38,25 @@ router.post('/signup', async (req, res) => {
                 id: user._id,
                 username: user.username,
                 balance: user.balance,
-                isAdmin: user.isAdmin
+                level: user.level,
+                xp: user.xp,
+                isAdmin: user.isAdmin,
+                wins: user.wins,
+                losses: user.losses,
+                bestStreak: user.bestStreak,
+                currentStreak: user.currentStreak,
+                totalWagered: user.totalWagered
             }
         });
     } catch (error) {
-        console.error(error);
+        console.error('❌ Signup error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
 
+// ============================================================
+//  LOGIN
+// ============================================================
 router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -59,7 +73,7 @@ router.post('/login', async (req, res) => {
         
         const token = jwt.sign(
             { userId: user._id, username: user.username, isAdmin: user.isAdmin },
-            process.env.JWT_SECRET,
+            process.env.JWT_SECRET || 'secretkey',
             { expiresIn: '7d' }
         );
         
@@ -69,23 +83,34 @@ router.post('/login', async (req, res) => {
                 id: user._id,
                 username: user.username,
                 balance: user.balance,
+                level: user.level,
+                xp: user.xp,
+                isAdmin: user.isAdmin,
                 wins: user.wins,
                 losses: user.losses,
                 bestStreak: user.bestStreak,
-                totalWagered: user.totalWagered,
-                isAdmin: user.isAdmin
+                currentStreak: user.currentStreak,
+                totalWagered: user.totalWagered
             }
         });
     } catch (error) {
+        console.error('❌ Login error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
 
-router.get('/me', require('../middleware/auth'), async (req, res) => {
+// ============================================================
+//  GET CURRENT USER
+// ============================================================
+router.get('/me', auth, async (req, res) => {
     try {
         const user = await User.findById(req.userId).select('-password');
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
         res.json(user);
     } catch (error) {
+        console.error('❌ Get user error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
