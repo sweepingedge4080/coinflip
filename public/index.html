@@ -1769,7 +1769,7 @@ function maxBet() {
 }
 
 // ============================================================
-//  MAIN FLIP FUNCTION - FIXED
+//  MAIN FLIP FUNCTION - FIXED (SERVER IS SOURCE OF TRUTH)
 // ============================================================
 async function flipCoin() {
     if (isFlipping) return;
@@ -1791,7 +1791,6 @@ async function flipCoin() {
         if (bet > currentUserData.balance) { showNotification('Insufficient balance!'); return; }
     }
 
-    // Don't deduct locally - let server handle it
     isFlipping = true;
     flipBtn.disabled = true;
     coinEl.classList.add('flipping');
@@ -1799,7 +1798,7 @@ async function flipCoin() {
     resultEl.className = 'result';
 
     try {
-        // Call the server to process the flip
+        // ✅ SERVER is the source of truth - send the bet and let the server calculate everything
         const response = await apiCall('/game/flip', 'POST', {
             betAmount: bet,
             choice: selectedChoice,
@@ -1807,127 +1806,119 @@ async function flipCoin() {
             originalBet: progressiveActive ? progressiveBet : bet
         });
 
-        // Update from server response (source of truth)
-        if (response.success !== undefined) {
-            const serverWin = response.isWin;
-            const serverWinnings = response.winnings || 0;
-            const serverNewBalance = response.newBalance;
-            const serverStats = response.stats || {};
+        console.log('📊 Server response:', response);
 
-            // Update local data with server data
-            currentUserData.balance = serverNewBalance;
-            currentUserData.wins = serverStats.wins || currentUserData.wins;
-            currentUserData.losses = serverStats.losses || currentUserData.losses;
-            currentUserData.currentStreak = serverStats.currentStreak || currentUserData.currentStreak;
-            currentUserData.bestStreak = serverStats.bestStreak || currentUserData.bestStreak;
-            currentUserData.totalWagered = serverStats.totalWagered || currentUserData.totalWagered;
+        // ✅ SERVER returns the result - use it!
+        const serverWin = response.isWin;
+        const serverWinnings = response.winnings || 0;
+        const serverNewBalance = response.newBalance;
+        const serverStats = response.stats || {};
 
-            // Update UI with new balance
-            updateUI();
+        // ✅ Update local data with server data (source of truth)
+        currentUserData.balance = serverNewBalance;
+        currentUserData.wins = serverStats.wins || currentUserData.wins;
+        currentUserData.losses = serverStats.losses || currentUserData.losses;
+        currentUserData.currentStreak = serverStats.currentStreak || currentUserData.currentStreak;
+        currentUserData.bestStreak = serverStats.bestStreak || currentUserData.bestStreak;
+        currentUserData.totalWagered = serverStats.totalWagered || currentUserData.totalWagered;
 
-            // Remove flipping class after animation
-            setTimeout(() => {
-                coinEl.classList.remove('flipping');
-                coinEl.textContent = '🪙';
-                coinEl.style.filter = serverWin ? 'none' : 'grayscale(0.5)';
+        // ✅ Update UI with new balance
+        updateUI();
 
-                if (serverWin) {
-                    if (isProgressiveFlip || progressiveActive) {
-                        progressiveLevel++;
-                        const multiplier = progressiveLevel <= PROGRESSIVE_MULTIPLIERS.length 
-                            ? PROGRESSIVE_MULTIPLIERS[progressiveLevel - 1] 
-                            : PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
-                        const pot = progressiveBet * multiplier;
-                        progressivePot = pot;
+        // ✅ Show the result based on SERVER response
+        setTimeout(() => {
+            coinEl.classList.remove('flipping');
+            coinEl.textContent = '🪙';
+            coinEl.style.filter = serverWin ? 'none' : 'grayscale(0.5)';
 
-                        resultEl.innerHTML = `🎉 LEVEL ${progressiveLevel} REACHED! 🎉<br>💰 Current Pot: $${pot.toFixed(2)} (${multiplier}x)`;
-                        resultEl.className = 'result progressive-win';
-                        showNotification(`🔥 Level ${progressiveLevel}! Pot: $${pot.toFixed(2)}`, 2000);
+            if (serverWin) {
+                if (isProgressiveFlip || progressiveActive) {
+                    progressiveLevel++;
+                    const multiplier = progressiveLevel <= PROGRESSIVE_MULTIPLIERS.length 
+                        ? PROGRESSIVE_MULTIPLIERS[progressiveLevel - 1] 
+                        : PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
+                    const pot = progressiveBet * multiplier;
+                    progressivePot = pot;
 
-                        if (progressiveLevel >= PROGRESSIVE_MULTIPLIERS.length) {
-                            const finalPot = progressiveBet * PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
-                            currentUserData.balance += finalPot;
-                            updateUI();
-                            showNotification(`🏆 MAX LEVEL REACHED! Won $${finalPot.toFixed(2)}! 🏆`, 5000);
-                            showWinCelebration(finalPot);
-                            const savedBet = progressiveBet;
-                            resetProgressiveRun();
-                            betInput.value = savedBet.toFixed(2);
-                            betInput.disabled = false;
-                            resultEl.innerHTML = `🏆 MAX LEVEL! Won $${finalPot.toFixed(2)}! 🏆`;
-                            resultEl.className = 'result win';
-                            isFlipping = false;
-                            flipBtn.disabled = false;
-                            renderCheckpoints();
-                            return;
-                        }
+                    resultEl.innerHTML = `🎉 LEVEL ${progressiveLevel} REACHED! 🎉<br>💰 Current Pot: $${pot.toFixed(2)} (${multiplier}x)`;
+                    resultEl.className = 'result progressive-win';
+                    showNotification(`🔥 Level ${progressiveLevel}! Pot: $${pot.toFixed(2)}`, 2000);
 
-                        const nextMultiplier = progressiveLevel < PROGRESSIVE_MULTIPLIERS.length 
-                            ? PROGRESSIVE_MULTIPLIERS[progressiveLevel] 
-                            : PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
-                        showLevelUpOverlay(progressiveLevel, pot, nextMultiplier);
-                        renderCheckpoints();
-                        lockedBetDisplay.textContent = progressiveBet.toFixed(2);
-                    } else {
-                        resultEl.innerHTML = `🎉 WIN! Won $${serverWinnings.toFixed(2)}! 🎉`;
-                        resultEl.className = 'result win';
-                        showWinCelebration(serverWinnings);
-                        showNotification(`🎉 Won $${serverWinnings.toFixed(2)}!`);
-                    }
-                } else {
-                    if (isProgressiveFlip || progressiveActive) {
-                        const lostAmount = progressiveBet * (progressiveLevel > 0 ? PROGRESSIVE_MULTIPLIERS[progressiveLevel - 1] : 1);
-                        const levelReached = progressiveLevel;
-                        
-                        resultEl.innerHTML = `💀 BUSTED! Lost $${lostAmount.toFixed(2)} at Level ${levelReached}! 💀`;
-                        resultEl.className = 'result lose';
-                        showLossCelebration(lostAmount);
-                        showBigLossOverlay(levelReached, lostAmount);
-                        
+                    if (progressiveLevel >= PROGRESSIVE_MULTIPLIERS.length) {
+                        const finalPot = progressiveBet * PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
+                        currentUserData.balance = serverNewBalance; // Already updated
+                        updateUI();
+                        showNotification(`🏆 MAX LEVEL REACHED! Won $${finalPot.toFixed(2)}! 🏆`, 5000);
+                        showWinCelebration(finalPot);
                         const savedBet = progressiveBet;
                         resetProgressiveRun();
                         betInput.value = savedBet.toFixed(2);
                         betInput.disabled = false;
-                    } else {
-                        resultEl.innerHTML = `💀 LOSS! Lost $${bet.toFixed(2)} 💀`;
-                        resultEl.className = 'result lose';
-                        showLossCelebration(bet);
+                        resultEl.innerHTML = `🏆 MAX LEVEL! Won $${finalPot.toFixed(2)}! 🏆`;
+                        resultEl.className = 'result win';
+                        isFlipping = false;
+                        flipBtn.disabled = false;
+                        renderCheckpoints();
+                        return;
                     }
-                }
 
-                isFlipping = false;
-                flipBtn.disabled = false;
-                
-                if (!progressiveActive) {
+                    const nextMultiplier = progressiveLevel < PROGRESSIVE_MULTIPLIERS.length 
+                        ? PROGRESSIVE_MULTIPLIERS[progressiveLevel] 
+                        : PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
+                    showLevelUpOverlay(progressiveLevel, pot, nextMultiplier);
+                    renderCheckpoints();
+                    lockedBetDisplay.textContent = progressiveBet.toFixed(2);
+                } else {
+                    // ✅ NORMAL WIN - use server winnings amount
+                    resultEl.innerHTML = `🎉 WIN! Won $${serverWinnings.toFixed(2)}! 🎉`;
+                    resultEl.className = 'result win';
+                    showWinCelebration(serverWinnings);
+                    showNotification(`🎉 Won $${serverWinnings.toFixed(2)}!`);
+                }
+            } else {
+                // ❌ LOSS
+                if (isProgressiveFlip || progressiveActive) {
+                    const lostAmount = progressiveBet * (progressiveLevel > 0 ? PROGRESSIVE_MULTIPLIERS[progressiveLevel - 1] : 1);
+                    const levelReached = progressiveLevel;
+                    
+                    resultEl.innerHTML = `💀 BUSTED! Lost $${lostAmount.toFixed(2)} at Level ${levelReached}! 💀`;
+                    resultEl.className = 'result lose';
+                    showLossCelebration(lostAmount);
+                    showBigLossOverlay(levelReached, lostAmount);
+                    
+                    const savedBet = progressiveBet;
+                    resetProgressiveRun();
+                    betInput.value = savedBet.toFixed(2);
                     betInput.disabled = false;
+                } else {
+                    // ✅ NORMAL LOSS - use bet amount
+                    resultEl.innerHTML = `💀 LOSS! Lost $${bet.toFixed(2)} 💀`;
+                    resultEl.className = 'result lose';
+                    showLossCelebration(bet);
                 }
+            }
 
-                coinEl.style.filter = 'none';
-            }, 600);
-        } else {
-            // Fallback - shouldn't happen if server is working
-            console.warn('Server response missing expected fields');
             isFlipping = false;
             flipBtn.disabled = false;
-            if (!progressiveActive) betInput.disabled = false;
-            coinEl.classList.remove('flipping');
-            showNotification('⚠️ Server error, please try again');
-        }
+            
+            if (!progressiveActive) {
+                betInput.disabled = false;
+            }
+
+            coinEl.style.filter = 'none';
+        }, 600);
+
     } catch (error) {
-        console.error('Flip API error:', error);
+        console.error('❌ Flip API error:', error);
         showNotification('❌ Error processing flip: ' + error.message);
         
-        // Revert local balance since server didn't process
-        if (!isProgressiveFlip || progressiveLevel === 0) {
-            // The server didn't deduct, so we don't need to revert
-            // But if we had deducted locally, we'd add it back
-        }
-
         isFlipping = false;
         flipBtn.disabled = false;
         if (!progressiveActive) betInput.disabled = false;
         coinEl.classList.remove('flipping');
         coinEl.style.filter = 'none';
+        resultEl.innerHTML = '⚠️ Error! Please try again.';
+        resultEl.className = 'result';
     }
 }
 
