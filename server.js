@@ -1,5 +1,5 @@
 // ============================================================
-//  server.js - Complete Production Version
+//  server.js - Updated for Separate Deposit/Withdraw Models
 // ============================================================
 
 require('dotenv').config();
@@ -63,44 +63,11 @@ mongoose.connection.on('disconnected', () => {
 });
 
 // ============================================================
-//  USER SCHEMA - NEW PLAYERS START WITH $0
+//  MODELS - Using Separate Files
 // ============================================================
-const UserSchema = new mongoose.Schema({
-    username: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    balance: { type: Number, default: 0 },
-    isAdmin: { type: Boolean, default: false },
-    wins: { type: Number, default: 0 },
-    losses: { type: Number, default: 0 },
-    bestStreak: { type: Number, default: 0 },
-    currentStreak: { type: Number, default: 0 },
-    totalWagered: { type: Number, default: 0 },
-    level: { type: Number, default: 1 },
-    xp: { type: Number, default: 0 },
-    createdAt: { type: Date, default: Date.now }
-});
-
-const User = mongoose.model('User', UserSchema);
-
-// ============================================================
-//  DEPOSIT REQUEST SCHEMA
-// ============================================================
-const DepositRequestSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    username: { type: String, required: true },
-    type: { type: String, enum: ['deposit', 'withdraw'], required: true },
-    amount: { type: Number, required: true },
-    cryptoMethod: { type: String, required: true },
-    walletAddress: { type: String, required: true },
-    transactionId: { type: String },
-    note: { type: String },
-    status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
-    processedBy: { type: String },
-    processedAt: { type: Date },
-    createdAt: { type: Date, default: Date.now }
-});
-
-const DepositRequest = mongoose.model('DepositRequest', DepositRequestSchema);
+const User = require('./models/User');
+const DepositRequest = require('./models/DepositRequest');
+const WithdrawRequest = require('./models/WithdrawRequest');
 
 // ============================================================
 //  LEVEL CONFIGURATION
@@ -446,8 +413,8 @@ app.post('/api/deposit/request-deposit', auth, async (req, res) => {
         const request = new DepositRequest({
             userId: user._id,
             username: user.username,
-            type: 'deposit',
             amount: amountPoints || amount,
+            amountPoints: amountPoints || amount,
             cryptoMethod,
             walletAddress,
             transactionId: transactionId || walletAddress,
@@ -475,11 +442,11 @@ app.post('/api/deposit/request-withdraw', auth, async (req, res) => {
             return res.status(400).json({ error: 'Insufficient balance' });
         }
 
-        const request = new DepositRequest({
+        const request = new WithdrawRequest({
             userId: user._id,
             username: user.username,
-            type: 'withdraw',
             amount: amountPoints || amount,
+            amountPoints: amountPoints || amount,
             cryptoMethod,
             walletAddress,
             note
@@ -494,7 +461,7 @@ app.post('/api/deposit/request-withdraw', auth, async (req, res) => {
 });
 
 // ============================================================
-//  ADMIN ROUTES - COMPLETE (All Endpoints Working)
+//  ADMIN ROUTES - Updated for Separate Models
 // ============================================================
 
 // Get all users - /api/admin/users
@@ -507,13 +474,14 @@ app.get('/api/admin/users', auth, isAdmin, async (req, res) => {
     }
 });
 
+// ============================================================
+//  DEPOSIT ADMIN ROUTES
+// ============================================================
+
 // Get pending deposit requests - /api/admin/requests/deposits/pending
 app.get('/api/admin/requests/deposits/pending', auth, isAdmin, async (req, res) => {
     try {
-        const requests = await DepositRequest.find({ 
-            type: 'deposit', 
-            status: 'pending' 
-        }).sort({ createdAt: -1 });
+        const requests = await DepositRequest.find({ status: 'pending' }).sort({ createdAt: -1 });
         res.json(requests);
     } catch (err) {
         console.error('❌ Admin deposits pending error:', err);
@@ -525,76 +493,11 @@ app.get('/api/admin/requests/deposits/pending', auth, isAdmin, async (req, res) 
 app.get('/api/admin/requests/deposits/processed', auth, isAdmin, async (req, res) => {
     try {
         const requests = await DepositRequest.find({ 
-            type: 'deposit', 
-            status: { $in: ['approved', 'rejected'] } 
+            status: { $in: ['confirmed', 'rejected'] } 
         }).sort({ processedAt: -1 }).limit(100);
-        
-        // Format the response with clear status
-        const formattedRequests = requests.map(req => ({
-            id: req._id,
-            userId: req.userId,
-            username: req.username,
-            type: req.type,
-            amount: req.amount,
-            cryptoMethod: req.cryptoMethod,
-            walletAddress: req.walletAddress,
-            transactionId: req.transactionId,
-            note: req.note,
-            status: req.status,
-            processedBy: req.processedBy,
-            processedAt: req.processedAt,
-            createdAt: req.createdAt
-        }));
-        
-        res.json(formattedRequests);
-    } catch (err) {
-        console.error('❌ Admin deposits processed error:', err);
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Get pending withdrawal requests - /api/admin/requests/withdrawals/pending
-app.get('/api/admin/requests/withdrawals/pending', auth, isAdmin, async (req, res) => {
-    try {
-        const requests = await DepositRequest.find({ 
-            type: 'withdraw', 
-            status: 'pending' 
-        }).sort({ createdAt: -1 });
         res.json(requests);
     } catch (err) {
-        console.error('❌ Admin withdrawals pending error:', err);
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Get processed withdrawal requests - /api/admin/requests/withdrawals/processed
-app.get('/api/admin/requests/withdrawals/processed', auth, isAdmin, async (req, res) => {
-    try {
-        const requests = await DepositRequest.find({ 
-            type: 'withdraw', 
-            status: { $in: ['approved', 'rejected'] } 
-        }).sort({ processedAt: -1 }).limit(100);
-        
-        // Format the response with clear status
-        const formattedRequests = requests.map(req => ({
-            id: req._id,
-            userId: req.userId,
-            username: req.username,
-            type: req.type,
-            amount: req.amount,
-            cryptoMethod: req.cryptoMethod,
-            walletAddress: req.walletAddress,
-            transactionId: req.transactionId,
-            note: req.note,
-            status: req.status,
-            processedBy: req.processedBy,
-            processedAt: req.processedAt,
-            createdAt: req.createdAt
-        }));
-        
-        res.json(formattedRequests);
-    } catch (err) {
-        console.error('❌ Admin withdrawals processed error:', err);
+        console.error('❌ Admin deposits processed error:', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -611,9 +514,6 @@ app.post('/api/admin/requests/deposit/approve', auth, isAdmin, async (req, res) 
         if (!request) {
             return res.status(404).json({ error: 'Request not found' });
         }
-        if (request.type !== 'deposit') {
-            return res.status(400).json({ error: 'Not a deposit request' });
-        }
         if (request.status !== 'pending') {
             return res.status(400).json({ error: 'Request already processed' });
         }
@@ -627,33 +527,18 @@ app.post('/api/admin/requests/deposit/approve', auth, isAdmin, async (req, res) 
         user.balance += request.amount;
         await user.save();
 
-        // Update request status
-        request.status = 'approved';
-        request.processedBy = req.adminUser.username;
+        // Update request status to 'confirmed' (matches your model)
+        request.status = 'confirmed';
+        request.adminNotes = `Approved by ${req.adminUser.username}`;
         request.processedAt = new Date();
         await request.save();
 
         console.log(`✅ Deposit approved: ${user.username} +$${request.amount} by ${req.adminUser.username}`);
 
-        // Return the updated request with all fields
         res.json({
             success: true,
             message: 'Deposit approved successfully',
-            request: {
-                id: request._id,
-                userId: request.userId,
-                username: request.username,
-                type: request.type,
-                amount: request.amount,
-                cryptoMethod: request.cryptoMethod,
-                walletAddress: request.walletAddress,
-                transactionId: request.transactionId,
-                note: request.note,
-                status: request.status,
-                processedBy: request.processedBy,
-                processedAt: request.processedAt,
-                createdAt: request.createdAt
-            },
+            request: request,
             newBalance: user.balance
         });
     } catch (err) {
@@ -674,43 +559,52 @@ app.post('/api/admin/requests/deposit/reject', auth, isAdmin, async (req, res) =
         if (!request) {
             return res.status(404).json({ error: 'Request not found' });
         }
-        if (request.type !== 'deposit') {
-            return res.status(400).json({ error: 'Not a deposit request' });
-        }
         if (request.status !== 'pending') {
             return res.status(400).json({ error: 'Request already processed' });
         }
 
-        // Update request status
         request.status = 'rejected';
-        request.processedBy = req.adminUser.username;
+        request.adminNotes = `Rejected by ${req.adminUser.username}`;
         request.processedAt = new Date();
         await request.save();
 
         console.log(`❌ Deposit rejected: ${request.username} - $${request.amount} by ${req.adminUser.username}`);
 
-        // Return the updated request with all fields
         res.json({
             success: true,
             message: 'Deposit rejected',
-            request: {
-                id: request._id,
-                userId: request.userId,
-                username: request.username,
-                type: request.type,
-                amount: request.amount,
-                cryptoMethod: request.cryptoMethod,
-                walletAddress: request.walletAddress,
-                transactionId: request.transactionId,
-                note: request.note,
-                status: request.status,
-                processedBy: request.processedBy,
-                processedAt: request.processedAt,
-                createdAt: request.createdAt
-            }
+            request: request
         });
     } catch (err) {
         console.error('❌ Reject deposit error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
+//  WITHDRAWAL ADMIN ROUTES
+// ============================================================
+
+// Get pending withdrawal requests - /api/admin/requests/withdrawals/pending
+app.get('/api/admin/requests/withdrawals/pending', auth, isAdmin, async (req, res) => {
+    try {
+        const requests = await WithdrawRequest.find({ status: 'pending' }).sort({ createdAt: -1 });
+        res.json(requests);
+    } catch (err) {
+        console.error('❌ Admin withdrawals pending error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Get processed withdrawal requests - /api/admin/requests/withdrawals/processed
+app.get('/api/admin/requests/withdrawals/processed', auth, isAdmin, async (req, res) => {
+    try {
+        const requests = await WithdrawRequest.find({ 
+            status: { $in: ['completed', 'rejected'] } 
+        }).sort({ processedAt: -1 }).limit(100);
+        res.json(requests);
+    } catch (err) {
+        console.error('❌ Admin withdrawals processed error:', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -723,12 +617,9 @@ app.post('/api/admin/requests/withdraw/approve', auth, isAdmin, async (req, res)
             return res.status(400).json({ error: 'Request ID required' });
         }
 
-        const request = await DepositRequest.findById(requestId);
+        const request = await WithdrawRequest.findById(requestId);
         if (!request) {
             return res.status(404).json({ error: 'Request not found' });
-        }
-        if (request.type !== 'withdraw') {
-            return res.status(400).json({ error: 'Not a withdrawal request' });
         }
         if (request.status !== 'pending') {
             return res.status(400).json({ error: 'Request already processed' });
@@ -747,33 +638,18 @@ app.post('/api/admin/requests/withdraw/approve', auth, isAdmin, async (req, res)
         user.balance -= request.amount;
         await user.save();
 
-        // Update request status
-        request.status = 'approved';
-        request.processedBy = req.adminUser.username;
+        // Update request status to 'completed' (matches your model)
+        request.status = 'completed';
+        request.adminNotes = `Approved by ${req.adminUser.username}`;
         request.processedAt = new Date();
         await request.save();
 
         console.log(`✅ Withdrawal approved: ${user.username} -$${request.amount} by ${req.adminUser.username}`);
 
-        // Return the updated request with all fields
         res.json({
             success: true,
             message: 'Withdrawal approved successfully',
-            request: {
-                id: request._id,
-                userId: request.userId,
-                username: request.username,
-                type: request.type,
-                amount: request.amount,
-                cryptoMethod: request.cryptoMethod,
-                walletAddress: request.walletAddress,
-                transactionId: request.transactionId,
-                note: request.note,
-                status: request.status,
-                processedBy: request.processedBy,
-                processedAt: request.processedAt,
-                createdAt: request.createdAt
-            },
+            request: request,
             newBalance: user.balance
         });
     } catch (err) {
@@ -790,50 +666,35 @@ app.post('/api/admin/requests/withdraw/reject', auth, isAdmin, async (req, res) 
             return res.status(400).json({ error: 'Request ID required' });
         }
 
-        const request = await DepositRequest.findById(requestId);
+        const request = await WithdrawRequest.findById(requestId);
         if (!request) {
             return res.status(404).json({ error: 'Request not found' });
-        }
-        if (request.type !== 'withdraw') {
-            return res.status(400).json({ error: 'Not a withdrawal request' });
         }
         if (request.status !== 'pending') {
             return res.status(400).json({ error: 'Request already processed' });
         }
 
-        // Update request status
         request.status = 'rejected';
-        request.processedBy = req.adminUser.username;
+        request.adminNotes = `Rejected by ${req.adminUser.username}`;
         request.processedAt = new Date();
         await request.save();
 
         console.log(`❌ Withdrawal rejected: ${request.username} - $${request.amount} by ${req.adminUser.username}`);
 
-        // Return the updated request with all fields
         res.json({
             success: true,
             message: 'Withdrawal rejected',
-            request: {
-                id: request._id,
-                userId: request.userId,
-                username: request.username,
-                type: request.type,
-                amount: request.amount,
-                cryptoMethod: request.cryptoMethod,
-                walletAddress: request.walletAddress,
-                transactionId: request.transactionId,
-                note: request.note,
-                status: request.status,
-                processedBy: request.processedBy,
-                processedAt: request.processedAt,
-                createdAt: request.createdAt
-            }
+            request: request
         });
     } catch (err) {
         console.error('❌ Reject withdrawal error:', err);
         res.status(500).json({ error: err.message });
     }
 });
+
+// ============================================================
+//  LEGACY ADMIN ROUTES (Keep for compatibility)
+// ============================================================
 
 // Add funds - /api/admin/add-funds
 app.post('/api/admin/add-funds', auth, isAdmin, async (req, res) => {
