@@ -1,5 +1,5 @@
 // ============================================================
-//  server.js - Render Optimized with Better MongoDB Handling
+//  server.js - Complete with MongoDB URI Hardcoded
 // ============================================================
 
 require('dotenv').config();
@@ -16,47 +16,39 @@ const PORT = process.env.PORT || 5000;
 //  MIDDLEWARE
 // ============================================================
 app.use(cors({
-    origin: '*', // Allow all origins for testing
+    origin: '*',
     credentials: true
 }));
 app.use(express.json());
 app.use(express.static('public'));
 
 // ============================================================
-//  MONGODB CONNECTION - WITH RETRY LOGIC
+//  MONGODB CONNECTION - HARDCODED URI
 // ============================================================
 
-const MONGO_URI = process.env.MONGO_URI;
+// YOUR MONGODB URI - Hardcoded for Render deployment
+const MONGO_URI = 'mongodb+srv://yujigraphics_db_user:14142135624@coinflip.ec7vquf.mongodb.net/coinflip_casino?retryWrites=true&w=majority&appName=coinflip';
 
-console.log('🔍 MONGO_URI exists:', MONGO_URI ? '✅ YES' : '❌ NO');
-if (MONGO_URI) {
-    console.log('📝 MONGO_URI starts with:', MONGO_URI.substring(0, 20) + '...');
-}
+console.log('🔍 Attempting to connect to MongoDB...');
 
 // Connection options
 const connectOptions = {
-    serverSelectionTimeoutMS: 5000,
+    serverSelectionTimeoutMS: 10000,
     socketTimeoutMS: 45000,
     family: 4,
 };
 
 async function connectToMongoDB() {
     try {
-        if (!MONGO_URI) {
-            console.error('❌ MONGO_URI is not defined in environment variables!');
-            console.error('💡 Go to Render Dashboard → Environment → Add MONGO_URI');
-            return false;
-        }
-
         await mongoose.connect(MONGO_URI, connectOptions);
-        console.log('✅ MongoDB connected successfully!');
+        console.log('✅ MongoDB connected successfully to coinflip_casino!');
         return true;
     } catch (error) {
         console.error('❌ MongoDB connection error:', error.message);
         console.error('💡 Check:');
-        console.error('   1. MONGO_URI is correct in Render environment');
-        console.error('   2. IP whitelist allows all IPs (0.0.0.0/0) in MongoDB Atlas');
-        console.error('   3. Database user has correct permissions');
+        console.error('   1. MongoDB Atlas cluster is running');
+        console.error('   2. IP whitelist allows all IPs (0.0.0.0/0)');
+        console.error('   3. Username and password are correct');
         return false;
     }
 }
@@ -171,7 +163,7 @@ const auth = (req, res, next) => {
 //  AUTH ROUTES
 // ============================================================
 
-// Signup
+// Signup - /api/auth/signup
 app.post('/api/auth/signup', async (req, res) => {
     try {
         console.log('📝 Signup attempt:', req.body.username);
@@ -217,7 +209,7 @@ app.post('/api/auth/signup', async (req, res) => {
     }
 });
 
-// Login
+// Login - /api/auth/login
 app.post('/api/auth/login', async (req, res) => {
     try {
         console.log('🔑 Login attempt:', req.body.username);
@@ -261,7 +253,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-// Get current user
+// Get current user - /api/auth/me
 app.get('/api/auth/me', auth, async (req, res) => {
     try {
         const user = await User.findById(req.userId).select('-password');
@@ -294,7 +286,7 @@ app.get('/api/auth/me', auth, async (req, res) => {
 //  GAME ROUTES
 // ============================================================
 
-// Get game stats
+// Get game stats - /api/game/stats
 app.get('/api/game/stats', auth, async (req, res) => {
     try {
         const user = await User.findById(req.userId).select('-password');
@@ -323,7 +315,7 @@ app.get('/api/game/stats', auth, async (req, res) => {
     }
 });
 
-// Flip coin
+// Flip coin - /api/game/flip
 app.post('/api/game/flip', auth, async (req, res) => {
     try {
         const { betAmount, choice, progressiveStreak, originalBet } = req.body;
@@ -346,9 +338,11 @@ app.post('/api/game/flip', auth, async (req, res) => {
             return res.status(400).json({ error: 'Insufficient balance' });
         }
 
+        // Deduct bet
         user.balance -= betAmount;
         user.totalWagered = (user.totalWagered || 0) + betAmount;
 
+        // 11% house edge = 44.5% win chance
         const winChance = 0.5 * (1 - 0.11);
         const result = Math.random() < winChance ? 'heads' : 'tails';
         const win = choice === result;
@@ -383,6 +377,7 @@ app.post('/api/game/flip', auth, async (req, res) => {
             xpGain = 2;
         }
 
+        // Level up
         user.xp = (user.xp || 0) + xpGain;
         while (true) {
             const next = getNextLevelData(user.level);
@@ -427,6 +422,7 @@ app.post('/api/game/flip', auth, async (req, res) => {
 //  ADMIN ROUTES
 // ============================================================
 
+// Get all users - /api/admin/users
 app.get('/api/admin/users', auth, async (req, res) => {
     try {
         const admin = await User.findById(req.userId);
@@ -441,6 +437,7 @@ app.get('/api/admin/users', auth, async (req, res) => {
     }
 });
 
+// Add funds - /api/admin/add-funds
 app.post('/api/admin/add-funds', auth, async (req, res) => {
     try {
         const admin = await User.findById(req.userId);
@@ -467,6 +464,7 @@ app.post('/api/admin/add-funds', auth, async (req, res) => {
     }
 });
 
+// Remove funds - /api/admin/remove-funds
 app.post('/api/admin/remove-funds', auth, async (req, res) => {
     try {
         const admin = await User.findById(req.userId);
@@ -498,9 +496,10 @@ app.post('/api/admin/remove-funds', auth, async (req, res) => {
 });
 
 // ============================================================
-//  DEPOSIT ROUTES
+//  DEPOSIT / WITHDRAW ROUTES
 // ============================================================
 
+// Request deposit - /api/deposit/request-deposit
 app.post('/api/deposit/request-deposit', auth, async (req, res) => {
     try {
         const { amount, amountPoints, cryptoMethod, walletAddress, transactionId, note } = req.body;
@@ -528,6 +527,7 @@ app.post('/api/deposit/request-deposit', auth, async (req, res) => {
     }
 });
 
+// Request withdraw - /api/deposit/request-withdraw
 app.post('/api/deposit/request-withdraw', auth, async (req, res) => {
     try {
         const { amount, amountPoints, cryptoMethod, walletAddress, note } = req.body;
@@ -559,7 +559,7 @@ app.post('/api/deposit/request-withdraw', auth, async (req, res) => {
 });
 
 // ============================================================
-//  HEALTH CHECK (for Render)
+//  HEALTH CHECK (for Render monitoring)
 // ============================================================
 app.get('/api/health', (req, res) => {
     const dbState = mongoose.connection.readyState;
@@ -582,4 +582,12 @@ app.get('/api/health', (req, res) => {
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📡 Health check: http://localhost:${PORT}/api/health`);
+    console.log('🔗 Endpoints:');
+    console.log('   POST /api/auth/signup - Register');
+    console.log('   POST /api/auth/login - Login');
+    console.log('   GET  /api/auth/me - Get user');
+    console.log('   GET  /api/game/stats - Get stats');
+    console.log('   POST /api/game/flip - Flip coin');
+    console.log('   POST /api/deposit/request-deposit - Deposit');
+    console.log('   POST /api/deposit/request-withdraw - Withdraw');
 });
