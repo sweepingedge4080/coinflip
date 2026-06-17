@@ -1349,13 +1349,19 @@ function cashoutProgressive() {
         : PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
     const winnings = progressiveBet * multiplier;
     
-    if (currentUserData) {
-        currentUserData.balance += winnings;
+    // ✅ Call the server to add progressive winnings
+    apiCall('/game/add-progressive', 'POST', {
+        amount: winnings,
+        streak: progressiveLevel
+    }).then(response => {
+        // ✅ Use server response for balance
+        currentUserData.balance = response.newBalance;
         updateUI();
-    }
-    
-    showNotification(`💰💰💰 CASHED OUT! Won $${winnings.toFixed(2)} at ${multiplier}x multiplier! 💰💰💰`, 5000);
-    showWinCelebration(winnings);
+        showNotification(`💰💰💰 CASHED OUT! Won $${winnings.toFixed(2)} at ${multiplier}x multiplier! 💰💰💰`, 5000);
+        showWinCelebration(winnings);
+    }).catch(error => {
+        showNotification('❌ Error cashing out: ' + error.message);
+    });
     
     const bet = progressiveBet;
     resetProgressiveRun();
@@ -1769,7 +1775,7 @@ function maxBet() {
 }
 
 // ============================================================
-//  MAIN FLIP FUNCTION - FIXED (SERVER IS SOURCE OF TRUTH)
+//  MAIN FLIP FUNCTION - COMPLETE REWRITE (NO LOCAL MATH)
 // ============================================================
 async function flipCoin() {
     if (isFlipping) return;
@@ -1798,7 +1804,7 @@ async function flipCoin() {
     resultEl.className = 'result';
 
     try {
-        // ✅ SERVER is the source of truth - send the bet and let the server calculate everything
+        // ✅ Send to server and let it handle everything
         const response = await apiCall('/game/flip', 'POST', {
             betAmount: bet,
             choice: selectedChoice,
@@ -1808,13 +1814,13 @@ async function flipCoin() {
 
         console.log('📊 Server response:', response);
 
-        // ✅ SERVER returns the result - use it!
+        // ✅ Get server data
         const serverWin = response.isWin;
         const serverWinnings = response.winnings || 0;
         const serverNewBalance = response.newBalance;
         const serverStats = response.stats || {};
 
-        // ✅ Update local data with server data (source of truth)
+        // ✅ OVERWRITE local balance with server balance (DON'T ADD)
         currentUserData.balance = serverNewBalance;
         currentUserData.wins = serverStats.wins || currentUserData.wins;
         currentUserData.losses = serverStats.losses || currentUserData.losses;
@@ -1825,7 +1831,7 @@ async function flipCoin() {
         // ✅ Update UI with new balance
         updateUI();
 
-        // ✅ Show the result based on SERVER response
+        // ✅ Show result
         setTimeout(() => {
             coinEl.classList.remove('flipping');
             coinEl.textContent = '🪙';
@@ -1846,7 +1852,6 @@ async function flipCoin() {
 
                     if (progressiveLevel >= PROGRESSIVE_MULTIPLIERS.length) {
                         const finalPot = progressiveBet * PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
-                        currentUserData.balance = serverNewBalance; // Already updated
                         updateUI();
                         showNotification(`🏆 MAX LEVEL REACHED! Won $${finalPot.toFixed(2)}! 🏆`, 5000);
                         showWinCelebration(finalPot);
@@ -1869,14 +1874,14 @@ async function flipCoin() {
                     renderCheckpoints();
                     lockedBetDisplay.textContent = progressiveBet.toFixed(2);
                 } else {
-                    // ✅ NORMAL WIN - use server winnings amount
+                    // NORMAL WIN - server winnings already added by server
                     resultEl.innerHTML = `🎉 WIN! Won $${serverWinnings.toFixed(2)}! 🎉`;
                     resultEl.className = 'result win';
                     showWinCelebration(serverWinnings);
                     showNotification(`🎉 Won $${serverWinnings.toFixed(2)}!`);
                 }
             } else {
-                // ❌ LOSS
+                // LOSS
                 if (isProgressiveFlip || progressiveActive) {
                     const lostAmount = progressiveBet * (progressiveLevel > 0 ? PROGRESSIVE_MULTIPLIERS[progressiveLevel - 1] : 1);
                     const levelReached = progressiveLevel;
@@ -1891,7 +1896,6 @@ async function flipCoin() {
                     betInput.value = savedBet.toFixed(2);
                     betInput.disabled = false;
                 } else {
-                    // ✅ NORMAL LOSS - use bet amount
                     resultEl.innerHTML = `💀 LOSS! Lost $${bet.toFixed(2)} 💀`;
                     resultEl.className = 'result lose';
                     showLossCelebration(bet);
