@@ -1,5 +1,5 @@
 // ============================================================
-//  server.js - Complete with Level Progression & All Endpoints
+//  server.js - Render Optimized with Better MongoDB Handling
 // ============================================================
 
 require('dotenv').config();
@@ -12,35 +12,81 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
+// ============================================================
+//  MIDDLEWARE
+// ============================================================
+app.use(cors({
+    origin: '*', // Allow all origins for testing
+    credentials: true
+}));
 app.use(express.json());
 app.use(express.static('public'));
 
 // ============================================================
-//  DATABASE CONNECTION
+//  MONGODB CONNECTION - WITH RETRY LOGIC
 // ============================================================
 
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/coinflip')
-    .then(() => console.log('✅ MongoDB connected'))
-    .catch(err => console.error('❌ MongoDB error:', err));
+const MONGO_URI = process.env.MONGO_URI;
+
+console.log('🔍 MONGO_URI exists:', MONGO_URI ? '✅ YES' : '❌ NO');
+if (MONGO_URI) {
+    console.log('📝 MONGO_URI starts with:', MONGO_URI.substring(0, 20) + '...');
+}
+
+// Connection options
+const connectOptions = {
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+    family: 4,
+};
+
+async function connectToMongoDB() {
+    try {
+        if (!MONGO_URI) {
+            console.error('❌ MONGO_URI is not defined in environment variables!');
+            console.error('💡 Go to Render Dashboard → Environment → Add MONGO_URI');
+            return false;
+        }
+
+        await mongoose.connect(MONGO_URI, connectOptions);
+        console.log('✅ MongoDB connected successfully!');
+        return true;
+    } catch (error) {
+        console.error('❌ MongoDB connection error:', error.message);
+        console.error('💡 Check:');
+        console.error('   1. MONGO_URI is correct in Render environment');
+        console.error('   2. IP whitelist allows all IPs (0.0.0.0/0) in MongoDB Atlas');
+        console.error('   3. Database user has correct permissions');
+        return false;
+    }
+}
+
+// Connect immediately
+connectToMongoDB();
+
+// Handle connection events
+mongoose.connection.on('error', (err) => {
+    console.error('❌ MongoDB connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+    console.log('⚠️ MongoDB disconnected. Attempting to reconnect...');
+    setTimeout(() => connectToMongoDB(), 5000);
+});
 
 // ============================================================
 //  USER SCHEMA
 // ============================================================
-
 const UserSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     balance: { type: Number, default: 100.00 },
     isAdmin: { type: Boolean, default: false },
-    // Stats
     wins: { type: Number, default: 0 },
     losses: { type: Number, default: 0 },
     bestStreak: { type: Number, default: 0 },
     currentStreak: { type: Number, default: 0 },
     totalWagered: { type: Number, default: 0 },
-    // Level Progression
     level: { type: Number, default: 1 },
     xp: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now }
@@ -51,7 +97,6 @@ const User = mongoose.model('User', UserSchema);
 // ============================================================
 //  DEPOSIT REQUEST SCHEMA
 // ============================================================
-
 const DepositRequestSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     username: { type: String, required: true },
@@ -70,7 +115,6 @@ const DepositRequest = mongoose.model('DepositRequest', DepositRequestSchema);
 // ============================================================
 //  LEVEL CONFIGURATION
 // ============================================================
-
 const LEVEL_CONFIG = [
     { level: 1, xpRequired: 0, maxBet: 10, winBonus: 1.0 },
     { level: 2, xpRequired: 100, maxBet: 25, winBonus: 1.1 },
@@ -108,10 +152,11 @@ function getXPToNext(level) {
 // ============================================================
 //  AUTH MIDDLEWARE
 // ============================================================
-
 const auth = (req, res, next) => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ error: 'No token provided' });
+    if (!token) {
+        return res.status(401).json({ error: 'No token provided' });
+    }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secretkey');
@@ -123,21 +168,33 @@ const auth = (req, res, next) => {
 };
 
 // ============================================================
-//  AUTH ROUTES (matching frontend expectations)
+//  AUTH ROUTES
 // ============================================================
 
-// Signup - /api/auth/signup
+// Signup
 app.post('/api/auth/signup', async (req, res) => {
     try {
+        console.log('📝 Signup attempt:', req.body.username);
         const { username, password } = req.body;
+        
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Username and password required' });
+        }
+        if (password.length < 4) {
+            return res.status(400).json({ error: 'Password must be at least 4 characters' });
+        }
+
         const existing = await User.findOne({ username });
-        if (existing) return res.status(400).json({ error: 'Username taken' });
+        if (existing) {
+            return res.status(400).json({ error: 'Username taken' });
+        }
 
         const hashed = await bcrypt.hash(password, 10);
         const user = new User({ username, password: hashed });
         await user.save();
 
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || 'secretkey');
+        
         res.json({
             token,
             user: {
@@ -155,21 +212,33 @@ app.post('/api/auth/signup', async (req, res) => {
             }
         });
     } catch (err) {
+        console.error('❌ Signup error:', err);
         res.status(500).json({ error: err.message });
     }
 });
 
-// Login - /api/auth/login
+// Login
 app.post('/api/auth/login', async (req, res) => {
     try {
+        console.log('🔑 Login attempt:', req.body.username);
         const { username, password } = req.body;
+
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Username and password required' });
+        }
+
         const user = await User.findOne({ username });
-        if (!user) return res.status(400).json({ error: 'Invalid credentials' });
+        if (!user) {
+            return res.status(400).json({ error: 'Invalid credentials' });
+        }
 
         const valid = await bcrypt.compare(password, user.password);
-        if (!valid) return res.status(400).json({ error: 'Invalid credentials' });
+        if (!valid) {
+            return res.status(400).json({ error: 'Invalid credentials' });
+        }
 
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || 'secretkey');
+        
         res.json({
             token,
             user: {
@@ -187,15 +256,18 @@ app.post('/api/auth/login', async (req, res) => {
             }
         });
     } catch (err) {
+        console.error('❌ Login error:', err);
         res.status(500).json({ error: err.message });
     }
 });
 
-// Get current user - /api/auth/me
+// Get current user
 app.get('/api/auth/me', auth, async (req, res) => {
     try {
         const user = await User.findById(req.userId).select('-password');
-        if (!user) return res.status(404).json({ error: 'User not found' });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
 
         res.json({
             id: user._id,
@@ -222,11 +294,13 @@ app.get('/api/auth/me', auth, async (req, res) => {
 //  GAME ROUTES
 // ============================================================
 
-// Get game stats - /api/game/stats
+// Get game stats
 app.get('/api/game/stats', auth, async (req, res) => {
     try {
         const user = await User.findById(req.userId).select('-password');
-        if (!user) return res.status(404).json({ error: 'User not found' });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
 
         res.json({
             id: user._id,
@@ -249,7 +323,7 @@ app.get('/api/game/stats', auth, async (req, res) => {
     }
 });
 
-// Flip - /api/game/flip
+// Flip coin
 app.post('/api/game/flip', auth, async (req, res) => {
     try {
         const { betAmount, choice, progressiveStreak, originalBet } = req.body;
@@ -259,9 +333,10 @@ app.post('/api/game/flip', auth, async (req, res) => {
         }
 
         const user = await User.findById(req.userId);
-        if (!user) return res.status(404).json({ error: 'User not found' });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
 
-        // Level-based restrictions
         const maxBet = getMaxBet(user.level);
         if (betAmount > maxBet) {
             return res.status(400).json({ error: `Max bet for Level ${user.level} is $${maxBet}` });
@@ -271,12 +346,10 @@ app.post('/api/game/flip', auth, async (req, res) => {
             return res.status(400).json({ error: 'Insufficient balance' });
         }
 
-        // Deduct bet
         user.balance -= betAmount;
         user.totalWagered = (user.totalWagered || 0) + betAmount;
 
-        // Flip logic with 11% house edge (44.5% win chance)
-        const winChance = 0.5 * (1 - 0.11); // ~44.5%
+        const winChance = 0.5 * (1 - 0.11);
         const result = Math.random() < winChance ? 'heads' : 'tails';
         const win = choice === result;
 
@@ -284,21 +357,17 @@ app.post('/api/game/flip', auth, async (req, res) => {
         let xpGain = 2;
         let leveledUp = false;
 
-        // Track progressive streak
-        let effectiveStreak = progressiveStreak || 0;
+        const PROGRESSIVE_MULTIPLIERS = [2, 3, 5, 8, 13, 21, 34, 55];
 
         if (win) {
-            // Use progressive multiplier if in progressive mode
-            const PROGRESSIVE_MULTIPLIERS = [2, 3, 5, 8, 13, 21, 34, 55];
             let multiplier = 2;
-            
-            if (effectiveStreak > 0 && effectiveStreak <= PROGRESSIVE_MULTIPLIERS.length) {
-                multiplier = PROGRESSIVE_MULTIPLIERS[effectiveStreak - 1];
-            } else if (effectiveStreak > PROGRESSIVE_MULTIPLIERS.length) {
+            const streak = progressiveStreak || 0;
+            if (streak > 0 && streak <= PROGRESSIVE_MULTIPLIERS.length) {
+                multiplier = PROGRESSIVE_MULTIPLIERS[streak - 1];
+            } else if (streak > PROGRESSIVE_MULTIPLIERS.length) {
                 multiplier = PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
             }
             
-            // Use originalBet for progressive mode, otherwise use betAmount
             const baseBet = originalBet || betAmount;
             winnings = baseBet * multiplier;
             user.balance += winnings;
@@ -314,7 +383,6 @@ app.post('/api/game/flip', auth, async (req, res) => {
             xpGain = 2;
         }
 
-        // Add XP and check for level up
         user.xp = (user.xp || 0) + xpGain;
         while (true) {
             const next = getNextLevelData(user.level);
@@ -350,6 +418,7 @@ app.post('/api/game/flip', auth, async (req, res) => {
         });
 
     } catch (err) {
+        console.error('❌ Flip error:', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -358,7 +427,6 @@ app.post('/api/game/flip', auth, async (req, res) => {
 //  ADMIN ROUTES
 // ============================================================
 
-// Get all users - /api/admin/users
 app.get('/api/admin/users', auth, async (req, res) => {
     try {
         const admin = await User.findById(req.userId);
@@ -373,7 +441,6 @@ app.get('/api/admin/users', auth, async (req, res) => {
     }
 });
 
-// Add funds - /api/admin/add-funds
 app.post('/api/admin/add-funds', auth, async (req, res) => {
     try {
         const admin = await User.findById(req.userId);
@@ -387,7 +454,9 @@ app.post('/api/admin/add-funds', auth, async (req, res) => {
         }
 
         const user = await User.findOne({ username });
-        if (!user) return res.status(404).json({ error: 'User not found' });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
 
         user.balance += amount;
         await user.save();
@@ -398,7 +467,6 @@ app.post('/api/admin/add-funds', auth, async (req, res) => {
     }
 });
 
-// Remove funds - /api/admin/remove-funds
 app.post('/api/admin/remove-funds', auth, async (req, res) => {
     try {
         const admin = await User.findById(req.userId);
@@ -412,7 +480,9 @@ app.post('/api/admin/remove-funds', auth, async (req, res) => {
         }
 
         const user = await User.findOne({ username });
-        if (!user) return res.status(404).json({ error: 'User not found' });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
 
         if (user.balance < amount) {
             return res.status(400).json({ error: 'Insufficient balance' });
@@ -428,15 +498,16 @@ app.post('/api/admin/remove-funds', auth, async (req, res) => {
 });
 
 // ============================================================
-//  DEPOSIT / WITHDRAW ROUTES
+//  DEPOSIT ROUTES
 // ============================================================
 
-// Request deposit - /api/deposit/request-deposit
 app.post('/api/deposit/request-deposit', auth, async (req, res) => {
     try {
         const { amount, amountPoints, cryptoMethod, walletAddress, transactionId, note } = req.body;
         const user = await User.findById(req.userId);
-        if (!user) return res.status(404).json({ error: 'User not found' });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
 
         const request = new DepositRequest({
             userId: user._id,
@@ -450,19 +521,20 @@ app.post('/api/deposit/request-deposit', auth, async (req, res) => {
         });
 
         await request.save();
-
         res.json({ success: true, message: 'Deposit request submitted', requestId: request._id });
     } catch (err) {
+        console.error('❌ Deposit error:', err);
         res.status(500).json({ error: err.message });
     }
 });
 
-// Request withdraw - /api/deposit/request-withdraw
 app.post('/api/deposit/request-withdraw', auth, async (req, res) => {
     try {
         const { amount, amountPoints, cryptoMethod, walletAddress, note } = req.body;
         const user = await User.findById(req.userId);
-        if (!user) return res.status(404).json({ error: 'User not found' });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
 
         if (user.balance < (amountPoints || amount)) {
             return res.status(400).json({ error: 'Insufficient balance' });
@@ -479,101 +551,35 @@ app.post('/api/deposit/request-withdraw', auth, async (req, res) => {
         });
 
         await request.save();
-
         res.json({ success: true, message: 'Withdrawal request submitted', requestId: request._id });
     } catch (err) {
+        console.error('❌ Withdraw error:', err);
         res.status(500).json({ error: err.message });
     }
 });
 
-// Admin: Get all deposit requests - /api/admin/deposit-requests
-app.get('/api/admin/deposit-requests', auth, async (req, res) => {
-    try {
-        const admin = await User.findById(req.userId);
-        if (!admin || !admin.isAdmin) {
-            return res.status(403).json({ error: 'Admin access required' });
-        }
-
-        const requests = await DepositRequest.find().sort({ createdAt: -1 });
-        res.json(requests);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Admin: Approve deposit request - /api/admin/approve-deposit
-app.post('/api/admin/approve-deposit', auth, async (req, res) => {
-    try {
-        const admin = await User.findById(req.userId);
-        if (!admin || !admin.isAdmin) {
-            return res.status(403).json({ error: 'Admin access required' });
-        }
-
-        const { requestId } = req.body;
-        const request = await DepositRequest.findById(requestId);
-        if (!request) return res.status(404).json({ error: 'Request not found' });
-
-        if (request.status !== 'pending') {
-            return res.status(400).json({ error: 'Request already processed' });
-        }
-
-        const user = await User.findById(request.userId);
-        if (!user) return res.status(404).json({ error: 'User not found' });
-
-        if (request.type === 'deposit') {
-            user.balance += request.amount;
-        }
-
-        request.status = 'approved';
-        await request.save();
-        await user.save();
-
-        res.json({ success: true, message: 'Request approved' });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Admin: Reject deposit request - /api/admin/reject-deposit
-app.post('/api/admin/reject-deposit', auth, async (req, res) => {
-    try {
-        const admin = await User.findById(req.userId);
-        if (!admin || !admin.isAdmin) {
-            return res.status(403).json({ error: 'Admin access required' });
-        }
-
-        const { requestId } = req.body;
-        const request = await DepositRequest.findById(requestId);
-        if (!request) return res.status(404).json({ error: 'Request not found' });
-
-        if (request.status !== 'pending') {
-            return res.status(400).json({ error: 'Request already processed' });
-        }
-
-        request.status = 'rejected';
-        await request.save();
-
-        res.json({ success: true, message: 'Request rejected' });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+// ============================================================
+//  HEALTH CHECK (for Render)
+// ============================================================
+app.get('/api/health', (req, res) => {
+    const dbState = mongoose.connection.readyState;
+    const states = {
+        0: 'disconnected',
+        1: 'connected',
+        2: 'connecting',
+        3: 'disconnecting'
+    };
+    res.json({
+        status: 'ok',
+        database: states[dbState] || 'unknown',
+        timestamp: new Date().toISOString()
+    });
 });
 
 // ============================================================
 //  START SERVER
 // ============================================================
-
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-    console.log('📡 Endpoints available:');
-    console.log('  POST /api/auth/signup - Register');
-    console.log('  POST /api/auth/login - Login');
-    console.log('  GET  /api/auth/me - Get user');
-    console.log('  GET  /api/game/stats - Get stats');
-    console.log('  POST /api/game/flip - Flip coin');
-    console.log('  POST /api/deposit/request-deposit - Deposit');
-    console.log('  POST /api/deposit/request-withdraw - Withdraw');
-    console.log('  GET  /api/admin/users - Admin users');
-    console.log('  POST /api/admin/add-funds - Add funds');
-    console.log('  POST /api/admin/remove-funds - Remove funds');
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📡 Health check: http://localhost:${PORT}/api/health`);
 });
