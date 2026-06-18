@@ -1288,7 +1288,7 @@ function renderCheckpoints() {
 function resetProgressiveRun() {
     progressiveActive = false;
     progressiveLevel = 0;
-    progressiveBet = 0;
+    // ✅ Keep progressiveBet value (don't reset to 0)
     progressivePot = 0;
     isInProgressiveRun = false;
     pendingLevelUp = false;
@@ -1316,7 +1316,7 @@ function startProgressiveRun() {
     
     progressiveActive = true;
     progressiveLevel = 0;
-    progressiveBet = bet;
+    progressiveBet = bet;  // ✅ Store the bet
     progressivePot = 0;
     isInProgressiveRun = true;
     pendingLevelUp = false;
@@ -1363,10 +1363,12 @@ function cashoutProgressive() {
         showNotification('❌ Error cashing out: ' + error.message);
     });
     
-    const bet = progressiveBet;
+    const savedBet = progressiveBet;
     resetProgressiveRun();
-    betInput.value = bet.toFixed(2);
+    // ✅ Restore the bet amount
+    betInput.value = savedBet.toFixed(2);
     betInput.disabled = false;
+    progressiveBet = savedBet;  // ✅ Keep the bet for next run
     showNotification(`💰 Cashed out! Starting new run available.`, 3000);
 }
 
@@ -1428,6 +1430,9 @@ function showLevelUpOverlay(level, pot, nextMultiplier) {
     };
 }
 
+// ============================================================
+//  SHOW BIG LOSS OVERLAY - FIXED (Keeps bet amount)
+// ============================================================
 function showBigLossOverlay(level, lostAmount) {
     document.querySelectorAll('.level-up-overlay, .big-loss-overlay').forEach(el => el.remove());
     
@@ -1439,19 +1444,26 @@ function showBigLossOverlay(level, lostAmount) {
             <h2>BUSTED!</h2>
             <div class="lost-amount">Lost $${lostAmount.toFixed(2)}</div>
             <div class="lost-details">You reached Level ${level} before losing it all.</div>
-            <button id="lossOverlayOkBtn">😔 START AGAIN</button>
+            <button id="lossOverlayOkBtn">😔 TRY AGAIN</button>
         </div>
     `;
     document.body.appendChild(overlay);
     
     document.getElementById('lossOverlayOkBtn').onclick = function() {
         document.querySelectorAll('.big-loss-overlay').forEach(el => el.remove());
-        const bet = progressiveBet;
+        
+        // ✅ KEEP the bet amount - restore from saved bet
+        const savedBet = progressiveBet;
         resetProgressiveRun();
-        betInput.value = bet.toFixed(2);
+        
+        // ✅ Set bet input back to the saved bet amount (not 0)
+        betInput.value = savedBet.toFixed(2);
         betInput.disabled = false;
-        resultEl.innerHTML = '💀 Busted! Start a new run when ready.';
+        resultEl.innerHTML = '💀 Busted! Try again with the same bet.';
         resultEl.className = 'result lose';
+        
+        // ✅ Store the bet for next progressive run
+        progressiveBet = savedBet;
     };
 }
 
@@ -1889,12 +1901,16 @@ async function flipCoin() {
                     resultEl.innerHTML = `💀 BUSTED! Lost $${lostAmount.toFixed(2)} at Level ${levelReached}! 💀`;
                     resultEl.className = 'result lose';
                     showLossCelebration(lostAmount);
+                    
+                    // ✅ Save the bet amount before showing overlay
+                    const savedBet = progressiveBet;
                     showBigLossOverlay(levelReached, lostAmount);
                     
-                    const savedBet = progressiveBet;
+                    // ✅ Reset but keep the bet
                     resetProgressiveRun();
                     betInput.value = savedBet.toFixed(2);
                     betInput.disabled = false;
+                    progressiveBet = savedBet;
                 } else {
                     resultEl.innerHTML = `💀 LOSS! Lost $${bet.toFixed(2)} 💀`;
                     resultEl.className = 'result lose';
