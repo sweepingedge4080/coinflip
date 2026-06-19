@@ -1,5 +1,5 @@
 // ============================================================
-//  PROGRESSIVE.JS - Progressive Mode Logic (Fully Secured)
+//  PROGRESSIVE.JS - Progressive Mode Logic (KEEPS MODE ON)
 // ============================================================
 
 // ----- STATE -----
@@ -9,39 +9,6 @@ let progressiveBet = 0;
 let progressivePot = 0;
 let isInProgressiveRun = false;
 let pendingLevelUp = false;
-
-// ============================================================
-//  PROGRESSIVE VALIDATION HELPERS
-// ============================================================
-
-function validateProgressiveBet(amount) {
-    if (!amount && amount !== 0) {
-        return { valid: false, message: 'Please enter a valid bet amount' };
-    }
-    if (isNaN(amount)) {
-        return { valid: false, message: 'Please enter a valid number' };
-    }
-    if (amount <= 0) {
-        return { valid: false, message: 'Bet amount must be greater than 0' };
-    }
-    if (amount < 1) {
-        return { valid: false, message: 'Minimum bet for progressive mode is $1' };
-    }
-    if (amount > 10000) {
-        return { valid: false, message: 'Bet amount cannot exceed $10,000' };
-    }
-    if (!Number.isFinite(amount)) {
-        return { valid: false, message: 'Invalid bet amount' };
-    }
-    return { valid: true };
-}
-
-function sanitizeProgressiveBet(amount) {
-    const parsed = parseFloat(amount);
-    if (isNaN(parsed) || !isFinite(parsed)) return 0;
-    // Round to 2 decimal places
-    return Math.round(parsed * 100) / 100;
-}
 
 // ============================================================
 //  RENDER CHECKPOINTS
@@ -116,12 +83,39 @@ function updateProgressiveUI() {
 }
 
 // ============================================================
-//  RESET PROGRESSIVE RUN
+//  RESET PROGRESSIVE RUN (Resets streak, but KEEPS mode active)
 // ============================================================
 
 function resetProgressiveRun() {
+    // ✅ ONLY reset the streak, NOT the mode
+    progressiveLevel = 0;
+    progressivePot = 0;
+    isInProgressiveRun = false;
+    pendingLevelUp = false;
+    
+    if (DOM.betLockedInfo) {
+        DOM.betLockedInfo.classList.remove('visible');
+    }
+    if (DOM.betInput) {
+        DOM.betInput.disabled = false;
+    }
+    
+    // ✅ Keep progressiveActive true, don't change the toggle button
+    // DOM.toggleProgressiveBtn.textContent = '▶ START PROGRESSIVE'; // DON'T change this
+    // DOM.toggleProgressiveBtn.classList.remove('active'); // DON'T change this
+    
+    renderCheckpoints();
+    log('Progressive run reset - mode still active');
+}
+
+// ============================================================
+//  FULL RESET PROGRESSIVE (Completely turns off mode)
+// ============================================================
+
+function fullResetProgressive() {
     progressiveActive = false;
     progressiveLevel = 0;
+    progressiveBet = 0;
     progressivePot = 0;
     isInProgressiveRun = false;
     pendingLevelUp = false;
@@ -138,11 +132,11 @@ function resetProgressiveRun() {
     }
     
     renderCheckpoints();
-    log('Progressive run reset');
+    log('Progressive mode fully disabled');
 }
 
 // ============================================================
-//  START PROGRESSIVE RUN - WITH VALIDATION
+//  START PROGRESSIVE RUN
 // ============================================================
 
 function startProgressiveRun() {
@@ -159,7 +153,6 @@ function startProgressiveRun() {
     const rawBet = DOM.betInput ? DOM.betInput.value : '0';
     const bet = sanitizeProgressiveBet(rawBet);
     
-    // ✅ Validate bet amount
     const betValidation = validateProgressiveBet(bet);
     if (!betValidation.valid) {
         showNotification(`❌ ${betValidation.message}`);
@@ -171,7 +164,6 @@ function startProgressiveRun() {
         return;
     }
     
-    // Additional progressive-specific check: need at least $1 to start
     if (bet < 1) {
         showNotification('❌ Minimum bet for progressive mode is $1');
         return;
@@ -194,7 +186,7 @@ function startProgressiveRun() {
         DOM.betLockedInfo.classList.add('visible');
     }
     if (DOM.toggleProgressiveBtn) {
-        DOM.toggleProgressiveBtn.textContent = '⏳ IN RUN';
+        DOM.toggleProgressiveBtn.textContent = '🟢 ACTIVE';
         DOM.toggleProgressiveBtn.classList.add('active');
     }
     
@@ -204,13 +196,13 @@ function startProgressiveRun() {
     }
     
     renderCheckpoints();
-    showNotification(`🔥 Progressive run started with $${bet.toFixed(2)}! Win to advance!`);
+    showNotification(`🔥 Progressive mode activated with $${bet.toFixed(2)}! Win to advance!`);
     if (DOM.result) {
-        DOM.result.innerHTML = '🔥 Progressive run started! Win to advance to Level 1!';
+        DOM.result.innerHTML = '🔥 Progressive mode activated! Win to advance to Level 1!';
         DOM.result.className = 'result progressive-win';
     }
     
-    log(`Progressive run started: $${bet}`);
+    log(`Progressive mode activated: $${bet}`);
 }
 
 // ============================================================
@@ -228,21 +220,17 @@ function cashoutProgressive() {
         : PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
     const winnings = progressiveBet * multiplier;
     
-    // Validate winnings
     if (!isFinite(winnings) || winnings <= 0) {
         showNotification('❌ Invalid winnings amount');
         return;
     }
     
-    // Call the server to add progressive winnings
     apiAddProgressive(winnings, progressiveLevel)
         .then(response => {
-            // Validate response
             if (!response || typeof response !== 'object') {
                 throw new Error('Invalid server response');
             }
             
-            // Use server response for balance
             const newBalance = parseFloat(response.newBalance);
             if (isNaN(newBalance) || !isFinite(newBalance)) {
                 throw new Error('Invalid balance response');
@@ -259,15 +247,16 @@ function cashoutProgressive() {
             showNotification('❌ Error cashing out: ' + error.message);
         });
     
+    // ✅ Reset streak but KEEP mode active
     const savedBet = progressiveBet;
     resetProgressiveRun();
     if (DOM.betInput) {
         DOM.betInput.value = savedBet.toFixed(2);
-        DOM.betInput.disabled = false;
+        DOM.betInput.disabled = true; // Bet stays locked since mode is still active
     }
     progressiveBet = savedBet;
     
-    showNotification(`💰 Cashed out! Starting new run available.`, 3000);
+    showNotification(`💰 Cashed out! Mode stays active.`, 3000);
 }
 
 // ============================================================
@@ -275,12 +264,10 @@ function cashoutProgressive() {
 // ============================================================
 
 function showLevelUpOverlay(level, pot, nextMultiplier) {
-    // Validate inputs
     if (!level || level <= 0) return;
     if (!pot || pot <= 0) return;
     if (!nextMultiplier || nextMultiplier <= 0) return;
     
-    // Remove any existing overlays
     document.querySelectorAll('.level-up-overlay, .big-loss-overlay').forEach(el => el.remove());
     
     const overlay = document.createElement('div');
@@ -335,11 +322,9 @@ function showLevelUpOverlay(level, pot, nextMultiplier) {
 // ============================================================
 
 function showBigLossOverlay(level, lostAmount) {
-    // Validate inputs
     if (!level || level < 0) level = 0;
     if (!lostAmount || lostAmount <= 0) lostAmount = 0;
     
-    // Remove any existing overlays
     document.querySelectorAll('.level-up-overlay, .big-loss-overlay').forEach(el => el.remove());
     
     const overlay = document.createElement('div');
@@ -350,7 +335,7 @@ function showBigLossOverlay(level, lostAmount) {
             <h2>BUSTED!</h2>
             <div class="lost-amount">Lost $${lostAmount.toFixed(2)}</div>
             <div class="lost-details">You reached Level ${level} before losing it all.</div>
-            <button id="lossOverlayOkBtn">😔 TRY AGAIN</button>
+            <button id="lossOverlayOkBtn">😔 CONTINUE</button>
         </div>
     `;
     document.body.appendChild(overlay);
@@ -361,19 +346,21 @@ function showBigLossOverlay(level, lostAmount) {
             document.querySelectorAll('.big-loss-overlay').forEach(el => el.remove());
             
             const savedBet = progressiveBet;
+            
+            // ✅ Reset streak but KEEP mode active
             resetProgressiveRun();
             
             if (DOM.betInput) {
                 DOM.betInput.value = savedBet.toFixed(2);
-                DOM.betInput.disabled = false;
+                DOM.betInput.disabled = true; // Bet stays locked
             }
             if (DOM.result) {
-                DOM.result.innerHTML = '💀 Busted! Try again with the same bet.';
+                DOM.result.innerHTML = '💀 Busted! Try again with the same bet. Mode stays active.';
                 DOM.result.className = 'result lose';
             }
             
             progressiveBet = savedBet;
-            log(`Big loss overlay dismissed: Level ${level}`);
+            log(`Big loss overlay dismissed: Level ${level} - mode still active`);
         };
     }
 }
@@ -386,14 +373,9 @@ function setupProgressiveListeners() {
     if (DOM.toggleProgressiveBtn) {
         DOM.toggleProgressiveBtn.onclick = function() {
             if (progressiveActive) {
-                if (progressiveLevel > 0) {
-                    if (confirm('End progressive run? You will lose your current winnings!')) {
-                        resetProgressiveRun();
-                        if (DOM.betInput) DOM.betInput.disabled = false;
-                        showNotification('Progressive run ended');
-                    }
-                } else {
-                    resetProgressiveRun();
+                // ✅ Turn off mode completely
+                if (confirm('Turn off progressive mode? Your current streak will be lost.')) {
+                    fullResetProgressive();
                     if (DOM.betInput) DOM.betInput.disabled = false;
                     showNotification('Progressive mode disabled');
                 }
@@ -425,6 +407,7 @@ window.sanitizeProgressiveBet = sanitizeProgressiveBet;
 window.renderCheckpoints = renderCheckpoints;
 window.updateProgressiveUI = updateProgressiveUI;
 window.resetProgressiveRun = resetProgressiveRun;
+window.fullResetProgressive = fullResetProgressive;
 window.startProgressiveRun = startProgressiveRun;
 window.cashoutProgressive = cashoutProgressive;
 window.showLevelUpOverlay = showLevelUpOverlay;
