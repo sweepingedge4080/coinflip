@@ -1,5 +1,5 @@
 // ============================================================
-//  APP.JS - Main Application Entry Point (FIXED - No Auto-Disable)
+//  APP.JS - Main Application Entry Point (FIXED)
 // ============================================================
 
 // ============================================================
@@ -59,8 +59,8 @@ async function initApp() {
         log('🚀 CoinFlip Casino is ready!');
         log(`👤 ${sessionRestored ? 'Session restored' : 'Not logged in'}`);
         
-        // ✅ FIXED: Don't call setGameEnabled here - let game-page.js handle it
-        // The game page will enable controls after session validation
+        // ✅ FIXED: REMOVED setGameEnabled(false) - THIS WAS THE PROBLEM!
+        // Do NOT disable the game here - let the session check handle it
         
         // Optional: Show welcome notification if logged in
         if (sessionRestored && currentUser) {
