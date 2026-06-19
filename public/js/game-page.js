@@ -1,18 +1,17 @@
 // ============================================================
-//  GAME-PAGE.JS - Game Page Specific Logic (FIXED - Forces Game Enabled)
+//  GAME-PAGE.JS - Game Page Specific Logic (FIXED - Balance Sync)
 // ============================================================
 
 // ============================================================
 //  DOM READY - Check Session and Initialize Game
 // ============================================================
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // Check if user is logged in
     const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
     const userData = localStorage.getItem('userData');
 
     if (!token || !userData) {
-        // Not logged in, redirect to login
         console.log('🔒 No session found, redirecting to login');
         window.location.href = '/login';
         return;
@@ -33,33 +32,57 @@ document.addEventListener('DOMContentLoaded', function() {
         window.currentUserData = user;
         window.isAdmin = user.isAdmin || false;
 
-        // ✅ CRITICAL: Force enable the game with ALL game elements
+        // ✅ CRITICAL: Fetch fresh user data from server
+        try {
+            console.log('🔄 Fetching fresh user data from server...');
+            const freshUser = await fetch('/api/auth/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const freshData = await freshUser.json();
+            
+            if (freshData && freshData.balance !== undefined) {
+                console.log(`💰 Balance from server: $${freshData.balance.toFixed(2)}`);
+                // Update user data with fresh balance
+                currentUserData = freshData;
+                user.balance = freshData.balance;
+                localStorage.setItem('userData', JSON.stringify(user));
+                window.currentUserData = freshData;
+            }
+        } catch (fetchError) {
+            console.warn('⚠️ Could not fetch fresh user data, using cached data:', fetchError);
+        }
+
+        // ✅ Force enable the game
         enableGameFully();
 
         // ✅ Force update UI
         if (typeof updateUI === 'function') {
             updateUI();
+        } else {
+            // Direct UI update if function not available
+            const balanceEl = document.getElementById('balance');
+            if (balanceEl && currentUserData) {
+                balanceEl.innerText = currentUserData.balance.toFixed(2);
+            }
         }
+        
         if (typeof renderCheckpoints === 'function') {
             renderCheckpoints();
         }
 
-        // Show admin badge if admin (visual only - no panel)
+        // Show admin badge if admin
         const adminBadge = document.getElementById('adminBadge');
         if (adminBadge) {
             adminBadge.style.display = isAdmin ? 'inline-block' : 'none';
         }
 
-        console.log(`✅ Welcome back, ${user.username}!`);
+        console.log(`✅ Welcome back, ${currentUserData.username || user.username}!`);
+        console.log(`💰 Current balance: $${(currentUserData.balance || 0).toFixed(2)}`);
         console.log('🎮 Game enabled successfully');
 
     } catch (e) {
-        console.error('❌ Error parsing user data:', e);
-        // Clear invalid data and redirect to login
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userData');
-        sessionStorage.removeItem('authToken');
-        window.location.href = '/login';
+        console.error('❌ Error loading game:', e);
+        showNotification('❌ Error loading game. Please refresh.');
     }
 });
 
@@ -86,85 +109,59 @@ function enableGameFully() {
         cashoutProgressive: document.getElementById('cashoutProgressiveBtn')
     };
 
-    // ✅ Directly enable each element
+    // ✅ Enable bet input
     if (elements.betInput) {
         elements.betInput.disabled = false;
         elements.betInput.style.opacity = '1';
         elements.betInput.style.cursor = 'text';
+        // Set max to balance or a high number
+        if (currentUserData && currentUserData.balance > 0) {
+            elements.betInput.max = currentUserData.balance;
+        } else {
+            elements.betInput.max = 999999;
+        }
+        if (parseFloat(elements.betInput.value) <= 0) {
+            elements.betInput.value = '10';
+        }
     }
     
-    if (elements.headsBtn) {
-        elements.headsBtn.disabled = false;
-        elements.headsBtn.style.opacity = '1';
-        elements.headsBtn.style.cursor = 'pointer';
-    }
+    // ✅ Enable all buttons
+    const buttons = ['headsBtn', 'tailsBtn', 'flipBtn', 'halfBtn', 'doubleBtn', 'maxBtn', 'depositBtn', 'withdrawBtn', 'toggleProgressive'];
+    buttons.forEach(id => {
+        const el = elements[id];
+        if (el) {
+            el.disabled = false;
+            el.style.opacity = '1';
+            el.style.cursor = 'pointer';
+        }
+    });
     
-    if (elements.tailsBtn) {
-        elements.tailsBtn.disabled = false;
-        elements.tailsBtn.style.opacity = '1';
-        elements.tailsBtn.style.cursor = 'pointer';
-    }
-    
-    if (elements.flipBtn) {
-        elements.flipBtn.disabled = false;
-        elements.flipBtn.style.opacity = '1';
-        elements.flipBtn.style.cursor = 'pointer';
-    }
-    
-    if (elements.halfBtn) {
-        elements.halfBtn.disabled = false;
-        elements.halfBtn.style.opacity = '1';
-        elements.halfBtn.style.cursor = 'pointer';
-    }
-    
-    if (elements.doubleBtn) {
-        elements.doubleBtn.disabled = false;
-        elements.doubleBtn.style.opacity = '1';
-        elements.doubleBtn.style.cursor = 'pointer';
-    }
-    
-    if (elements.maxBtn) {
-        elements.maxBtn.disabled = false;
-        elements.maxBtn.style.opacity = '1';
-        elements.maxBtn.style.cursor = 'pointer';
-    }
-    
-    if (elements.depositBtn) {
-        elements.depositBtn.disabled = false;
-        elements.depositBtn.style.opacity = '1';
-        elements.depositBtn.style.cursor = 'pointer';
-    }
-    
-    if (elements.withdrawBtn) {
-        elements.withdrawBtn.disabled = false;
-        elements.withdrawBtn.style.opacity = '1';
-        elements.withdrawBtn.style.cursor = 'pointer';
-    }
-    
-    if (elements.toggleProgressive) {
-        elements.toggleProgressive.disabled = false;
-        elements.toggleProgressive.style.opacity = '1';
-        elements.toggleProgressive.style.cursor = 'pointer';
-    }
-    
+    // ✅ Cashout button - enabled when progressive is active
     if (elements.cashoutProgressive) {
-        elements.cashoutProgressive.disabled = true; // Only enabled when progressive active
-        elements.cashoutProgressive.style.opacity = '0.5';
+        if (progressiveActive && progressiveLevel > 0) {
+            elements.cashoutProgressive.disabled = false;
+            elements.cashoutProgressive.style.opacity = '1';
+        } else {
+            elements.cashoutProgressive.disabled = true;
+            elements.cashoutProgressive.style.opacity = '0.5';
+        }
     }
     
     if (elements.result) {
-        elements.result.innerHTML = 'Select HEADS or TAILS to start';
+        elements.result.innerHTML = '🪙 Select HEADS or TAILS to start';
         elements.result.style.color = '#e2e8f0';
     }
 
-    // ✅ Also override the setGameEnabled function to prevent disabling
-    if (typeof window.setGameEnabled === 'function') {
-        const originalSetGameEnabled = window.setGameEnabled;
-        window.setGameEnabled = function(enabled) {
-            console.log(`🔒 setGameEnabled called with ${enabled} - FORCING ENABLED`);
-            // Always force enabled
-            enableGameFully();
-        };
+    // ✅ Override setGameEnabled to always enable
+    window.setGameEnabled = function(enabled) {
+        console.log(`🔒 setGameEnabled called - FORCING ENABLED`);
+        enableGameFully();
+    };
+
+    // ✅ Also update balance display
+    const balanceEl = document.getElementById('balance');
+    if (balanceEl && currentUserData) {
+        balanceEl.innerText = currentUserData.balance.toFixed(2);
     }
 
     console.log('✅ Game fully enabled!');
@@ -178,29 +175,22 @@ const logoutBtn = document.getElementById('gameLogoutBtn');
 if (logoutBtn) {
     logoutBtn.addEventListener('click', function() {
         if (confirm('Are you sure you want to logout?')) {
-            // Clear all storage
             localStorage.removeItem('authToken');
             localStorage.removeItem('userData');
             sessionStorage.removeItem('authToken');
-
-            // Redirect to home
             window.location.href = '/';
         }
     });
 }
 
 // ============================================================
-//  ✅ COMPLETELY OVERRIDE checkSession to prevent redirect loop
+//  ✅ COMPLETELY OVERRIDE checkSession
 // ============================================================
 
 window.checkSession = function() {
-    console.log('🔒 Session check overridden on game page - returning true');
+    console.log('🔒 Session check overridden on game page');
     return Promise.resolve(true);
 };
-
-// ============================================================
-//  ✅ OVERRIDE auth UI functions
-// ============================================================
 
 window.showAuthUI = function() {
     console.log('🔒 showAuthUI suppressed on game page');
@@ -211,41 +201,17 @@ window.hideAuthUI = function() {
 };
 
 // ============================================================
-//  ✅ OVERRIDE setGameEnabled to prevent disabling
-// ============================================================
-
-if (typeof window.setGameEnabled === 'function') {
-    const originalSetGameEnabled = window.setGameEnabled;
-    window.setGameEnabled = function(enabled) {
-        console.log(`🔒 setGameEnabled called with ${enabled} - FORCING ENABLED`);
-        // Always force enabled
-        enableGameFully();
-    };
-}
-
-// ============================================================
-//  ✅ Also override app.js initialization if needed
+//  ✅ OVERRIDE app.js initialization
 // ============================================================
 
 if (window.initApp) {
     const originalInitApp = window.initApp;
     window.initApp = function() {
         console.log('🔒 App init overridden on game page');
-        // Force enable game
         enableGameFully();
         return Promise.resolve();
     };
 }
 
-// ============================================================
-//  ✅ Fix for auth.js redirect in login page
-// ============================================================
-
-if (window.location.pathname === '/login') {
-    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-    if (token) {
-        console.log('🔒 Login page: Token exists, but not redirecting to game until user clicks login');
-    }
-}
-
-console.log('🎰 Game page loaded successfully - redirect loop prevented');
+console.log('🎰 Game page loaded successfully');
+console.log(`💰 Balance: $${(currentUserData ? currentUserData.balance : 0).toFixed(2)}`);
