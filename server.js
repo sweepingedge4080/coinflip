@@ -1,5 +1,5 @@
 // ============================================================
-//  server.js - Updated with Login Page Route
+//  server.js - Production Ready with Security Fixes
 // ============================================================
 
 require('dotenv').config();
@@ -21,13 +21,15 @@ const PORT = process.env.PORT || 3000;
 //  SECURITY MIDDLEWARE
 // ============================================================
 
+// ✅ UPDATED CSP - Allows Google Fonts
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
             imgSrc: ["'self'", "https://api.qrserver.com", "data:"],
             scriptSrc: ["'self'"],
-            styleSrc: ["'self'", "'unsafe-inline'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
             connectSrc: ["'self'"],
         },
     },
@@ -84,7 +86,7 @@ app.get('/loading', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'loading.html'));
 });
 
-// ✅ Login page (renamed from auth)
+// Login page
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
@@ -898,4 +900,5 @@ app.listen(PORT, () => {
     console.log('   ✅ JWT - Environment secret');
     console.log('   ✅ NO MAX BET LIMITS');
     console.log('   ✅ PROXY TRUST ENABLED - Render load balancer support');
+    console.log('   ✅ CSP UPDATED - Google Fonts allowed');
 });
