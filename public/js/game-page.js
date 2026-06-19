@@ -1,5 +1,5 @@
 // ============================================================
-//  GAME-PAGE.JS - Game Page Specific Logic (FIXED)
+//  GAME-PAGE.JS - Game Page Specific Logic (ULTRA FORCE)
 // ============================================================
 
 // ============================================================
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         window.currentUserData = user;
         window.isAdmin = user.isAdmin || false;
 
-        // ✅ CRITICAL: Fetch fresh user data from server
+        // ✅ Fetch fresh user data
         try {
             console.log('🔄 Fetching fresh user data from server...');
             const freshUser = await fetch('/api/auth/me', {
@@ -51,18 +51,17 @@ document.addEventListener('DOMContentLoaded', async function() {
             console.warn('⚠️ Could not fetch fresh user data:', fetchError);
         }
 
+        // ✅ ULTRA FORCE: Use MutationObserver to catch any changes
+        setupMutationObserver();
+
         // ✅ Force enable the game
         enableGameFully();
 
-        // ✅ Start force enable interval (keeps buttons enabled)
+        // ✅ Start force enable interval
         startForceEnableInterval();
 
         // ✅ Force update UI
-        if (typeof updateUI === 'function') {
-            updateUI();
-        } else {
-            updateUIDirect();
-        }
+        updateUIDirect();
         
         if (typeof renderCheckpoints === 'function') {
             renderCheckpoints();
@@ -83,6 +82,49 @@ document.addEventListener('DOMContentLoaded', async function() {
         showNotification('❌ Error loading game. Please refresh.');
     }
 });
+
+// ============================================================
+//  ✅ ULTRA FORCE: MutationObserver
+// ============================================================
+
+let mutationObserver = null;
+
+function setupMutationObserver() {
+    // Disconnect existing observer
+    if (mutationObserver) {
+        mutationObserver.disconnect();
+        mutationObserver = null;
+    }
+    
+    // Watch for changes to the DOM
+    mutationObserver = new MutationObserver(function(mutations) {
+        // Check if any game elements were changed
+        const buttonIds = ['headsBtn', 'tailsBtn', 'flipBtn', 'halfBtn', 'doubleBtn', 'maxBtn', 'depositBtn', 'withdrawBtn', 'toggleProgressive', 'betAmount'];
+        let needsEnable = false;
+        
+        buttonIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && (el.disabled === true || el.style.opacity === '0.5' || el.style.pointerEvents === 'none')) {
+                needsEnable = true;
+            }
+        });
+        
+        if (needsEnable) {
+            console.log('🔓 Mutation detected - re-enabling game...');
+            enableGameFully();
+        }
+    });
+    
+    // Start observing
+    mutationObserver.observe(document.body, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+        attributeFilter: ['disabled', 'style', 'class']
+    });
+    
+    console.log('🔍 MutationObserver started');
+}
 
 // ============================================================
 //  ✅ FORCE ENABLE GAME - Direct DOM Manipulation
@@ -134,6 +176,7 @@ function enableGameFully() {
             el.style.opacity = '1';
             el.style.cursor = 'pointer';
             el.style.pointerEvents = 'auto';
+            el.style.pointerEvents = 'auto !important';
         }
     });
     
@@ -154,7 +197,7 @@ function enableGameFully() {
         elements.result.style.color = '#e2e8f0';
     }
 
-    // ✅ Override setGameEnabled to always enable
+    // ✅ Override setGameEnabled
     window.setGameEnabled = function(enabled) {
         console.log(`🔒 setGameEnabled called - FORCING ENABLED`);
         enableGameFully();
@@ -180,77 +223,68 @@ function startForceEnableInterval() {
     forceEnableInterval = setInterval(() => {
         if (window.location.pathname === '/game') {
             const buttonIds = ['headsBtn', 'tailsBtn', 'flipBtn', 'halfBtn', 'doubleBtn', 'maxBtn', 'depositBtn', 'withdrawBtn', 'toggleProgressive'];
+            let needsEnable = false;
+            
             buttonIds.forEach(id => {
                 const el = document.getElementById(id);
-                if (el && el.disabled === true) {
-                    el.disabled = false;
-                    el.removeAttribute('disabled');
-                    el.style.opacity = '1';
-                    el.style.cursor = 'pointer';
-                    el.style.pointerEvents = 'auto';
+                if (el && (el.disabled === true || el.style.opacity === '0.5' || el.style.pointerEvents === 'none')) {
+                    needsEnable = true;
                 }
             });
             
             const betInput = document.getElementById('betAmount');
-            if (betInput && betInput.disabled === true) {
-                betInput.disabled = false;
-                betInput.removeAttribute('disabled');
-                betInput.style.opacity = '1';
-                betInput.style.cursor = 'text';
-                betInput.style.pointerEvents = 'auto';
+            if (betInput && (betInput.disabled === true || betInput.style.opacity === '0.5')) {
+                needsEnable = true;
+            }
+            
+            if (needsEnable) {
+                console.log('🔓 Interval detected disabled elements - re-enabling...');
+                enableGameFully();
             }
         }
     }, 500);
 }
 
 // ============================================================
-//  ✅ UPDATE UI DIRECTLY - FIXED (No null errors)
+//  ✅ UPDATE UI DIRECTLY
 // ============================================================
 
 function updateUIDirect() {
-    // Only proceed if we have user data
     if (!currentUserData) {
         console.warn('⚠️ No user data available for UI update');
         return;
     }
     
-    // Balance
     const balanceEl = document.getElementById('balance');
     if (balanceEl) {
         balanceEl.innerText = currentUserData.balance.toFixed(2);
     }
     
-    // Wins
     const winsEl = document.getElementById('winsCount');
     if (winsEl) {
         winsEl.innerText = currentUserData.wins || 0;
     }
     
-    // Losses
     const lossesEl = document.getElementById('lossesCount');
     if (lossesEl) {
         lossesEl.innerText = currentUserData.losses || 0;
     }
     
-    // Streak
     const streakEl = document.getElementById('currentStreak');
     if (streakEl) {
         streakEl.innerText = currentUserData.currentStreak || 0;
     }
     
-    // Total Wagered
     const totalWageredEl = document.getElementById('totalWagered');
     if (totalWageredEl) {
         totalWageredEl.innerText = (currentUserData.totalWagered || 0).toFixed(2);
     }
     
-    // Best Streak
     const bestStreakEl = document.getElementById('bestStreak');
     if (bestStreakEl) {
         bestStreakEl.innerText = currentUserData.bestStreak || 0;
     }
     
-    // Win Rate
     const total = (currentUserData.wins || 0) + (currentUserData.losses || 0);
     const winRate = total > 0 ? Math.round(((currentUserData.wins || 0) / total) * 100) : 0;
     const winRateEl = document.getElementById('winRate');
@@ -258,7 +292,6 @@ function updateUIDirect() {
         winRateEl.innerText = winRate + '%';
     }
     
-    // User ID
     const userIdDisplay = document.getElementById('userIdDisplay');
     if (userIdDisplay) {
         userIdDisplay.innerText = currentUserData.id || currentUserData._id || '-';
@@ -276,6 +309,10 @@ if (logoutBtn) {
             if (forceEnableInterval) {
                 clearInterval(forceEnableInterval);
                 forceEnableInterval = null;
+            }
+            if (mutationObserver) {
+                mutationObserver.disconnect();
+                mutationObserver = null;
             }
             localStorage.removeItem('authToken');
             localStorage.removeItem('userData');
@@ -302,15 +339,50 @@ window.hideAuthUI = function() {
     console.log('🔒 hideAuthUI suppressed on game page');
 };
 
+// ============================================================
+//  ✅ COMPLETELY BLOCK app.js from disabling game
+// ============================================================
+
+// Override the DOM elements themselves to prevent disabling
 if (window.initApp) {
     const originalInitApp = window.initApp;
     window.initApp = function() {
         console.log('🔒 App init overridden on game page');
+        // Instead of running app init, just enable game
         enableGameFully();
         startForceEnableInterval();
         return Promise.resolve();
     };
 }
+
+// ============================================================
+//  ✅ Also override any functions that might disable the game
+// ============================================================
+
+// If setGameEnabled exists, override it
+if (typeof window.setGameEnabled === 'function') {
+    const originalSetGameEnabled = window.setGameEnabled;
+    window.setGameEnabled = function(enabled) {
+        console.log(`🔒 setGameEnabled called with ${enabled} - IGNORING, forcing enabled`);
+        enableGameFully();
+        return true;
+    };
+}
+
+// If setGameEnabled is defined later, intercept it
+Object.defineProperty(window, 'setGameEnabled', {
+    set: function(value) {
+        console.log('🔒 setGameEnabled being set - intercepting');
+        // Don't store the original, just keep our version
+    },
+    get: function() {
+        return function() {
+            console.log('🔒 setGameEnabled called - forcing enabled');
+            enableGameFully();
+        };
+    },
+    configurable: true
+});
 
 console.log('🎰 Game page loaded successfully');
 console.log(`💰 Balance: $${(currentUserData ? currentUserData.balance : 0).toFixed(2)}`);
