@@ -1,5 +1,5 @@
 // ============================================================
-//  server.js - UPDATED with multi-page routing
+//  server.js - Updated with Login Page Route
 // ============================================================
 
 require('dotenv').config();
@@ -71,7 +71,7 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.static('public'));
 
 // ============================================================
-//  ✅ NEW: Serve HTML Pages (with route handling)
+//  ✅ PAGE ROUTES
 // ============================================================
 
 // Landing page (root)
@@ -84,9 +84,9 @@ app.get('/loading', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'loading.html'));
 });
 
-// Auth page
-app.get('/auth', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'auth.html'));
+// ✅ Login page (renamed from auth)
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
 // Game page (protected - will check token later)
@@ -887,7 +887,7 @@ app.listen(PORT, () => {
     console.log('📍 Pages:');
     console.log(`   🏠 Landing: http://localhost:${PORT}/`);
     console.log(`   ⏳ Loading: http://localhost:${PORT}/loading`);
-    console.log(`   🔐 Auth:    http://localhost:${PORT}/auth`);
+    console.log(`   🔐 Login:   http://localhost:${PORT}/login`);
     console.log(`   🎰 Game:    http://localhost:${PORT}/game`);
     console.log(`   👑 Admin:   http://localhost:${PORT}/admin`);
     console.log('🔗 Secure endpoints enabled:');
