@@ -1,0 +1,381 @@
+/* ============================================================
+   GAME.CSS - Coin Flip, Betting, Stats
+   ============================================================ */
+
+/* ----- COIN AREA ----- */
+.coin-area {
+    background: #0f1724;
+    border-radius: 40px;
+    padding: 30px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.coin-area.win-glow {
+    box-shadow: 0 0 30px #facc15;
+    background: radial-gradient(circle, #1a2a3a, #0f1724);
+}
+
+.coin-area.lose-glow {
+    box-shadow: 0 0 30px #ef4444;
+    background: radial-gradient(circle, #2a1a1a, #0f1724);
+}
+
+.coin {
+    font-size: 100px;
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.coin.flipping {
+    animation: flipCoin 0.5s ease-in-out;
+}
+
+@keyframes flipCoin {
+    0% {
+        transform: rotateY(0deg) scale(1);
+    }
+    50% {
+        transform: rotateY(180deg) scale(1.1);
+    }
+    100% {
+        transform: rotateY(360deg) scale(1);
+    }
+}
+
+.result {
+    font-size: 1rem;
+    margin-top: 15px;
+    color: #94a3b8;
+    min-height: 3rem;
+    transition: all 0.3s ease;
+}
+
+.result.win {
+    color: #22c55e;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.result.lose {
+    color: #ef4444;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.result.progressive-win {
+    color: #facc15;
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+/* ----- BET PANEL ----- */
+.bet-panel {
+    background: #0f1724;
+    border-radius: 40px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.bet-input {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.2rem;
+    font-family: 'Courier New', 'Segoe UI', monospace;
+    font-weight: bold;
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #ffffff;
+    border-radius: 60px;
+    outline: none;
+    text-align: center;
+    margin-bottom: 15px;
+    transition: border-color 0.2s ease;
+}
+
+.bet-input:focus {
+    border-color: #facc15;
+}
+
+.bet-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.bet-locked-info {
+    font-size: 0.7rem;
+    color: #facc15;
+    margin-bottom: 10px;
+    display: none;
+}
+
+.bet-locked-info.visible {
+    display: block;
+}
+
+/* ----- CHOICE BUTTONS ----- */
+.choice-buttons {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.choice-btn {
+    flex: 1;
+    padding: 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 60px;
+    cursor: pointer;
+    font-family: 'Courier New', 'Segoe UI', monospace;
+    transition: all 0.2s ease;
+}
+
+.choice-btn.heads {
+    background: #3b82f6;
+    color: #ffffff;
+}
+
+.choice-btn.heads:hover:not(:disabled) {
+    background: #2563eb;
+}
+
+.choice-btn.tails {
+    background: #ef4444;
+    color: #ffffff;
+}
+
+.choice-btn.tails:hover:not(:disabled) {
+    background: #dc2626;
+}
+
+.choice-btn.selected {
+    box-shadow: 0 0 0 3px #facc15, 0 0 20px rgba(250, 204, 21, 0.2);
+    transform: scale(1.02);
+}
+
+.choice-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ----- ACTION BUTTONS ----- */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 10px;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 60px;
+    cursor: pointer;
+    background: #334155;
+    color: #ffffff;
+    transition: all 0.2s ease;
+    font-family: 'Courier New', 'Segoe UI', monospace;
+}
+
+.action-btn:hover:not(:disabled) {
+    background: #475569;
+}
+
+.action-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ----- FLIP BUTTON ----- */
+.flip-btn {
+    background: #facc15;
+    color: #0f1724;
+    font-size: 1.2rem;
+    padding: 15px;
+    width: 100%;
+    border: none;
+    border-radius: 60px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    font-family: 'Courier New', 'Segoe UI', monospace;
+}
+
+.flip-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+    box-shadow: 0 0 30px rgba(250, 204, 21, 0.3);
+}
+
+.flip-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ----- STATS ----- */
+.stats {
+    display: flex;
+    gap: 10px;
+}
+
+.stat-box {
+    flex: 1;
+    background: #0f1724;
+    border-radius: 30px;
+    padding: 12px;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 1.2rem;
+    color: #facc15;
+    font-weight: bold;
+}
+
+/* ----- BANKING PANEL ----- */
+.banking-panel {
+    background: linear-gradient(135deg, #0f1724, #0a0f1e);
+    border-radius: 32px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #facc15;
+}
+
+.balance-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.balance-box {
+    flex: 1;
+    background: #00000066;
+    border-radius: 30px;
+    padding: 12px;
+    text-align: center;
+}
+
+.balance-label {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.balance-amount {
+    font-size: 1.5rem;
+    color: #facc15;
+    font-weight: bold;
+}
+
+.bank-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.bank-action-btn {
+    flex: 1;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 60px;
+    cursor: pointer;
+    font-family: 'Courier New', 'Segoe UI', monospace;
+    transition: all 0.2s ease;
+}
+
+.bank-action-btn:hover:not(:disabled) {
+    transform: scale(1.02);
+}
+
+.deposit-action-btn {
+    background: #22c55e;
+    color: #ffffff;
+}
+
+.deposit-action-btn:hover:not(:disabled) {
+    background: #16a34a;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+}
+
+.withdraw-action-btn {
+    background: #ef4444;
+    color: #ffffff;
+}
+
+.withdraw-action-btn:hover:not(:disabled) {
+    background: #dc2626;
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+/* ----- RESPONSIVE ----- */
+@media (max-width: 750px) {
+    .coin {
+        font-size: 70px;
+    }
+
+    .choice-btn,
+    .action-btn,
+    .flip-btn,
+    .bank-action-btn {
+        padding: 12px 8px;
+        font-size: 0.9rem;
+    }
+
+    .bet-input {
+        padding: 12px;
+        font-size: 1rem;
+    }
+
+    .balance-amount {
+        font-size: 1.2rem;
+    }
+
+    .stat-value {
+        font-size: 1rem;
+    }
+
+    .bank-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats {
+        flex-wrap: wrap;
+    }
+
+    .stat-box {
+        flex: 1 1 calc(50% - 5px);
+    }
+
+    .choice-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .action-buttons {
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        flex: 1 1 calc(33% - 7px);
+    }
+}
