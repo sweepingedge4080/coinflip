@@ -132,7 +132,7 @@ router.post('/flip', auth, async (req, res) => {
 });
 
 // ============================================================
-//  ✅ ADD PROGRESSIVE WINNINGS (FIXED - THIS WAS MISSING!)
+//  ✅ ADD PROGRESSIVE WINNINGS
 // ============================================================
 router.post('/add-progressive', auth, async (req, res) => {
     try {
