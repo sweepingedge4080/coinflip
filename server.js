@@ -1,5 +1,5 @@
 // ============================================================
-//  server.js - Production Ready with Security Fixes
+//  server.js - Production Ready with Security Fixes (No Max Bet)
 // ============================================================
 
 require('dotenv').config();
@@ -26,7 +26,7 @@ app.use(helmet({
             defaultSrc: ["'self'"],
             imgSrc: ["'self'", "https://api.qrserver.com"],
             scriptSrc: ["'self'"],
-            styleSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
         },
     },
 }));
@@ -111,19 +111,20 @@ const DepositRequest = require('./models/DepositRequest');
 const WithdrawRequest = require('./models/WithdrawRequest');
 
 // ============================================================
-//  LEVEL CONFIGURATION
+//  LEVEL CONFIGURATION - NO MAX BET LIMITS
 // ============================================================
+
 const LEVEL_CONFIG = [
-    { level: 1, xpRequired: 0, maxBet: 10, winBonus: 1.0 },
-    { level: 2, xpRequired: 100, maxBet: 25, winBonus: 1.1 },
-    { level: 3, xpRequired: 300, maxBet: 50, winBonus: 1.2 },
-    { level: 4, xpRequired: 600, maxBet: 100, winBonus: 1.3 },
-    { level: 5, xpRequired: 1000, maxBet: 200, winBonus: 1.5 },
-    { level: 6, xpRequired: 1500, maxBet: 350, winBonus: 1.7 },
-    { level: 7, xpRequired: 2100, maxBet: 500, winBonus: 2.0 },
-    { level: 8, xpRequired: 2800, maxBet: 750, winBonus: 2.3 },
-    { level: 9, xpRequired: 3600, maxBet: 1000, winBonus: 2.6 },
-    { level: 10, xpRequired: 4500, maxBet: 1500, winBonus: 3.0 },
+    { level: 1, xpRequired: 0, winBonus: 1.0 },
+    { level: 2, xpRequired: 100, winBonus: 1.1 },
+    { level: 3, xpRequired: 300, winBonus: 1.2 },
+    { level: 4, xpRequired: 600, winBonus: 1.3 },
+    { level: 5, xpRequired: 1000, winBonus: 1.5 },
+    { level: 6, xpRequired: 1500, winBonus: 1.7 },
+    { level: 7, xpRequired: 2100, winBonus: 2.0 },
+    { level: 8, xpRequired: 2800, winBonus: 2.3 },
+    { level: 9, xpRequired: 3600, winBonus: 2.6 },
+    { level: 10, xpRequired: 4500, winBonus: 3.0 },
 ];
 
 function getLevelData(level) {
@@ -135,7 +136,7 @@ function getNextLevelData(level) {
 }
 
 function getMaxBet(level) {
-    return getLevelData(level).maxBet;
+    return 999999; // No practical limit - players can bet up to their balance
 }
 
 function getWinBonus(level) {
@@ -157,7 +158,6 @@ const auth = (req, res, next) => {
     }
 
     try {
-        // ✅ JWT Secret from environment variable
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.userId = decoded.userId;
         next();
@@ -309,7 +309,7 @@ app.get('/api/auth/me', auth, async (req, res) => {
 });
 
 // ============================================================
-//  GAME ROUTES - WITH INPUT VALIDATION
+//  GAME ROUTES - WITH INPUT VALIDATION (NO MAX BET)
 // ============================================================
 
 // Get game stats
@@ -341,7 +341,7 @@ app.get('/api/game/stats', auth, async (req, res) => {
     }
 });
 
-// Flip coin
+// Flip coin - NO MAX BET LIMIT
 app.post('/api/game/flip', [
     auth,
     body('betAmount').isFloat({ min: 0.01 }),
@@ -362,13 +362,15 @@ app.post('/api/game/flip', [
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const maxBet = getMaxBet(user.level);
-        if (betAmount > maxBet) {
-            return res.status(400).json({ error: `Max bet for Level ${user.level} is $${maxBet}` });
-        }
-
+        // ✅ NO MAX BET LIMIT - removed max bet check
+        // Just check if bet exceeds balance
         if (betAmount > user.balance) {
             return res.status(400).json({ error: 'Insufficient balance' });
+        }
+
+        // Optional: Sanity check to prevent absurd bets
+        if (betAmount > 1000000) {
+            return res.status(400).json({ error: 'Bet amount cannot exceed $1,000,000' });
         }
 
         // Deduct bet
@@ -844,4 +846,5 @@ app.listen(PORT, () => {
     console.log('   ✅ Input Validation - All user inputs sanitized');
     console.log('   ✅ CORS - Domain restricted');
     console.log('   ✅ JWT - Environment secret');
+    console.log('   ✅ NO MAX BET LIMITS - Players can bet up to their balance');
 });
