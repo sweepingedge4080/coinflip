@@ -6,39 +6,56 @@
 const DOM = {};
 
 function initDOM() {
+    // Auth elements
+    DOM.authForm = document.getElementById('authForm');
+    DOM.userInfo = document.getElementById('userInfo');
+    DOM.loginUsername = document.getElementById('loginUsername');
+    DOM.loginPassword = document.getElementById('loginPassword');
+    DOM.loginBtn = document.getElementById('loginBtn');
+    DOM.signupBtn = document.getElementById('signupBtn');
+    DOM.logoutBtn = document.getElementById('logoutBtn');
+    DOM.currentUserDisplay = document.getElementById('currentUserDisplay');
+    DOM.userIdDisplay = document.getElementById('userIdDisplay');
+    DOM.userIdContainer = document.getElementById('userIdContainer');
+    DOM.adminBadge = document.getElementById('adminBadge');
+
+    // Banking elements
     DOM.balance = document.getElementById('balance');
     DOM.bestStreak = document.getElementById('bestStreak');
     DOM.totalWagered = document.getElementById('totalWagered');
+    DOM.depositBtn = document.getElementById('depositBtn');
+    DOM.withdrawBtn = document.getElementById('withdrawBtn');
+
+    // Game elements
     DOM.coin = document.getElementById('coin');
+    DOM.coinArea = document.getElementById('coinArea');
     DOM.result = document.getElementById('result');
     DOM.betInput = document.getElementById('betAmount');
+    DOM.betLockedInfo = document.getElementById('betLockedInfo');
+    DOM.lockedBetDisplay = document.getElementById('lockedBetDisplay');
     DOM.headsBtn = document.getElementById('headsBtn');
     DOM.tailsBtn = document.getElementById('tailsBtn');
     DOM.flipBtn = document.getElementById('flipBtn');
     DOM.halfBtn = document.getElementById('halfBtn');
     DOM.doubleBtn = document.getElementById('doubleBtn');
     DOM.maxBtn = document.getElementById('maxBtn');
+
+    // Stats elements
     DOM.winsCount = document.getElementById('winsCount');
     DOM.lossesCount = document.getElementById('lossesCount');
     DOM.winRate = document.getElementById('winRate');
     DOM.currentStreak = document.getElementById('currentStreak');
-    DOM.betLockedInfo = document.getElementById('betLockedInfo');
-    DOM.lockedBetDisplay = document.getElementById('lockedBetDisplay');
-    DOM.coinArea = document.getElementById('coinArea');
-    DOM.adminPanel = document.getElementById('adminPanel');
-    DOM.adminUserSelect = document.getElementById('adminUserSelect');
-    DOM.adminAmount = document.getElementById('adminAmount');
-    DOM.adminAddBtn = document.getElementById('adminAddBtn');
-    DOM.adminRemoveBtn = document.getElementById('adminRemoveBtn');
-    DOM.adminBadge = document.getElementById('adminBadge');
-    DOM.currentUserDisplay = document.getElementById('currentUserDisplay');
-    DOM.userIdDisplay = document.getElementById('userIdDisplay');
+    DOM.jackpotAmount = document.getElementById('jackpotAmount');
+
+    // Progressive elements
     DOM.progressiveStatus = document.getElementById('progressiveStatus');
     DOM.currentLevelDisplay = document.getElementById('currentLevelDisplay');
     DOM.currentPotDisplay = document.getElementById('currentPotDisplay');
     DOM.checkpointsContainer = document.getElementById('checkpointsContainer');
     DOM.toggleProgressiveBtn = document.getElementById('toggleProgressiveBtn');
     DOM.cashoutProgressiveBtn = document.getElementById('cashoutProgressiveBtn');
+
+    // Modal elements
     DOM.depositModal = document.getElementById('depositModal');
     DOM.withdrawModal = document.getElementById('withdrawModal');
     DOM.depositMethod = document.getElementById('depositMethod');
@@ -49,22 +66,24 @@ function initDOM() {
     DOM.withdrawAmount = document.getElementById('withdrawAmount');
     DOM.withdrawWallet = document.getElementById('withdrawWallet');
     DOM.withdrawNote = document.getElementById('withdrawNote');
-    DOM.jackpotAmount = document.getElementById('jackpotAmount');
-    DOM.authForm = document.getElementById('authForm');
-    DOM.userInfo = document.getElementById('userInfo');
-    DOM.loginUsername = document.getElementById('loginUsername');
-    DOM.loginPassword = document.getElementById('loginPassword');
-    DOM.loginBtn = document.getElementById('loginBtn');
-    DOM.signupBtn = document.getElementById('signupBtn');
-    DOM.logoutBtn = document.getElementById('logoutBtn');
-    DOM.userIdContainer = document.getElementById('userIdContainer');
     DOM.confirmDepositBtn = document.getElementById('confirmDepositBtn');
     DOM.cancelDepositBtn = document.getElementById('cancelDepositBtn');
     DOM.confirmWithdrawBtn = document.getElementById('confirmWithdrawBtn');
     DOM.cancelWithdrawBtn = document.getElementById('cancelWithdrawBtn');
+
+    // Log missing elements (warnings only, not errors)
+    const missingElements = [];
+    for (const [key, value] of Object.entries(DOM)) {
+        if (!value) {
+            missingElements.push(key);
+        }
+    }
     
-    // Log that DOM is initialized
-    log('✅ DOM initialized');
+    if (missingElements.length > 0) {
+        logWarning(`Some DOM elements not found: ${missingElements.join(', ')}`);
+    } else {
+        log('✅ DOM initialized successfully');
+    }
 }
 
 // ============================================================
@@ -74,22 +93,22 @@ function initDOM() {
 function updateUI() {
     if (!currentUserData) return;
     
-    DOM.balance.innerText = currentUserData.balance.toFixed(2);
-    DOM.bestStreak.innerText = currentUserData.bestStreak || 0;
-    DOM.totalWagered.innerText = (currentUserData.totalWagered || 0).toFixed(2);
-    DOM.winsCount.innerText = currentUserData.wins || 0;
-    DOM.lossesCount.innerText = currentUserData.losses || 0;
+    if (DOM.balance) DOM.balance.innerText = currentUserData.balance.toFixed(2);
+    if (DOM.bestStreak) DOM.bestStreak.innerText = currentUserData.bestStreak || 0;
+    if (DOM.totalWagered) DOM.totalWagered.innerText = (currentUserData.totalWagered || 0).toFixed(2);
+    if (DOM.winsCount) DOM.winsCount.innerText = currentUserData.wins || 0;
+    if (DOM.lossesCount) DOM.lossesCount.innerText = currentUserData.losses || 0;
     
     const total = (currentUserData.wins || 0) + (currentUserData.losses || 0);
     const winRate = total > 0 ? Math.round(((currentUserData.wins || 0) / total) * 100) : 0;
-    DOM.winRate.innerText = winRate + '%';
-    DOM.currentStreak.innerText = currentUserData.currentStreak || 0;
+    if (DOM.winRate) DOM.winRate.innerText = winRate + '%';
+    if (DOM.currentStreak) DOM.currentStreak.innerText = currentUserData.currentStreak || 0;
     
     if (!progressiveActive || progressiveLevel === 0) {
-        DOM.betInput.max = currentUserData.balance;
+        if (DOM.betInput) DOM.betInput.max = currentUserData.balance;
     }
     
-    DOM.userIdDisplay.innerText = currentUserData.id || currentUserData._id;
+    if (DOM.userIdDisplay) DOM.userIdDisplay.innerText = currentUserData.id || currentUserData._id;
 }
 
 // ============================================================
@@ -118,10 +137,15 @@ function showNotification(msg, duration = 3000) {
 // ============================================================
 
 function updateSelectedButton() {
-    DOM.headsBtn.classList.remove('selected');
-    DOM.tailsBtn.classList.remove('selected');
-    if (selectedChoice === 'heads') DOM.headsBtn.classList.add('selected');
-    if (selectedChoice === 'tails') DOM.tailsBtn.classList.add('selected');
+    if (DOM.headsBtn) DOM.headsBtn.classList.remove('selected');
+    if (DOM.tailsBtn) DOM.tailsBtn.classList.remove('selected');
+    
+    if (selectedChoice === 'heads' && DOM.headsBtn) {
+        DOM.headsBtn.classList.add('selected');
+    }
+    if (selectedChoice === 'tails' && DOM.tailsBtn) {
+        DOM.tailsBtn.classList.add('selected');
+    }
 }
 
 // ============================================================
@@ -131,19 +155,21 @@ function updateSelectedButton() {
 function setGameEnabled(enabled) {
     const disabled = !enabled || progressiveActive;
     
-    DOM.betInput.disabled = disabled;
-    DOM.headsBtn.disabled = disabled;
-    DOM.tailsBtn.disabled = disabled;
-    DOM.halfBtn.disabled = disabled;
-    DOM.doubleBtn.disabled = disabled;
-    DOM.maxBtn.disabled = disabled;
-    DOM.flipBtn.disabled = disabled;
-    DOM.depositBtn.disabled = !enabled;
-    DOM.withdrawBtn.disabled = !enabled;
+    if (DOM.betInput) DOM.betInput.disabled = disabled;
+    if (DOM.headsBtn) DOM.headsBtn.disabled = disabled;
+    if (DOM.tailsBtn) DOM.tailsBtn.disabled = disabled;
+    if (DOM.halfBtn) DOM.halfBtn.disabled = disabled;
+    if (DOM.doubleBtn) DOM.doubleBtn.disabled = disabled;
+    if (DOM.maxBtn) DOM.maxBtn.disabled = disabled;
+    if (DOM.flipBtn) DOM.flipBtn.disabled = disabled;
+    if (DOM.depositBtn) DOM.depositBtn.disabled = !enabled;
+    if (DOM.withdrawBtn) DOM.withdrawBtn.disabled = !enabled;
     
-    DOM.result.innerHTML = enabled 
-        ? 'Select HEADS or TAILS to start' 
-        : 'Login to start playing!';
+    if (DOM.result) {
+        DOM.result.innerHTML = enabled 
+            ? 'Select HEADS or TAILS to start' 
+            : 'Login to start playing!';
+    }
 }
 
 // ============================================================
@@ -151,24 +177,24 @@ function setGameEnabled(enabled) {
 // ============================================================
 
 function showAuthUI() {
-    DOM.authForm.style.display = 'none';
-    DOM.userInfo.style.display = 'block';
-    DOM.currentUserDisplay.innerText = currentUser.username;
-    DOM.userIdDisplay.innerText = currentUser.id;
+    if (!currentUser) return;
     
-    if (isAdmin) {
-        DOM.adminBadge.style.display = 'inline-block';
-        DOM.adminPanel.style.display = 'block';
-        loadAdminUsers();
+    if (DOM.authForm) DOM.authForm.style.display = 'none';
+    if (DOM.userInfo) DOM.userInfo.style.display = 'block';
+    if (DOM.currentUserDisplay) DOM.currentUserDisplay.innerText = currentUser.username;
+    if (DOM.userIdDisplay) DOM.userIdDisplay.innerText = currentUser.id;
+    
+    // Show admin badge if user is admin (just visual, no panel)
+    if (DOM.adminBadge) {
+        DOM.adminBadge.style.display = isAdmin ? 'inline-block' : 'none';
     }
 }
 
 function hideAuthUI() {
-    DOM.authForm.style.display = 'block';
-    DOM.userInfo.style.display = 'none';
-    DOM.adminPanel.style.display = 'none';
-    DOM.adminBadge.style.display = 'none';
-    DOM.balance.innerText = '0.00';
+    if (DOM.authForm) DOM.authForm.style.display = 'block';
+    if (DOM.userInfo) DOM.userInfo.style.display = 'none';
+    if (DOM.adminBadge) DOM.adminBadge.style.display = 'none';
+    if (DOM.balance) DOM.balance.innerText = '0.00';
 }
 
 // ============================================================
@@ -186,15 +212,19 @@ function showWinCelebration(amount) {
     setTimeout(() => { flash.remove(); style.remove(); }, 500);
     
     // Glow effect on coin area
-    DOM.coinArea.classList.add('win-glow');
-    setTimeout(() => DOM.coinArea.classList.remove('win-glow'), 800);
+    if (DOM.coinArea) {
+        DOM.coinArea.classList.add('win-glow');
+        setTimeout(() => DOM.coinArea.classList.remove('win-glow'), 800);
+    }
     
     showNotification(`🎉 WIN! Won ${amount.toFixed(2)}! 🎉`);
 }
 
 function showLossCelebration(amount) {
-    DOM.coinArea.classList.add('lose-glow');
-    setTimeout(() => DOM.coinArea.classList.remove('lose-glow'), 800);
+    if (DOM.coinArea) {
+        DOM.coinArea.classList.add('lose-glow');
+        setTimeout(() => DOM.coinArea.classList.remove('lose-glow'), 800);
+    }
     showNotification(`💀 LOSS! Lost ${amount.toFixed(2)}! 💀`);
 }
 
@@ -203,7 +233,7 @@ function showLossCelebration(amount) {
 // ============================================================
 
 function copyToClipboard(elementId) {
-    const text = document.getElementById(elementId).innerText;
+    const text = document.getElementById(elementId)?.innerText;
     if (!text) return;
     
     navigator.clipboard.writeText(text)
@@ -211,17 +241,19 @@ function copyToClipboard(elementId) {
         .catch(() => {
             // Fallback
             const el = document.getElementById(elementId);
-            const range = document.createRange();
-            range.selectNode(el);
-            window.getSelection().removeAllRanges();
-            window.getSelection().addRange(range);
-            document.execCommand('copy');
-            showNotification(`📋 Copied: ${text.substring(0, 20)}...`);
+            if (el) {
+                const range = document.createRange();
+                range.selectNode(el);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                document.execCommand('copy');
+                showNotification(`📋 Copied: ${text.substring(0, 20)}...`);
+            }
         });
 }
 
 function copyUserId() {
-    const userId = DOM.userIdDisplay.innerText;
+    const userId = DOM.userIdDisplay?.innerText;
     if (userId && userId !== '-') {
         navigator.clipboard.writeText(userId)
             .then(() => showNotification(`📋 User ID copied: ${userId}`))
@@ -269,6 +301,28 @@ function showError(element, message) {
     }
 }
 
+// ============================================================
+//  REFRESH UI DATA
+// ============================================================
+
+async function refreshUserData() {
+    if (!authToken) return false;
+    
+    try {
+        const user = await apiGetUser();
+        if (user) {
+            currentUserData = user;
+            updateUI();
+            log('User data refreshed');
+            return true;
+        }
+        return false;
+    } catch (error) {
+        logError('Failed to refresh user data', error);
+        return false;
+    }
+}
+
 // ----- EXPOSE GLOBALLY -----
 window.DOM = DOM;
 window.initDOM = initDOM;
@@ -285,3 +339,4 @@ window.copyUserId = copyUserId;
 window.showLoading = showLoading;
 window.hideLoading = hideLoading;
 window.showError = showError;
+window.refreshUserData = refreshUserData;
