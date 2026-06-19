@@ -12,18 +12,33 @@ function openDepositModal() {
         return;
     }
     
-    DOM.depositModal.style.display = 'flex';
-    updateDepositQR();
-    log('Deposit modal opened');
+    const modal = document.getElementById('depositModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        updateDepositQR();
+        log('Deposit modal opened');
+    } else {
+        logError('Deposit modal not found');
+    }
 }
 
 function closeDepositModal() {
-    DOM.depositModal.style.display = 'none';
+    const modal = document.getElementById('depositModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    
     // Reset form fields
-    DOM.depositMethod.value = 'Bitcoin (BTC)';
-    DOM.depositAmount.value = '100';
-    DOM.depositWallet.value = '';
-    DOM.depositNote.value = '';
+    const method = document.getElementById('depositMethod');
+    const amount = document.getElementById('depositAmount');
+    const wallet = document.getElementById('depositWallet');
+    const note = document.getElementById('depositNote');
+    
+    if (method) method.value = 'Bitcoin (BTC)';
+    if (amount) amount.value = '100';
+    if (wallet) wallet.value = '';
+    if (note) note.value = '';
+    
     updateDepositQR();
     log('Deposit modal closed');
 }
@@ -43,17 +58,32 @@ function openWithdrawModal() {
         return;
     }
     
-    DOM.withdrawModal.style.display = 'flex';
-    log('Withdraw modal opened');
+    const modal = document.getElementById('withdrawModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        log('Withdraw modal opened');
+    } else {
+        logError('Withdraw modal not found');
+    }
 }
 
 function closeWithdrawModal() {
-    DOM.withdrawModal.style.display = 'none';
+    const modal = document.getElementById('withdrawModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    
     // Reset form fields
-    DOM.withdrawMethod.value = 'Bitcoin (BTC)';
-    DOM.withdrawAmount.value = '100';
-    DOM.withdrawWallet.value = '';
-    DOM.withdrawNote.value = '';
+    const method = document.getElementById('withdrawMethod');
+    const amount = document.getElementById('withdrawAmount');
+    const wallet = document.getElementById('withdrawWallet');
+    const note = document.getElementById('withdrawNote');
+    
+    if (method) method.value = 'Bitcoin (BTC)';
+    if (amount) amount.value = '100';
+    if (wallet) wallet.value = '';
+    if (note) note.value = '';
+    
     log('Withdraw modal closed');
 }
 
@@ -62,7 +92,10 @@ function closeWithdrawModal() {
 // ============================================================
 
 function updateDepositQR() {
-    const method = DOM.depositMethod.value;
+    const methodSelect = document.getElementById('depositMethod');
+    if (!methodSelect) return;
+    
+    const method = methodSelect.value;
     
     // Hide all QR divs
     document.querySelectorAll('.qr-placeholder').forEach(el => {
@@ -84,10 +117,20 @@ function updateDepositQR() {
 // ============================================================
 
 async function confirmDeposit() {
-    const amount = parseFloat(DOM.depositAmount.value);
-    const method = DOM.depositMethod.value;
-    const wallet = DOM.depositWallet.value.trim();
-    const note = DOM.depositNote.value.trim();
+    const amountInput = document.getElementById('depositAmount');
+    const methodSelect = document.getElementById('depositMethod');
+    const walletInput = document.getElementById('depositWallet');
+    const noteInput = document.getElementById('depositNote');
+    
+    if (!amountInput || !methodSelect || !walletInput) {
+        showNotification('❌ Form elements not found');
+        return;
+    }
+    
+    const amount = parseFloat(amountInput.value);
+    const method = methodSelect.value;
+    const wallet = walletInput.value.trim();
+    const note = noteInput ? noteInput.value.trim() : '';
     
     // Validation
     if (!amount || amount < 10) {
@@ -127,10 +170,20 @@ async function confirmDeposit() {
 // ============================================================
 
 async function confirmWithdraw() {
-    const amount = parseFloat(DOM.withdrawAmount.value);
-    const method = DOM.withdrawMethod.value;
-    const wallet = DOM.withdrawWallet.value.trim();
-    const note = DOM.withdrawNote.value.trim();
+    const amountInput = document.getElementById('withdrawAmount');
+    const methodSelect = document.getElementById('withdrawMethod');
+    const walletInput = document.getElementById('withdrawWallet');
+    const noteInput = document.getElementById('withdrawNote');
+    
+    if (!amountInput || !methodSelect || !walletInput) {
+        showNotification('❌ Form elements not found');
+        return;
+    }
+    
+    const amount = parseFloat(amountInput.value);
+    const method = methodSelect.value;
+    const wallet = walletInput.value.trim();
+    const note = noteInput ? noteInput.value.trim() : '';
     
     // Validation
     if (!amount || amount < 10) {
@@ -175,24 +228,68 @@ async function confirmWithdraw() {
 
 function setupModalListeners() {
     // Deposit buttons
-    DOM.depositBtn.onclick = openDepositModal;
-    DOM.confirmDepositBtn.onclick = confirmDeposit;
-    DOM.cancelDepositBtn.onclick = closeDepositModal;
+    const depositBtn = document.getElementById('depositBtn');
+    const confirmDepositBtn = document.getElementById('confirmDepositBtn');
+    const cancelDepositBtn = document.getElementById('cancelDepositBtn');
+    
+    if (depositBtn) {
+        depositBtn.onclick = openDepositModal;
+    } else {
+        logWarning('depositBtn not found');
+    }
+    
+    if (confirmDepositBtn) {
+        confirmDepositBtn.onclick = confirmDeposit;
+    } else {
+        logWarning('confirmDepositBtn not found');
+    }
+    
+    if (cancelDepositBtn) {
+        cancelDepositBtn.onclick = closeDepositModal;
+    } else {
+        logWarning('cancelDepositBtn not found');
+    }
     
     // Withdraw buttons
-    DOM.withdrawBtn.onclick = openWithdrawModal;
-    DOM.confirmWithdrawBtn.onclick = confirmWithdraw;
-    DOM.cancelWithdrawBtn.onclick = closeWithdrawModal;
+    const withdrawBtn = document.getElementById('withdrawBtn');
+    const confirmWithdrawBtn = document.getElementById('confirmWithdrawBtn');
+    const cancelWithdrawBtn = document.getElementById('cancelWithdrawBtn');
+    
+    if (withdrawBtn) {
+        withdrawBtn.onclick = openWithdrawModal;
+    } else {
+        logWarning('withdrawBtn not found');
+    }
+    
+    if (confirmWithdrawBtn) {
+        confirmWithdrawBtn.onclick = confirmWithdraw;
+    } else {
+        logWarning('confirmWithdrawBtn not found');
+    }
+    
+    if (cancelWithdrawBtn) {
+        cancelWithdrawBtn.onclick = closeWithdrawModal;
+    } else {
+        logWarning('cancelWithdrawBtn not found');
+    }
     
     // QR switcher
-    DOM.depositMethod.onchange = updateDepositQR;
+    const depositMethod = document.getElementById('depositMethod');
+    if (depositMethod) {
+        depositMethod.onchange = updateDepositQR;
+    } else {
+        logWarning('depositMethod not found');
+    }
     
     // Close modals on background click
     window.onclick = function(e) {
-        if (e.target === DOM.depositModal) {
+        const depositModal = document.getElementById('depositModal');
+        const withdrawModal = document.getElementById('withdrawModal');
+        
+        if (e.target === depositModal) {
             closeDepositModal();
         }
-        if (e.target === DOM.withdrawModal) {
+        if (e.target === withdrawModal) {
             closeWithdrawModal();
         }
     };
@@ -200,10 +297,13 @@ function setupModalListeners() {
     // Close modals on Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            if (DOM.depositModal.style.display === 'flex') {
+            const depositModal = document.getElementById('depositModal');
+            const withdrawModal = document.getElementById('withdrawModal');
+            
+            if (depositModal && depositModal.style.display === 'flex') {
                 closeDepositModal();
             }
-            if (DOM.withdrawModal.style.display === 'flex') {
+            if (withdrawModal && withdrawModal.style.display === 'flex') {
                 closeWithdrawModal();
             }
         }
