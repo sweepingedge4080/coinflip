@@ -35,7 +35,7 @@ async function initApp() {
         setupModalListeners();
         setupProgressiveListeners();
         setupGameListeners();
-        setupAdminListeners();
+        // ❌ setupAdminListeners() REMOVED - No in-game admin controls
         log('✅ Event listeners setup complete');
         
         // ----- STEP 3: Apply mobile detection -----
@@ -58,12 +58,6 @@ async function initApp() {
         // ----- STEP 7: Mark as ready -----
         AppState.ready = true;
         
-        // ----- STEP 8: Admin initialization if user is admin -----
-        if (isAdmin && currentUserData) {
-            initAdminDashboard();
-            log('👑 Admin dashboard initialized');
-        }
-        
         log('🚀 CoinFlip Casino is ready!');
         log(`👤 ${sessionRestored ? 'Session restored' : 'Not logged in'}`);
         
@@ -74,7 +68,7 @@ async function initApp() {
             }, 500);
         }
         
-        // ----- STEP 9: Add keyboard shortcuts -----
+        // ----- STEP 8: Add keyboard shortcuts -----
         setupKeyboardShortcuts();
         
     } catch (error) {
@@ -95,38 +89,38 @@ function setupKeyboardShortcuts() {
         
         switch (e.key) {
             case '1':
-                DOM.headsBtn.click();
+                if (DOM.headsBtn) DOM.headsBtn.click();
                 break;
             case '2':
-                DOM.tailsBtn.click();
+                if (DOM.tailsBtn) DOM.tailsBtn.click();
                 break;
             case ' ':
                 e.preventDefault();
-                if (!DOM.flipBtn.disabled) {
+                if (DOM.flipBtn && !DOM.flipBtn.disabled) {
                     DOM.flipBtn.click();
                 }
                 break;
             case 'h':
             case 'H':
-                DOM.halfBtn.click();
+                if (DOM.halfBtn) DOM.halfBtn.click();
                 break;
             case 'd':
             case 'D':
-                DOM.doubleBtn.click();
+                if (DOM.doubleBtn) DOM.doubleBtn.click();
                 break;
             case 'm':
             case 'M':
-                DOM.maxBtn.click();
+                if (DOM.maxBtn) DOM.maxBtn.click();
                 break;
             case 'p':
             case 'P':
-                if (!DOM.toggleProgressiveBtn.disabled) {
+                if (DOM.toggleProgressiveBtn && !DOM.toggleProgressiveBtn.disabled) {
                     DOM.toggleProgressiveBtn.click();
                 }
                 break;
             case 'c':
             case 'C':
-                if (!DOM.cashoutProgressiveBtn.disabled) {
+                if (DOM.cashoutProgressiveBtn && !DOM.cashoutProgressiveBtn.disabled) {
                     DOM.cashoutProgressiveBtn.click();
                 }
                 break;
@@ -197,9 +191,7 @@ async function startApp() {
         info: showAppInfo,
         reload: () => location.reload(),
         forceRefresh: async () => {
-            await loadAdminRequests();
-            await loadAdminUsers();
-            updateUI();
+            await refreshUserData();
             renderCheckpoints();
             showNotification('🔄 App refreshed');
         }
@@ -209,7 +201,7 @@ async function startApp() {
 }
 
 // ============================================================
-//  START - No auto-start, waits for DOM
+//  START - Auto-start when DOM is ready
 // ============================================================
 
 // Auto-start when DOM is ready
