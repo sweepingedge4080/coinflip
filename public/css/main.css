@@ -1,0 +1,202 @@
+/* ============================================================
+   MAIN.CSS - Base Styles & Reset
+   ============================================================ */
+
+/* ----- RESET & BASE ----- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background: linear-gradient(145deg, #0a0f1e 0%, #0c1222 100%);
+    font-family: 'Courier New', 'Segoe UI', monospace;
+    color: #e2e8f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+}
+
+.game-container {
+    background: #1e2a3a;
+    border-radius: 48px;
+    padding: 30px;
+    box-shadow: 0 20px 35px rgba(0, 0, 0, 0.4);
+    max-width: 650px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+}
+
+.logo {
+    font-size: 1.6rem;
+    font-weight: bold;
+    background: linear-gradient(135deg, #facc15, #a855f7);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 20px;
+}
+
+/* ----- BUTTONS ----- */
+button {
+    font-family: 'Courier New', 'Segoe UI', monospace;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+    transform: scale(1.02);
+}
+
+button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ----- INFO TEXT ----- */
+.info-text {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    margin-top: 10px;
+}
+
+/* ----- NOTIFICATIONS ----- */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #1e293b;
+    border-left: 4px solid #facc15;
+    padding: 12px 20px;
+    border-radius: 12px;
+    color: white;
+    z-index: 10000;
+    animation: slideIn 0.3s ease-out;
+    max-width: 350px;
+    font-family: 'Courier New', 'Segoe UI', monospace;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* ----- MODAL OVERLAYS (Shared) ----- */
+.level-up-overlay,
+.big-loss-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+    animation: fadeInOverlay 0.3s ease;
+}
+
+@keyframes fadeInOverlay {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.level-up-overlay .card,
+.big-loss-overlay .card {
+    border-radius: 30px;
+    padding: 40px 50px;
+    text-align: center;
+    max-width: 450px;
+    width: 90%;
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ----- RESPONSIVE ----- */
+@media (max-width: 750px) {
+    .game-container {
+        padding: 20px;
+    }
+
+    .logo {
+        font-size: 1.2rem;
+        margin-bottom: 12px;
+    }
+
+    .coin {
+        font-size: 70px;
+    }
+
+    .level-up-overlay .card,
+    .big-loss-overlay .card {
+        padding: 25px;
+    }
+}
+
+/* Mobile mode (applied via JS) */
+body.mobile-mode .game-container {
+    padding: 16px;
+    border-radius: 28px;
+}
+
+body.mobile-mode .logo {
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+}
+
+body.mobile-mode .coin {
+    font-size: 70px;
+}
+
+body.mobile-mode .balance-amount {
+    font-size: 1.2rem;
+}
+
+body.mobile-mode .stat-value {
+    font-size: 1rem;
+}
+
+body.mobile-mode .qr-image {
+    width: 100px;
+    height: 100px;
+}
+
+body.mobile-mode .balance-box {
+    padding: 8px;
+}
+
+body.mobile-mode .instructions-text,
+body.mobile-mode .warning-text {
+    font-size: 0.65rem;
+}
