@@ -5,839 +5,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Admin Dashboard | Coin Flip Casino</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: linear-gradient(145deg, #0a0f1e 0%, #0c1222 100%);
-            font-family: 'Courier New', 'Segoe UI', monospace;
-            color: #e2e8f0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .login-container {
-            background: #1e2a3a;
-            border-radius: 48px;
-            padding: 40px;
-            max-width: 400px;
-            width: 100%;
-            text-align: center;
-            border: 1px solid #facc15;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            background: linear-gradient(135deg, #facc15, #a855f7);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 30px;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #94a3b8;
-        }
-
-        input {
-            width: 100%;
-            padding: 14px;
-            background: #0f1724;
-            border: 1px solid #334155;
-            border-radius: 30px;
-            color: white;
-            font-family: monospace;
-            font-size: 1rem;
-            outline: none;
-        }
-
-        input:focus {
-            border-color: #facc15;
-        }
-
-        button {
-            background: #facc15;
-            color: #0f1724;
-            border: none;
-            padding: 14px 30px;
-            border-radius: 40px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-            font-family: monospace;
-        }
-
-        button:hover {
-            transform: scale(1.02);
-        }
-
-        .error-message {
-            color: #ef4444;
-            margin-top: 15px;
-            font-size: 0.8rem;
-        }
-
-        .back-link {
-            margin-top: 20px;
-            display: block;
-            color: #94a3b8;
-            font-size: 0.8rem;
-        }
-
-        .back-link a {
-            color: #facc15;
-            text-decoration: none;
-        }
-
-        .dashboard {
-            display: none;
-        }
-
-        /* Dashboard Styles */
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: #1e2a3a;
-            border-radius: 48px;
-            border: 1px solid #facc15;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: #1e2a3a;
-            border-radius: 28px;
-            padding: 20px;
-            text-align: center;
-            border-left: 4px solid #facc15;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            color: #facc15;
-            font-weight: bold;
-        }
-
-        .stat-label {
-            font-size: 0.8rem;
-            color: #94a3b8;
-            margin-top: 5px;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .tab-btn {
-            background: #0f1724;
-            border: none;
-            color: #94a3b8;
-            padding: 12px 24px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-family: monospace;
-            width: auto;
-        }
-
-        .tab-btn.active {
-            background: #facc15;
-            color: #0f1724;
-            font-weight: bold;
-        }
-
-        .requests-table, .users-table {
-            background: #0f1724;
-            border-radius: 28px;
-            padding: 20px;
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #334155;
-        }
-
-        th {
-            color: #facc15;
-        }
-
-        .approve-btn {
-            background: #22c55e;
-            border: none;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            margin-right: 5px;
-            width: auto;
-        }
-
-        .reject-btn {
-            background: #ef4444;
-            border: none;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            width: auto;
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #1e293b;
-            border-left: 4px solid #facc15;
-            padding: 12px 20px;
-            border-radius: 12px;
-            color: white;
-            z-index: 10000;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #94a3b8;
-        }
-        
-        /* Status Badge Styles */
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: bold;
-        }
-        .status-pending { background: #facc15; color: #0f1724; }
-        .status-confirmed { background: #22c55e; color: white; }
-        .status-completed { background: #22c55e; color: white; }
-        .status-approved { background: #22c55e; color: white; }
-        .status-rejected { background: #ef4444; color: white; }
-        .status-unknown { background: #64748b; color: white; }
-        
-        .add-funds-section {
-            background: #1e2a3a;
-            border-radius: 28px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        .manual-add {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .manual-add select, .manual-add input {
-            flex: 1;
-            min-width: 150px;
-            padding: 12px;
-            background: #0f1724;
-            border: 1px solid #334155;
-            border-radius: 30px;
-            color: white;
-            font-family: monospace;
-            font-size: 0.9rem;
-            outline: none;
-        }
-        .manual-add select:focus, .manual-add input:focus {
-            border-color: #facc15;
-        }
-        .manual-add select option {
-            background: #1e2a3a;
-        }
+        /* ... (keep all your existing admin styles) ... */
     </style>
 </head>
 <body>
-<!-- LOGIN FORM -->
-<div id="loginForm" class="login-container">
-    <div class="logo">🪙 ADMIN LOGIN</div>
-    <div class="input-group">
-        <label>👑 Admin Username</label>
-        <input type="text" id="adminUsername" placeholder="Enter admin username">
+    <!-- LOGIN FORM -->
+    <div id="loginForm" class="login-container">
+        <div class="logo">🪙 ADMIN LOGIN</div>
+        <div class="input-group">
+            <label>👑 Admin Username</label>
+            <input type="text" id="adminUsername" placeholder="Enter admin username">
+        </div>
+        <div class="input-group">
+            <label>🔐 Admin Password</label>
+            <input type="password" id="adminPassword" placeholder="Enter admin password">
+        </div>
+        <button id="adminLoginBtn">🔓 LOGIN TO DASHBOARD</button>
+        <div id="loginError" class="error-message"></div>
+        <div class="back-link"><a href="/">← Back to Game</a></div>
     </div>
-    <div class="input-group">
-        <label>🔐 Admin Password</label>
-        <input type="password" id="adminPassword" placeholder="Enter admin password">
-    </div>
-    <button id="adminLoginBtn">🔓 LOGIN TO DASHBOARD</button>
-    <div id="loginError" class="error-message"></div>
-    <div class="back-link"><a href="/">← Back to Game</a></div>
-</div>
 
-<!-- DASHBOARD -->
-<div id="dashboard" class="dashboard">
-    <div class="admin-header">
-        <div class="logo">🪙 COIN FLIP CASINO | ADMIN DASHBOARD</div>
-        <div>
-            <span id="adminUserDisplay" class="stat-label" style="background:#a855f7;padding:8px 16px;border-radius:40px;">Admin</span>
-            <button id="logoutDashboardBtn" style="background:#ef4444;margin-left:10px;padding:8px 20px;width:auto;">🚪 LOGOUT</button>
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="dashboard">
+        <div class="admin-header">
+            <div class="logo">🪙 COIN FLIP CASINO | ADMIN DASHBOARD</div>
+            <div>
+                <span id="adminUserDisplay" class="stat-label" style="background:#a855f7;padding:8px 16px;border-radius:40px;">Admin</span>
+                <button id="logoutDashboardBtn" style="background:#ef4444;margin-left:10px;padding:8px 20px;width:auto;">🚪 LOGOUT</button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalUsers">0</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalVolume">0</div>
+                <div class="stat-label">Total Wagered ($)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="pendingDeposits">0</div>
+                <div class="stat-label">Pending Deposits</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="pendingWithdrawals">0</div>
+                <div class="stat-label">Pending Withdrawals</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="deposits">💵 Pending Deposits</button>
+            <button class="tab-btn" data-tab="withdrawals">💰 Pending Withdrawals</button>
+            <button class="tab-btn" data-tab="users">👥 All Users</button>
+            <button class="tab-btn" data-tab="history">📜 Request History</button>
+            <button class="tab-btn" id="refreshDashboardBtn">🔄 Refresh</button>
+        </div>
+
+        <div id="depositsTab" class="requests-table">
+            <h3 style="margin-bottom: 15px; color: #facc15;">💵 Pending Deposit Requests</h3>
+            <div id="depositsList">Loading...</div>
+        </div>
+
+        <div id="withdrawalsTab" class="requests-table" style="display: none;">
+            <h3 style="margin-bottom: 15px; color: #facc15;">💰 Pending Withdrawal Requests</h3>
+            <div id="withdrawalsList">Loading...</div>
+        </div>
+
+        <div id="usersTab" class="users-table" style="display: none;">
+            <h3 style="margin-bottom: 15px; color: #facc15;">👥 All Users</h3>
+            <div id="usersList">Loading...</div>
+        </div>
+
+        <div id="historyTab" class="requests-table" style="display: none;">
+            <h3 style="margin-bottom: 15px; color: #facc15;">📜 Processed Request History</h3>
+            <div id="historyList">Loading...</div>
+        </div>
+
+        <div class="add-funds-section">
+            <h3 style="color: #facc15; margin-bottom: 15px;">💸 Manual Fund Adjustment</h3>
+            <div class="manual-add">
+                <select id="manualUserSelect"></select>
+                <input type="number" id="manualAmount" placeholder="Amount ($)" step="0.01">
+                <button id="manualAddBtn" class="approve-btn" style="background: #22c55e;">➕ ADD FUNDS</button>
+                <button id="manualRemoveBtn" class="reject-btn" style="background: #ef4444;">➖ REMOVE FUNDS</button>
+            </div>
         </div>
     </div>
 
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-value" id="totalUsers">0</div>
-            <div class="stat-label">Total Users</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="totalVolume">0</div>
-            <div class="stat-label">Total Wagered ($)</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="pendingDeposits">0</div>
-            <div class="stat-label">Pending Deposits</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="pendingWithdrawals">0</div>
-            <div class="stat-label">Pending Withdrawals</div>
-        </div>
-    </div>
-
-    <div class="tabs">
-        <button class="tab-btn active" data-tab="deposits">💵 Pending Deposits</button>
-        <button class="tab-btn" data-tab="withdrawals">💰 Pending Withdrawals</button>
-        <button class="tab-btn" data-tab="users">👥 All Users</button>
-        <button class="tab-btn" data-tab="history">📜 Request History</button>
-        <button class="tab-btn" id="refreshDashboardBtn">🔄 Refresh</button>
-    </div>
-
-    <div id="depositsTab" class="requests-table">
-        <h3 style="margin-bottom: 15px; color: #facc15;">💵 Pending Deposit Requests</h3>
-        <div id="depositsList">Loading...</div>
-    </div>
-
-    <div id="withdrawalsTab" class="requests-table" style="display: none;">
-        <h3 style="margin-bottom: 15px; color: #facc15;">💰 Pending Withdrawal Requests</h3>
-        <div id="withdrawalsList">Loading...</div>
-    </div>
-
-    <div id="usersTab" class="users-table" style="display: none;">
-        <h3 style="margin-bottom: 15px; color: #facc15;">👥 All Users</h3>
-        <div id="usersList">Loading...</div>
-    </div>
-    
-    <div id="historyTab" class="requests-table" style="display: none;">
-        <h3 style="margin-bottom: 15px; color: #facc15;">📜 Processed Request History</h3>
-        <div id="historyList">Loading...</div>
-    </div>
-    
-    <div class="add-funds-section">
-        <h3 style="color: #facc15; margin-bottom: 15px;">💸 Manual Fund Adjustment</h3>
-        <div class="manual-add">
-            <select id="manualUserSelect"></select>
-            <input type="number" id="manualAmount" placeholder="Amount ($)" step="0.01">
-            <button id="manualAddBtn" class="approve-btn" style="background: #22c55e;">➕ ADD FUNDS</button>
-            <button id="manualRemoveBtn" class="reject-btn" style="background: #ef4444;">➖ REMOVE FUNDS</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    const API_URL = '';
-    let adminAuthToken = null;
-    let adminUserData = null;
-
-    const savedToken = sessionStorage.getItem('adminAuthToken');
-    if (savedToken) {
-        adminAuthToken = savedToken;
-        verifyAndShowDashboard();
-    }
-
-    document.getElementById('adminLoginBtn').onclick = async () => {
-        const username = document.getElementById('adminUsername').value.trim();
-        const password = document.getElementById('adminPassword').value;
-        
-        if (!username || !password) {
-            document.getElementById('loginError').innerText = 'Please enter username and password';
-            return;
-        }
-        
-        document.getElementById('loginError').innerText = '';
-        document.getElementById('adminLoginBtn').disabled = true;
-        document.getElementById('adminLoginBtn').innerText = 'Logging in...';
-        
-        try {
-            const loginResponse = await fetch(`${API_URL}/api/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
-            
-            const loginData = await loginResponse.json();
-            if (!loginResponse.ok) throw new Error(loginData.error || 'Login failed');
-            
-            const token = loginData.token;
-            
-            const meResponse = await fetch(`${API_URL}/api/auth/me`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            
-            const userData = await meResponse.json();
-            if (!meResponse.ok) throw new Error('Failed to get user data');
-            
-            if (!userData.isAdmin) {
-                throw new Error('User is not an administrator. Access denied.');
-            }
-            
-            adminAuthToken = token;
-            adminUserData = userData;
-            sessionStorage.setItem('adminAuthToken', token);
-            sessionStorage.setItem('adminUser', JSON.stringify(userData));
-            
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-            document.getElementById('adminUserDisplay').innerText = userData.username.toUpperCase();
-            
-            loadDashboardData();
-            loadUserSelect();
-            
-        } catch (error) {
-            document.getElementById('loginError').innerText = error.message;
-        } finally {
-            document.getElementById('adminLoginBtn').disabled = false;
-            document.getElementById('adminLoginBtn').innerText = '🔓 LOGIN TO DASHBOARD';
-        }
-    };
-    
-    async function verifyAndShowDashboard() {
-        try {
-            const meResponse = await fetch(`${API_URL}/api/auth/me`, {
-                headers: { 'Authorization': `Bearer ${adminAuthToken}` }
-            });
-            
-            if (!meResponse.ok) throw new Error('Session expired');
-            
-            const userData = await meResponse.json();
-            if (!userData.isAdmin) throw new Error('Not admin');
-            
-            adminUserData = userData;
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-            document.getElementById('adminUserDisplay').innerText = userData.username.toUpperCase();
-            loadDashboardData();
-            loadUserSelect();
-            
-        } catch (error) {
-            sessionStorage.removeItem('adminAuthToken');
-            sessionStorage.removeItem('adminUser');
-            adminAuthToken = null;
-        }
-    }
-    
-    async function apiCall(endpoint, method = 'GET', data = null) {
-        const options = {
-            method,
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${adminAuthToken}`
-            }
-        };
-        if (data) options.body = JSON.stringify(data);
-        
-        const response = await fetch(`${API_URL}/api${endpoint}`, options);
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || 'API error');
-        return result;
-    }
-    
-    function showNotification(msg) {
-        const notif = document.createElement('div');
-        notif.className = 'notification';
-        notif.innerHTML = msg;
-        document.body.appendChild(notif);
-        setTimeout(() => notif.remove(), 3000);
-    }
-    
-    // ✅ STATUS HELPER - Understands all statuses
-    function getStatusBadge(status) {
-        const statusMap = {
-            'pending': 'status-pending',
-            'confirmed': 'status-confirmed',
-            'completed': 'status-completed',
-            'approved': 'status-approved',
-            'rejected': 'status-rejected'
-        };
-        const displayNames = {
-            'pending': '⏳ Pending',
-            'confirmed': '✅ Confirmed',
-            'completed': '✅ Completed',
-            'approved': '✅ Approved',
-            'rejected': '❌ Rejected'
-        };
-        const statusClass = statusMap[status] || 'status-unknown';
-        const displayName = displayNames[status] || status || 'Unknown';
-        return `<span class="status-badge ${statusClass}">${displayName}</span>`;
-    }
-    
-    async function loadDashboardData() {
-        await Promise.all([
-            loadDeposits(),
-            loadWithdrawals(),
-            loadUsers(),
-            loadHistory(),
-            loadStats()
-        ]);
-    }
-    
-    async function loadUserSelect() {
-        try {
-            const users = await apiCall('/admin/users');
-            const select = document.getElementById('manualUserSelect');
-            select.innerHTML = '<option value="">-- Select User --</option>';
-            for (const user of users) {
-                const option = document.createElement('option');
-                option.value = user.username;
-                option.textContent = `${user.username} - Balance: $${user.balance.toFixed(2)}`;
-                select.appendChild(option);
-            }
-        } catch (error) {
-            console.error('Failed to load users for select:', error);
-        }
-    }
-    
-    async function loadStats() {
-        try {
-            const users = await apiCall('/admin/users');
-            const deposits = await apiCall('/admin/requests/deposits/pending');
-            const withdrawals = await apiCall('/admin/requests/withdrawals/pending');
-            
-            document.getElementById('totalUsers').innerText = users.length;
-            document.getElementById('pendingDeposits').innerText = deposits.length;
-            document.getElementById('pendingWithdrawals').innerText = withdrawals.length;
-            
-            let totalVolume = users.reduce((sum, user) => sum + (user.totalWagered || 0), 0);
-            document.getElementById('totalVolume').innerText = totalVolume.toFixed(0);
-        } catch (error) {
-            console.error('Failed to load stats:', error);
-        }
-    }
-    
-    async function loadDeposits() {
-        try {
-            const deposits = await apiCall('/admin/requests/deposits/pending');
-            const container = document.getElementById('depositsList');
-            
-            if (deposits.length === 0) {
-                container.innerHTML = '<div style="text-align:center;padding:40px;">✅ No pending deposits</div>';
-                return;
-            }
-            
-            let html = '<table><thead><tr><th>Date</th><th>User</th><th>Amount ($)</th><th>Crypto</th><th>TXID / Wallet</th><th>Actions</th></tr></thead><tbody>';
-            
-            for (const deposit of deposits) {
-                html += `<tr>
-                    <td>${new Date(deposit.createdAt).toLocaleString()}</td>
-                    <td>${deposit.username || 'Unknown'}</td>
-                    <td style="color:#22c55e;">$${deposit.amount.toFixed(2)}</td>
-                    <td>${deposit.cryptoMethod || 'N/A'}</td>
-                    <td style="font-size:0.7rem;max-width:200px;word-break:break-all;">${deposit.transactionId || deposit.walletAddress || 'N/A'}</td>
-                    <td class="action-buttons">
-                        <button class="approve-btn" onclick="approveDeposit('${deposit._id}')">✅ Approve</button>
-                        <button class="reject-btn" onclick="rejectDeposit('${deposit._id}')">❌ Reject</button>
-                    </td>
-                </tr>`;
-            }
-            html += '</tbody></table>';
-            container.innerHTML = html;
-        } catch (error) {
-            document.getElementById('depositsList').innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;">❌ Failed to load deposits</div>';
-        }
-    }
-    
-    async function loadWithdrawals() {
-        try {
-            const withdrawals = await apiCall('/admin/requests/withdrawals/pending');
-            const container = document.getElementById('withdrawalsList');
-            
-            if (withdrawals.length === 0) {
-                container.innerHTML = '<div style="text-align:center;padding:40px;">✅ No pending withdrawals</div>';
-                return;
-            }
-            
-            let html = '<table><thead><tr><th>Date</th><th>User</th><th>Amount ($)</th><th>Crypto</th><th>Wallet Address</th><th>Actions</th></tr></thead><tbody>';
-            
-            for (const withdrawal of withdrawals) {
-                html += `<tr>
-                    <td>${new Date(withdrawal.createdAt).toLocaleString()}</td>
-                    <td>${withdrawal.username || 'Unknown'}</td>
-                    <td style="color:#facc15;">$${withdrawal.amount.toFixed(2)}</td>
-                    <td>${withdrawal.cryptoMethod || 'N/A'}</td>
-                    <td style="font-size:0.7rem;max-width:200px;word-break:break-all;">${withdrawal.walletAddress || 'N/A'}</td>
-                    <td class="action-buttons">
-                        <button class="approve-btn" onclick="approveWithdrawal('${withdrawal._id}')">✅ Approve</button>
-                        <button class="reject-btn" onclick="rejectWithdrawal('${withdrawal._id}')">❌ Reject</button>
-                    </td>
-                </tr>`;
-            }
-            html += '</tbody></table>';
-            container.innerHTML = html;
-        } catch (error) {
-            document.getElementById('withdrawalsList').innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;">❌ Failed to load withdrawals</div>';
-        }
-    }
-    
-    async function loadUsers() {
-        try {
-            const users = await apiCall('/admin/users');
-            const container = document.getElementById('usersList');
-            
-            if (users.length === 0) {
-                container.innerHTML = '<div style="text-align:center;padding:40px;">No users yet</div>';
-                return;
-            }
-            
-            let html = '<table><thead><tr><th>Username</th><th>Balance ($)</th><th>Wins/Losses</th><th>Win Rate</th><th>Total Wagered ($)</th><th>Joined</th></tr></thead><tbody>';
-            
-            for (const user of users) {
-                const total = (user.wins || 0) + (user.losses || 0);
-                const winRate = total > 0 ? ((user.wins / total) * 100).toFixed(1) : 0;
-                html += `<tr>
-                    <td>${user.username} ${user.isAdmin ? '👑' : ''}</td>
-                    <td style="color:#facc15;">$${user.balance.toFixed(2)}</td>
-                    <td>${user.wins || 0}/${user.losses || 0}</td>
-                    <td>${winRate}%</td>
-                    <td>$${(user.totalWagered || 0).toFixed(2)}</td>
-                    <td>${new Date(user.createdAt).toLocaleDateString()}</td>
-                </tr>`;
-            }
-            html += '</tbody></table>';
-            container.innerHTML = html;
-        } catch (error) {
-            document.getElementById('usersList').innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;">❌ Failed to load users</div>';
-        }
-    }
-    
-    async function loadHistory() {
-        try {
-            // Load both deposit and withdrawal history
-            const [deposits, withdrawals] = await Promise.all([
-                apiCall('/admin/requests/deposits/processed'),
-                apiCall('/admin/requests/withdrawals/processed')
-            ]);
-            
-            const container = document.getElementById('historyList');
-            
-            // Combine and sort by processedAt
-            const all = [
-                ...deposits.map(d => ({ ...d, type: 'deposit' })),
-                ...withdrawals.map(w => ({ ...w, type: 'withdraw' }))
-            ].sort((a, b) => new Date(b.processedAt || b.createdAt) - new Date(a.processedAt || a.createdAt));
-            
-            if (all.length === 0) {
-                container.innerHTML = '<div style="text-align:center;padding:40px;">📭 No processed requests yet</div>';
-                return;
-            }
-            
-            let html = `<table><thead><tr>
-                <th>Date</th>
-                <th>User</th>
-                <th>Type</th>
-                <th>Amount ($)</th>
-                <th>Status</th>
-                <th>Processed By</th>
-                <th>Note</th>
-            </tr></thead><tbody>`;
-            
-            for (const item of all) {
-                const statusDisplay = getStatusBadge(item.status);
-                html += `<tr>
-                    <td>${new Date(item.processedAt || item.createdAt).toLocaleString()}</td>
-                    <td>${item.username || 'Unknown'}</td>
-                    <td>${item.type === 'deposit' ? '💵 Deposit' : '💰 Withdraw'}</td>
-                    <td style="color:${item.type === 'deposit' ? '#22c55e' : '#facc15'};">$${item.amount.toFixed(2)}</td>
-                    <td>${statusDisplay}</td>
-                    <td>${item.processedBy || 'Admin'}</td>
-                    <td style="font-size:0.7rem;max-width:150px;word-break:break-all;">${item.rejectionReason || item.note || '-'}</td>
-                </tr>`;
-            }
-            html += '</tbody></table>';
-            container.innerHTML = html;
-        } catch (error) {
-            console.error('Failed to load history:', error);
-            document.getElementById('historyList').innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;">❌ Failed to load history</div>';
-        }
-    }
-    
-    // ========== ACTION FUNCTIONS ==========
-    
-    async function approveDeposit(requestId) {
-        if (!confirm('Approve this deposit request?')) return;
-        try {
-            await apiCall('/admin/requests/deposit/approve', 'POST', { requestId });
-            showNotification('✅ Deposit approved successfully!');
-            loadDashboardData();
-            loadUserSelect();
-        } catch (error) {
-            showNotification('❌ Error: ' + error.message);
-        }
-    }
-    
-    async function rejectDeposit(requestId) {
-        const reason = prompt('Reason for rejection (optional):');
-        if (reason === null) return;
-        try {
-            await apiCall('/admin/requests/deposit/reject', 'POST', { requestId, reason });
-            showNotification('❌ Deposit rejected');
-            loadDashboardData();
-            loadUserSelect();
-        } catch (error) {
-            showNotification('❌ Error: ' + error.message);
-        }
-    }
-    
-    async function approveWithdrawal(requestId) {
-        if (!confirm('Approve this withdrawal request?')) return;
-        try {
-            await apiCall('/admin/requests/withdrawal/approve', 'POST', { requestId });
-            showNotification('✅ Withdrawal approved successfully!');
-            loadDashboardData();
-            loadUserSelect();
-        } catch (error) {
-            showNotification('❌ Error: ' + error.message);
-        }
-    }
-    
-    async function rejectWithdrawal(requestId) {
-        const reason = prompt('Reason for rejection (optional):');
-        if (reason === null) return;
-        try {
-            await apiCall('/admin/requests/withdrawal/reject', 'POST', { requestId, reason });
-            showNotification('❌ Withdrawal rejected');
-            loadDashboardData();
-            loadUserSelect();
-        } catch (error) {
-            showNotification('❌ Error: ' + error.message);
-        }
-    }
-    
-    // ========== MANUAL FUND ADJUSTMENT ==========
-    
-    document.getElementById('manualAddBtn').onclick = async () => {
-        const username = document.getElementById('manualUserSelect').value;
-        const amount = parseFloat(document.getElementById('manualAmount').value);
-        
-        if (!username) { showNotification('Select a user first!'); return; }
-        if (!amount || amount <= 0) { showNotification('Enter a valid amount!'); return; }
-        
-        if (!confirm(`Add $${amount} to ${username}?`)) return;
-        
-        try {
-            await apiCall('/admin/add-funds', 'POST', { username, amount });
-            showNotification(`✅ Added $${amount} to ${username}`);
-            loadDashboardData();
-            loadUserSelect();
-            document.getElementById('manualAmount').value = '';
-        } catch (error) {
-            showNotification('❌ Error: ' + error.message);
-        }
-    };
-    
-    document.getElementById('manualRemoveBtn').onclick = async () => {
-        const username = document.getElementById('manualUserSelect').value;
-        const amount = parseFloat(document.getElementById('manualAmount').value);
-        
-        if (!username) { showNotification('Select a user first!'); return; }
-        if (!amount || amount <= 0) { showNotification('Enter a valid amount!'); return; }
-        
-        if (!confirm(`Remove $${amount} from ${username}?`)) return;
-        
-        try {
-            await apiCall('/admin/remove-funds', 'POST', { username, amount });
-            showNotification(`✅ Removed $${amount} from ${username}`);
-            loadDashboardData();
-            loadUserSelect();
-            document.getElementById('manualAmount').value = '';
-        } catch (error) {
-            showNotification('❌ Error: ' + error.message);
-        }
-    };
-    
-    // ========== TAB SWITCHING ==========
-    
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.onclick = function() {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            const tab = this.dataset.tab;
-            document.getElementById('depositsTab').style.display = tab === 'deposits' ? 'block' : 'none';
-            document.getElementById('withdrawalsTab').style.display = tab === 'withdrawals' ? 'block' : 'none';
-            document.getElementById('usersTab').style.display = tab === 'users' ? 'block' : 'none';
-            document.getElementById('historyTab').style.display = tab === 'history' ? 'block' : 'none';
-        };
-    });
-    
-    document.getElementById('refreshDashboardBtn').onclick = function() {
-        this.textContent = '🔄 Refreshing...';
-        loadDashboardData().then(() => {
-            this.textContent = '🔄 Refresh';
-            showNotification('✅ Dashboard refreshed');
-        });
-    };
-    
-    document.getElementById('logoutDashboardBtn').onclick = function() {
-        if (confirm('Logout from admin dashboard?')) {
-            sessionStorage.removeItem('adminAuthToken');
-            sessionStorage.removeItem('adminUser');
-            adminAuthToken = null;
-            document.getElementById('loginForm').style.display = 'block';
-            document.getElementById('dashboard').style.display = 'none';
-        }
-    };
-    
-    // Enter key to login
-    document.getElementById('adminPassword').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            document.getElementById('adminLoginBtn').click();
-        }
-    });
-</script>
+    <!-- ============================================================
+         JAVASCRIPT - External
+         ============================================================ -->
+    <script src="/js/admin-page.js"></script>
 </body>
 </html>
