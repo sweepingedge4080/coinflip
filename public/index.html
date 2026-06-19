@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    
+    <!-- Security Meta Tags -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    
     <title>COIN FLIP CASINO | Multi-Crypto | 11% House Edge | Progressive Mode</title>
 
     <!-- ============================================================
@@ -24,8 +30,8 @@
          ============================================================ -->
     <div class="auth-panel" id="authPanel">
         <div id="authForm">
-            <input type="text" id="loginUsername" class="auth-input" placeholder="Username">
-            <input type="password" id="loginPassword" class="auth-input" placeholder="Password">
+            <input type="text" id="loginUsername" class="auth-input" placeholder="Username" minlength="3" maxlength="20" autocomplete="username" required>
+            <input type="password" id="loginPassword" class="auth-input" placeholder="Password" minlength="4" autocomplete="current-password" required>
             <button id="loginBtn" class="auth-btn login-btn">🔓 LOGIN</button>
             <button id="signupBtn" class="auth-btn signup-btn">📝 SIGN UP</button>
         </div>
@@ -110,7 +116,7 @@
                         <!-- BTC -->
                         <div id="qr-btc" class="qr-placeholder" style="display: flex;">
                             <div class="qr-title">💎 Bitcoin (BTC) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=16Hv2ngy7qy6ZEAxfga2mRDdMhzqgryXUC">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=16Hv2ngy7qy6ZEAxfga2mRDdMhzqgryXUC" alt="BTC QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="btcAddress">16Hv2ngy7qy6ZEAxfga2mRDdMhzqgryXUC</span>
                                 <button class="copy-btn" onclick="copyToClipboard('btcAddress')">📋 COPY</button>
@@ -119,7 +125,7 @@
                         <!-- ETH -->
                         <div id="qr-eth" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Ethereum (ETH) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344" alt="ETH QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="ethAddress">0x524b351129D5bC89eFA657f5266155297F398344</span>
                                 <button class="copy-btn" onclick="copyToClipboard('ethAddress')">📋 COPY</button>
@@ -128,7 +134,7 @@
                         <!-- USDT ERC20 -->
                         <div id="qr-usdt-erc20" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 USDT (ERC20) - Ethereum Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344" alt="USDT ERC20 QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="usdtErc20Address">0x524b351129D5bC89eFA657f5266155297F398344</span>
                                 <button class="copy-btn" onclick="copyToClipboard('usdtErc20Address')">📋 COPY</button>
@@ -137,7 +143,7 @@
                         <!-- USDT BEP20 -->
                         <div id="qr-usdt-bep20" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 USDT (BEP20) - BNB Chain Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344" alt="USDT BEP20 QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="usdtBep20Address">0x524b351129D5bC89eFA657f5266155297F398344</span>
                                 <button class="copy-btn" onclick="copyToClipboard('usdtBep20Address')">📋 COPY</button>
@@ -146,7 +152,7 @@
                         <!-- USDT TRC20 -->
                         <div id="qr-usdt-trc20" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 USDT (TRC20) - TRON Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN" alt="USDT TRC20 QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="usdtTrc20Address">TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN</span>
                                 <button class="copy-btn" onclick="copyToClipboard('usdtTrc20Address')">📋 COPY</button>
@@ -155,7 +161,7 @@
                         <!-- USDC ERC20 -->
                         <div id="qr-usdc-erc20" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 USDC (ERC20) - Ethereum Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344" alt="USDC ERC20 QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="usdcErc20Address">0x524b351129D5bC89eFA657f5266155297F398344</span>
                                 <button class="copy-btn" onclick="copyToClipboard('usdcErc20Address')">📋 COPY</button>
@@ -164,7 +170,7 @@
                         <!-- USDC BEP20 -->
                         <div id="qr-usdc-bep20" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 USDC (BEP20) - BNB Chain Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344" alt="USDC BEP20 QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="usdcBep20Address">0x524b351129D5bC89eFA657f5266155297F398344</span>
                                 <button class="copy-btn" onclick="copyToClipboard('usdcBep20Address')">📋 COPY</button>
@@ -173,7 +179,7 @@
                         <!-- USDC TRC20 -->
                         <div id="qr-usdc-trc20" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 USDC (TRC20) - TRON Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN" alt="USDC TRC20 QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="usdcTrc20Address">TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN</span>
                                 <button class="copy-btn" onclick="copyToClipboard('usdcTrc20Address')">📋 COPY</button>
@@ -182,7 +188,7 @@
                         <!-- BNB -->
                         <div id="qr-bnb" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 BNB (BSC) - Binance Coin Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344" alt="BNB QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="bnbAddress">0x524b351129D5bC89eFA657f5266155297F398344</span>
                                 <button class="copy-btn" onclick="copyToClipboard('bnbAddress')">📋 COPY</button>
@@ -191,7 +197,7 @@
                         <!-- LTC -->
                         <div id="qr-ltc" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Litecoin (LTC) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=LLVjH9nxPjGLNrGQA7TXyUx2eexKL4Yuxn">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=LLVjH9nxPjGLNrGQA7TXyUx2eexKL4Yuxn" alt="LTC QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="ltcAddress">LLVjH9nxPjGLNrGQA7TXyUx2eexKL4Yuxn</span>
                                 <button class="copy-btn" onclick="copyToClipboard('ltcAddress')">📋 COPY</button>
@@ -200,7 +206,7 @@
                         <!-- SOL -->
                         <div id="qr-sol" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Solana (SOL) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=6RFV3E4jSuEnATwi9NMTBfqE9yfNAz3Nh9Ad2ZPpFeE">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=6RFV3E4jSuEnATwi9NMTBfqE9yfNAz3Nh9Ad2ZPpFeE" alt="SOL QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="solAddress">6RFV3E4jSuEnATwi9NMTBfqE9yfNAz3Nh9Ad2ZPpFeE</span>
                                 <button class="copy-btn" onclick="copyToClipboard('solAddress')">📋 COPY</button>
@@ -209,7 +215,7 @@
                         <!-- DOGE -->
                         <div id="qr-doge" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Dogecoin (DOGE) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=DUBtSMnvRWKJks8GvRSGtKkusmFsWdgzWK">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=DUBtSMnvRWKJks8GvRSGtKkusmFsWdgzWK" alt="DOGE QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="dogeAddress">DUBtSMnvRWKJks8GvRSGtKkusmFsWdgzWK</span>
                                 <button class="copy-btn" onclick="copyToClipboard('dogeAddress')">📋 COPY</button>
@@ -218,7 +224,7 @@
                         <!-- XRP -->
                         <div id="qr-xrp" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Ripple (XRP) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=rG3SL9GntFomLeFxJMP1tvs5fdQwogZttG">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=rG3SL9GntFomLeFxJMP1tvs5fdQwogZttG" alt="XRP QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="xrpAddress">rG3SL9GntFomLeFxJMP1tvs5fdQwogZttG</span>
                                 <button class="copy-btn" onclick="copyToClipboard('xrpAddress')">📋 COPY</button>
@@ -227,7 +233,7 @@
                         <!-- ADA -->
                         <div id="qr-ada" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Cardano (ADA) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=addr1q8nalkryt3j43zz2cl4c6vwmcp3smugvr5jvj7l0hmkjgn7szeu32fljmxyhtksdsdh8gue73qtgkh0q875tthemh0lq2phz4v">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=addr1q8nalkryt3j43zz2cl4c6vwmcp3smugvr5jvj7l0hmkjgn7szeu32fljmxyhtksdsdh8gue73qtgkh0q875tthemh0lq2phz4v" alt="ADA QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="adaAddress">addr1q8nalkryt3j43zz2cl4c6vwmcp3smugvr5jvj7l0hmkjgn7szeu32fljmxyhtksdsdh8gue73qtgkh0q875tthemh0lq2phz4v</span>
                                 <button class="copy-btn" onclick="copyToClipboard('adaAddress')">📋 COPY</button>
@@ -236,7 +242,7 @@
                         <!-- DOT -->
                         <div id="qr-dot" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Polkadot (DOT) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=14mDXE2j5HbzXdGEXKj5xR3kJSRLyyDH94TjtDk3F1kVS2Ub">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=14mDXE2j5HbzXdGEXKj5xR3kJSRLyyDH94TjtDk3F1kVS2Ub" alt="DOT QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="dotAddress">14mDXE2j5HbzXdGEXKj5xR3kJSRLyyDH94TjtDk3F1kVS2Ub</span>
                                 <button class="copy-btn" onclick="copyToClipboard('dotAddress')">📋 COPY</button>
@@ -245,7 +251,7 @@
                         <!-- MATIC -->
                         <div id="qr-matic" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Polygon (MATIC) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344" alt="MATIC QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="maticAddress">0x524b351129D5bC89eFA657f5266155297F398344</span>
                                 <button class="copy-btn" onclick="copyToClipboard('maticAddress')">📋 COPY</button>
@@ -254,7 +260,7 @@
                         <!-- AVAX -->
                         <div id="qr-avax" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Avalanche (AVAX) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344" alt="AVAX QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="avaxAddress">0x524b351129D5bC89eFA657f5266155297F398344</span>
                                 <button class="copy-btn" onclick="copyToClipboard('avaxAddress')">📋 COPY</button>
@@ -263,7 +269,7 @@
                         <!-- TRX -->
                         <div id="qr-trx" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 TRON (TRX) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN" alt="TRX QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="trxAddress">TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN</span>
                                 <button class="copy-btn" onclick="copyToClipboard('trxAddress')">📋 COPY</button>
@@ -272,7 +278,7 @@
                         <!-- XMR -->
                         <div id="qr-xmr" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Monero (XMR) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=46ujpgsAHhW325Hq2qTfm7FFDE2adKwum65TvMS83oMkbt7Ezn5oCH5TaCer3Hn7adcvewixcm9MR4X4pNTtSuxNCeKErjU">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=46ujpgsAHhW325Hq2qTfm7FFDE2adKwum65TvMS83oMkbt7Ezn5oCH5TaCer3Hn7adcvewixcm9MR4X4pNTtSuxNCeKErjU" alt="XMR QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="xmrAddress">46ujpgsAHhW325Hq2qTfm7FFDE2adKwum65TvMS83oMkbt7Ezn5oCH5TaCer3Hn7adcvewixcm9MR4X4pNTtSuxNCeKErjU</span>
                                 <button class="copy-btn" onclick="copyToClipboard('xmrAddress')">📋 COPY</button>
@@ -281,7 +287,7 @@
                         <!-- TON -->
                         <div id="qr-ton" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 TONCOIN (TON) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=EQBJHKaLTccsEmxP8Tc0B-1yzSeHksP7O9fbbO5jrABdZPBU">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=EQBJHKaLTccsEmxP8Tc0B-1yzSeHksP7O9fbbO5jrABdZPBU" alt="TON QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="tonAddress">EQBJHKaLTccsEmxP8Tc0B-1yzSeHksP7O9fbbO5jrABdZPBU</span>
                                 <button class="copy-btn" onclick="copyToClipboard('tonAddress')">📋 COPY</button>
@@ -290,7 +296,7 @@
                         <!-- SHIB -->
                         <div id="qr-shib" class="qr-placeholder" style="display: none;">
                             <div class="qr-title">💎 Shiba Inu (SHIB) - ERC20 Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344">
+                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344" alt="SHIB QR Code" loading="lazy">
                             <div class="wallet-address-container">
                                 <span class="wallet-address" id="shibAddress">0x524b351129D5bC89eFA657f5266155297F398344</span>
                                 <button class="copy-btn" onclick="copyToClipboard('shibAddress')">📋 COPY</button>
@@ -298,9 +304,9 @@
                         </div>
                     </div>
 
-                    <input type="number" step="0.01" id="depositAmount" class="modal-input" placeholder="Amount (min 10 points)" value="100">
-                    <input type="text" id="depositWallet" class="modal-input" placeholder="Your Wallet Address / Transaction ID / Hash *REQUIRED*">
-                    <textarea id="depositNote" class="modal-textarea" placeholder="Additional notes (optional)"></textarea>
+                    <input type="number" step="0.01" id="depositAmount" class="modal-input" placeholder="Amount (min 10 points)" value="100" min="10" max="100000" required>
+                    <input type="text" id="depositWallet" class="modal-input" placeholder="Your Wallet Address / Transaction ID *REQUIRED*" minlength="5" maxlength="200" required>
+                    <textarea id="depositNote" class="modal-textarea" placeholder="Additional notes (optional)" maxlength="500"></textarea>
                 </div>
 
                 <div class="deposit-right-column">
@@ -383,9 +389,9 @@
                             <option value="Shiba Inu (SHIB)">Shiba Inu (SHIB) - ERC20</option>
                         </optgroup>
                     </select>
-                    <input type="number" step="0.01" id="withdrawAmount" class="modal-input" placeholder="Amount (min 10 points)" value="100">
-                    <input type="text" id="withdrawWallet" class="modal-input" placeholder="Your Wallet Address *REQUIRED*">
-                    <textarea id="withdrawNote" class="modal-textarea" placeholder="Additional notes (optional)"></textarea>
+                    <input type="number" step="0.01" id="withdrawAmount" class="modal-input" placeholder="Amount (min 10 points)" value="100" min="10" max="100000" required>
+                    <input type="text" id="withdrawWallet" class="modal-input" placeholder="Your Wallet Address *REQUIRED*" minlength="5" maxlength="200" required>
+                    <textarea id="withdrawNote" class="modal-textarea" placeholder="Additional notes (optional)" maxlength="500"></textarea>
                 </div>
 
                 <div class="deposit-right-column">
@@ -448,7 +454,7 @@
          BET PANEL
          ============================================================ -->
     <div class="bet-panel">
-        <input type="number" step="0.01" id="betAmount" class="bet-input" placeholder="BET AMOUNT" value="100" disabled>
+        <input type="number" step="0.01" id="betAmount" class="bet-input" placeholder="BET AMOUNT" value="100" min="0.01" max="10000" disabled>
         <div class="bet-locked-info" id="betLockedInfo">🔒 Bet locked at $<span id="lockedBetDisplay">0.00</span> for progressive run</div>
         <div class="choice-buttons">
             <button id="headsBtn" class="choice-btn heads" disabled>🪙 HEADS</button>
