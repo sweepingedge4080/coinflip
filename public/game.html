@@ -24,7 +24,7 @@
 
 <div class="game-container">
     <!-- ============================================================
-         GAME HEADER - UPDATED WITH USER INFO
+         GAME HEADER
          ============================================================ -->
     <div class="game-header">
         <div class="logo">🪙 COIN FLIP CASINO</div>
@@ -483,7 +483,28 @@
         </div>
     </div>
 
-    <div class="info-text" style="margin-top:10px;" id="jackpotDisplay">🎰 PROGRESSIVE JACKPOT: <span id="jackpotAmount">0.00</span></div>
+    <!-- ============================================================
+         FLIP HISTORY LOG
+         ============================================================ -->
+    <div class="log-container">
+        <div class="log-header">
+            <span class="log-title">📜 FLIP HISTORY</span>
+            <div class="log-controls">
+                <button id="clearLogBtn" class="log-clear-btn">🗑️ Clear</button>
+                <button id="toggleLogBtn" class="log-toggle-btn">⬆️ Minimize</button>
+            </div>
+        </div>
+        <div class="log-body" id="logBody">
+            <div class="log-empty">No flips yet. Start playing!</div>
+        </div>
+        <div class="log-stats">
+            <span id="logFlipCount">Total Flips: <span class="stat-value">0</span></span>
+            <span id="logWinCount">Wins: <span class="stat-value green">0</span></span>
+            <span id="logLossCount">Losses: <span class="stat-value red">0</span></span>
+            <span id="logWinRate">Win Rate: <span class="stat-value gold">0%</span></span>
+            <span id="logProfit">Profit: <span class="stat-value green">$0.00</span></span>
+        </div>
+    </div>
 </div>
 
 <!-- ============================================================
