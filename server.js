@@ -1,5 +1,5 @@
 // ============================================================
-//  server.js - Production Ready with Security Fixes (No Max Bet)
+//  server.js - Production Ready with Security Fixes
 // ============================================================
 
 require('dotenv').config();
@@ -13,6 +13,10 @@ const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 
 const app = express();
+
+// ✅ FIX 1: Trust proxy (Render's load balancer)
+app.set('trust proxy', 1);
+
 const PORT = process.env.PORT || 5000;
 
 // ============================================================
@@ -39,13 +43,18 @@ app.use(cors({
     credentials: true
 }));
 
-// Rate Limiting - Prevent brute force
+// ✅ FIX 2: Rate Limiting with proxy trust
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100,
     message: { error: 'Too many requests, please try again later.' },
     standardHeaders: true,
     legacyHeaders: false,
+    // ✅ Disable validation checks that cause errors
+    validate: {
+        xForwardedForHeader: false,
+        trustProxy: false
+    }
 });
 
 // Apply rate limiting to auth and game routes
@@ -58,6 +67,10 @@ const generalLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
     max: 1000,
     message: { error: 'Too many requests, please try again later.' },
+    validate: {
+        xForwardedForHeader: false,
+        trustProxy: false
+    }
 });
 app.use('/api', generalLimiter);
 
@@ -136,7 +149,7 @@ function getNextLevelData(level) {
 }
 
 function getMaxBet(level) {
-    return 999999; // No practical limit - players can bet up to their balance
+    return 999999; // No practical limit
 }
 
 function getWinBonus(level) {
@@ -181,10 +194,9 @@ const isAdmin = async (req, res, next) => {
 };
 
 // ============================================================
-//  AUTH ROUTES - WITH INPUT VALIDATION
+//  AUTH ROUTES
 // ============================================================
 
-// Signup
 app.post('/api/auth/signup', [
     body('username').trim().escape().isLength({ min: 3, max: 20 }),
     body('password').isLength({ min: 4 })
@@ -231,7 +243,6 @@ app.post('/api/auth/signup', [
     }
 });
 
-// Login
 app.post('/api/auth/login', [
     body('username').trim().escape(),
     body('password').notEmpty()
@@ -279,7 +290,6 @@ app.post('/api/auth/login', [
     }
 });
 
-// Get current user
 app.get('/api/auth/me', auth, async (req, res) => {
     try {
         const user = await User.findById(req.userId).select('-password');
@@ -309,10 +319,9 @@ app.get('/api/auth/me', auth, async (req, res) => {
 });
 
 // ============================================================
-//  GAME ROUTES - WITH INPUT VALIDATION (NO MAX BET)
+//  GAME ROUTES (Including add-progressive)
 // ============================================================
 
-// Get game stats
 app.get('/api/game/stats', auth, async (req, res) => {
     try {
         const user = await User.findById(req.userId).select('-password');
@@ -341,7 +350,7 @@ app.get('/api/game/stats', auth, async (req, res) => {
     }
 });
 
-// Flip coin - NO MAX BET LIMIT
+// ✅ Flip coin route
 app.post('/api/game/flip', [
     auth,
     body('betAmount').isFloat({ min: 0.01 }),
@@ -362,22 +371,17 @@ app.post('/api/game/flip', [
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // ✅ NO MAX BET LIMIT - removed max bet check
-        // Just check if bet exceeds balance
         if (betAmount > user.balance) {
             return res.status(400).json({ error: 'Insufficient balance' });
         }
 
-        // Optional: Sanity check to prevent absurd bets
         if (betAmount > 1000000) {
             return res.status(400).json({ error: 'Bet amount cannot exceed $1,000,000' });
         }
 
-        // Deduct bet
         user.balance -= betAmount;
         user.totalWagered = (user.totalWagered || 0) + betAmount;
 
-        // 11% house edge = 44.5% win chance
         const winChance = 0.5 * (1 - 0.11);
         const result = Math.random() < winChance ? 'heads' : 'tails';
         const win = choice === result;
@@ -412,7 +416,6 @@ app.post('/api/game/flip', [
             xpGain = 2;
         }
 
-        // Level up
         user.xp = (user.xp || 0) + xpGain;
         while (true) {
             const next = getNextLevelData(user.level);
@@ -453,11 +456,41 @@ app.post('/api/game/flip', [
     }
 });
 
+// ✅ FIX 3: ADD PROGRESSIVE CASHOUT ROUTE (Directly in server.js)
+app.post('/api/game/add-progressive', auth, async (req, res) => {
+    try {
+        const { amount, streak } = req.body;
+        
+        if (!amount || amount <= 0) {
+            return res.status(400).json({ error: 'Invalid amount' });
+        }
+        
+        const user = await User.findById(req.userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        // Add the progressive winnings to user balance
+        user.balance += amount;
+        await user.save();
+        
+        console.log(`✅ Progressive cashout: ${user.username} cashed out $${amount.toFixed(2)} from ${streak || '?'} win streak`);
+        
+        res.json({
+            success: true,
+            newBalance: user.balance,
+            message: `Added $${amount.toFixed(2)} from progressive cashout`
+        });
+    } catch (error) {
+        console.error('❌ Add progressive error:', error);
+        res.status(500).json({ error: 'Server error: ' + error.message });
+    }
+});
+
 // ============================================================
-//  DEPOSIT ROUTES - WITH INPUT VALIDATION
+//  DEPOSIT ROUTES
 // ============================================================
 
-// Request deposit
 app.post('/api/deposit/request-deposit', [
     auth,
     body('amount').isFloat({ min: 10 }),
@@ -495,7 +528,6 @@ app.post('/api/deposit/request-deposit', [
     }
 });
 
-// Request withdraw
 app.post('/api/deposit/request-withdraw', [
     auth,
     body('amount').isFloat({ min: 10 }),
@@ -537,10 +569,9 @@ app.post('/api/deposit/request-withdraw', [
 });
 
 // ============================================================
-//  ADMIN ROUTES - WITH ADMIN CHECK
+//  ADMIN ROUTES
 // ============================================================
 
-// Get all users
 app.get('/api/admin/users', auth, isAdmin, async (req, res) => {
     try {
         const users = await User.find().select('-password').sort({ balance: -1 });
@@ -550,7 +581,6 @@ app.get('/api/admin/users', auth, isAdmin, async (req, res) => {
     }
 });
 
-// Pending deposits
 app.get('/api/admin/requests/deposits/pending', auth, isAdmin, async (req, res) => {
     try {
         const requests = await DepositRequest.find({ status: 'pending' }).sort({ createdAt: -1 });
@@ -561,7 +591,6 @@ app.get('/api/admin/requests/deposits/pending', auth, isAdmin, async (req, res) 
     }
 });
 
-// Processed deposits
 app.get('/api/admin/requests/deposits/processed', auth, isAdmin, async (req, res) => {
     try {
         const requests = await DepositRequest.find({ 
@@ -574,7 +603,6 @@ app.get('/api/admin/requests/deposits/processed', auth, isAdmin, async (req, res
     }
 });
 
-// Pending withdrawals
 app.get('/api/admin/requests/withdrawals/pending', auth, isAdmin, async (req, res) => {
     try {
         const requests = await WithdrawRequest.find({ status: 'pending' }).sort({ createdAt: -1 });
@@ -585,7 +613,6 @@ app.get('/api/admin/requests/withdrawals/pending', auth, isAdmin, async (req, re
     }
 });
 
-// Processed withdrawals
 app.get('/api/admin/requests/withdrawals/processed', auth, isAdmin, async (req, res) => {
     try {
         const requests = await WithdrawRequest.find({ 
@@ -598,7 +625,6 @@ app.get('/api/admin/requests/withdrawals/processed', auth, isAdmin, async (req, 
     }
 });
 
-// Approve deposit
 app.post('/api/admin/requests/deposit/approve', auth, isAdmin, async (req, res) => {
     try {
         const { requestId } = req.body;
@@ -641,7 +667,6 @@ app.post('/api/admin/requests/deposit/approve', auth, isAdmin, async (req, res) 
     }
 });
 
-// Reject deposit
 app.post('/api/admin/requests/deposit/reject', auth, isAdmin, async (req, res) => {
     try {
         const { requestId } = req.body;
@@ -675,7 +700,6 @@ app.post('/api/admin/requests/deposit/reject', auth, isAdmin, async (req, res) =
     }
 });
 
-// Approve withdrawal
 app.post('/api/admin/requests/withdraw/approve', auth, isAdmin, async (req, res) => {
     try {
         const { requestId } = req.body;
@@ -722,7 +746,6 @@ app.post('/api/admin/requests/withdraw/approve', auth, isAdmin, async (req, res)
     }
 });
 
-// Reject withdrawal
 app.post('/api/admin/requests/withdraw/reject', auth, isAdmin, async (req, res) => {
     try {
         const { requestId } = req.body;
@@ -756,7 +779,6 @@ app.post('/api/admin/requests/withdraw/reject', auth, isAdmin, async (req, res) 
     }
 });
 
-// Add funds (admin)
 app.post('/api/admin/add-funds', auth, isAdmin, async (req, res) => {
     try {
         const { username, amount } = req.body;
@@ -780,7 +802,6 @@ app.post('/api/admin/add-funds', auth, isAdmin, async (req, res) => {
     }
 });
 
-// Remove funds (admin)
 app.post('/api/admin/remove-funds', auth, isAdmin, async (req, res) => {
     try {
         const { username, amount } = req.body;
@@ -847,4 +868,5 @@ app.listen(PORT, () => {
     console.log('   ✅ CORS - Domain restricted');
     console.log('   ✅ JWT - Environment secret');
     console.log('   ✅ NO MAX BET LIMITS - Players can bet up to their balance');
+    console.log('   ✅ PROXY TRUST ENABLED - Render load balancer support');
 });
