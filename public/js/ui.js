@@ -1,5 +1,5 @@
 // ============================================================
-//  UI.JS - UI Updates & Helpers
+//  UI.JS - UI Updates & Helpers (FIXED)
 // ============================================================
 
 // ----- DOM REFERENCE -----
@@ -149,7 +149,7 @@ function updateSelectedButton() {
 }
 
 // ============================================================
-//  GAME ENABLED STATE
+//  GAME ENABLED STATE - FIXED (No disable call)
 // ============================================================
 
 function setGameEnabled(enabled) {
@@ -323,7 +323,10 @@ async function refreshUserData() {
     }
 }
 
-// ----- EXPOSE GLOBALLY -----
+// ============================================================
+//  EXPOSE GLOBALLY
+// ============================================================
+
 window.DOM = DOM;
 window.initDOM = initDOM;
 window.updateUI = updateUI;
