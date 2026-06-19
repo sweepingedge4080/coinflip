@@ -1,26 +1,60 @@
 // ============================================================
-//  AUTH.JS - Authentication Logic (No Admin References)
+//  AUTH.JS - Authentication Logic with Validation
 // ============================================================
+
+// ============================================================
+//  VALIDATION HELPERS
+// ============================================================
+
+function validateUsername(username) {
+    if (!username) return { valid: false, message: 'Username is required' };
+    if (username.length < 3) return { valid: false, message: 'Username must be at least 3 characters' };
+    if (username.length > 20) return { valid: false, message: 'Username must be less than 20 characters' };
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        return { valid: false, message: 'Username can only contain letters, numbers, and underscores' };
+    }
+    return { valid: true };
+}
+
+function validatePassword(password) {
+    if (!password) return { valid: false, message: 'Password is required' };
+    if (password.length < 4) return { valid: false, message: 'Password must be at least 4 characters' };
+    if (password.length > 100) return { valid: false, message: 'Password must be less than 100 characters' };
+    return { valid: true };
+}
+
+function sanitizeInput(input) {
+    if (!input) return '';
+    // Remove any HTML tags
+    return String(input).replace(/<[^>]*>/g, '').trim();
+}
 
 // ============================================================
 //  SIGNUP
 // ============================================================
 
 async function signup(username, password) {
-    if (!username || username.length < 3) {
-        showNotification('❌ Username must be at least 3 characters');
+    // Validate username
+    const usernameValidation = validateUsername(username);
+    if (!usernameValidation.valid) {
+        showNotification(`❌ ${usernameValidation.message}`);
         return false;
     }
     
-    if (!password || password.length < 4) {
-        showNotification('❌ Password must be at least 4 characters');
+    // Validate password
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+        showNotification(`❌ ${passwordValidation.message}`);
         return false;
     }
+    
+    // Sanitize username
+    const sanitizedUsername = sanitizeInput(username);
     
     try {
         showNotification('📝 Creating account...');
         
-        const data = await apiSignup(username, password);
+        const data = await apiSignup(sanitizedUsername, password);
         
         setAuthToken(data.token);
         setUserData(data.user);
@@ -33,8 +67,12 @@ async function signup(username, password) {
         setGameEnabled(true);
         updateUI();
         
+        // Clear input fields
+        DOM.loginUsername.value = '';
+        DOM.loginPassword.value = '';
+        
         showNotification(`✅ Welcome ${currentUser.username}!`);
-        log(`User signed up: ${username}`);
+        log(`User signed up: ${sanitizedUsername}`);
         return true;
         
     } catch (error) {
@@ -49,15 +87,27 @@ async function signup(username, password) {
 // ============================================================
 
 async function login(username, password) {
-    if (!username || !password) {
-        showNotification('❌ Please enter username and password');
+    // Validate username
+    const usernameValidation = validateUsername(username);
+    if (!usernameValidation.valid) {
+        showNotification(`❌ ${usernameValidation.message}`);
         return false;
     }
+    
+    // Validate password
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+        showNotification(`❌ ${passwordValidation.message}`);
+        return false;
+    }
+    
+    // Sanitize username
+    const sanitizedUsername = sanitizeInput(username);
     
     try {
         showNotification('🔑 Logging in...');
         
-        const data = await apiLogin(username, password);
+        const data = await apiLogin(sanitizedUsername, password);
         
         setAuthToken(data.token);
         setUserData(data.user);
@@ -70,8 +120,12 @@ async function login(username, password) {
         setGameEnabled(true);
         updateUI();
         
+        // Clear input fields
+        DOM.loginUsername.value = '';
+        DOM.loginPassword.value = '';
+        
         showNotification(`✅ Welcome back ${currentUser.username}!`);
-        log(`User logged in: ${username}`);
+        log(`User logged in: ${sanitizedUsername}`);
         return true;
         
     } catch (error) {
@@ -162,15 +216,26 @@ async function checkSession() {
 // ============================================================
 
 async function adminLogin(username, password) {
-    if (!username || !password) {
-        showNotification('❌ Please enter admin credentials');
+    // Validate username
+    const usernameValidation = validateUsername(username);
+    if (!usernameValidation.valid) {
+        showNotification(`❌ ${usernameValidation.message}`);
         return false;
     }
+    
+    // Validate password
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+        showNotification(`❌ ${passwordValidation.message}`);
+        return false;
+    }
+    
+    const sanitizedUsername = sanitizeInput(username);
     
     try {
         showNotification('🔑 Admin login...');
         
-        const data = await apiLogin(username, password);
+        const data = await apiLogin(sanitizedUsername, password);
         
         if (!data.user || !data.user.isAdmin) {
             throw new Error('Not an admin user');
@@ -181,7 +246,7 @@ async function adminLogin(username, password) {
         sessionStorage.setItem(STORAGE_KEYS.ADMIN_USER, JSON.stringify(data.user));
         
         showNotification('✅ Admin login successful!');
-        log(`Admin logged in: ${username}`);
+        log(`Admin logged in: ${sanitizedUsername}`);
         return true;
         
     } catch (error) {
@@ -224,7 +289,7 @@ function showAuthUI() {
     DOM.currentUserDisplay.innerText = currentUser.username;
     DOM.userIdDisplay.innerText = currentUser.id;
     
-    // ✅ Show admin badge if user is admin (just visual, no panel)
+    // Show admin badge if user is admin (just visual, no panel)
     if (isAdmin) {
         DOM.adminBadge.style.display = 'inline-block';
     } else {
@@ -276,6 +341,11 @@ function setupAuthListeners() {
         }
     });
     
+    // Auto-trim username input (remove accidental spaces)
+    DOM.loginUsername.addEventListener('blur', function() {
+        this.value = this.value.trim();
+    });
+    
     log('✅ Auth listeners setup complete');
 }
 
@@ -296,7 +366,10 @@ function togglePasswordVisibility(inputId) {
     }
 }
 
-// ----- EXPOSE GLOBALLY -----
+// ============================================================
+//  EXPOSE GLOBALLY
+// ============================================================
+
 window.signup = signup;
 window.login = login;
 window.logout = logout;
@@ -309,3 +382,6 @@ window.setupAuthListeners = setupAuthListeners;
 window.togglePasswordVisibility = togglePasswordVisibility;
 window.showAuthUI = showAuthUI;
 window.hideAuthUI = hideAuthUI;
+window.validateUsername = validateUsername;
+window.validatePassword = validatePassword;
+window.sanitizeInput = sanitizeInput;
