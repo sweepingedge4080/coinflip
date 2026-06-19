@@ -379,8 +379,6 @@ function handleWinResponse(response, isProgressiveFlip, bet) {
         DOM.result.className = 'result win';
         showWinCelebration(serverWinnings);
         showNotification(`🎉 Won $${serverWinnings.toFixed(2)}!`);
-        
-        // ✅ Add log entry for normal win
         addLogEntry(selectedChoice, 'win', bet, serverWinnings, currentUserData.balance);
     }
 }
@@ -392,14 +390,12 @@ function handleLossResponse(response, isProgressiveFlip, bet) {
         DOM.result.innerHTML = `💀 LOSS! Lost $${bet.toFixed(2)} 💀`;
         DOM.result.className = 'result lose';
         showLossCelebration(bet);
-        
-        // ✅ Add log entry for normal loss
         addLogEntry(selectedChoice, 'lose', bet, 0, currentUserData.balance);
     }
 }
 
 // ============================================================
-//  PROGRESSIVE WIN / LOSS HANDLERS
+//  PROGRESSIVE WIN / LOSS HANDLERS (WITH LOGGING)
 // ============================================================
 
 function handleProgressiveWin(response) {
@@ -414,6 +410,9 @@ function handleProgressiveWin(response) {
     DOM.result.innerHTML = `🎉 LEVEL ${progressiveLevel} REACHED! 🎉<br>💰 Current Pot: $${pot.toFixed(2)} (${multiplier}x)`;
     DOM.result.className = 'result progressive-win';
     showNotification(`🔥 Level ${progressiveLevel}! Pot: $${pot.toFixed(2)}`, 2000);
+    
+    // ✅ ADD LOG ENTRY FOR PROGRESSIVE LEVEL REACHED
+    addLogEntry(selectedChoice, 'win', progressiveBet, pot, currentUserData.balance);
     
     if (progressiveLevel >= PROGRESSIVE_MULTIPLIERS.length) {
         handleMaxLevelReached();
@@ -437,12 +436,15 @@ function handleProgressiveLoss(bet) {
     DOM.result.className = 'result lose';
     showLossCelebration(lostAmount);
     
+    // ✅ ADD LOG ENTRY FOR PROGRESSIVE LOSS
+    addLogEntry(selectedChoice, 'lose', progressiveBet, 0, currentUserData.balance);
+    
     const savedBet = progressiveBet;
     showBigLossOverlay(levelReached, lostAmount);
     
     resetProgressiveRun();
     DOM.betInput.value = savedBet.toFixed(2);
-    DOM.betInput.disabled = false;
+    DOM.betInput.disabled = true; // ✅ Keep locked since mode stays active
     progressiveBet = savedBet;
 }
 
@@ -453,10 +455,14 @@ function handleMaxLevelReached() {
     showNotification(`🏆 MAX LEVEL REACHED! Won $${finalPot.toFixed(2)}! 🏆`, 5000);
     showWinCelebration(finalPot);
     
+    // ✅ ADD LOG ENTRY FOR MAX LEVEL
+    addLogEntry(selectedChoice, 'win', progressiveBet, finalPot, currentUserData.balance);
+    
     const savedBet = progressiveBet;
     resetProgressiveRun();
     DOM.betInput.value = savedBet.toFixed(2);
-    DOM.betInput.disabled = false;
+    DOM.betInput.disabled = true; // ✅ Keep locked since mode stays active
+    progressiveBet = savedBet;
     
     DOM.result.innerHTML = `🏆 MAX LEVEL! Won $${finalPot.toFixed(2)}! 🏆`;
     DOM.result.className = 'result win';
