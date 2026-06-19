@@ -1,0 +1,366 @@
+/* ============================================================
+   MODALS.CSS - Deposit/Withdraw Modal Styles
+   ============================================================ */
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 20000;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #1e293b, #0f1724);
+    border-radius: 32px;
+    padding: 25px;
+    max-width: 900px;
+    width: 95%;
+    border: 2px solid #facc15;
+    text-align: center;
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: modalSlideUp 0.3s ease;
+}
+
+@keyframes modalSlideUp {
+    0% {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-content h3 {
+    color: #facc15;
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+}
+
+/* Hide scrollbar but keep functionality */
+.modal-content::-webkit-scrollbar {
+    display: none;
+}
+
+.modal-content {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* ----- MODAL TWO COLUMN LAYOUT ----- */
+.deposit-two-columns {
+    display: flex;
+    gap: 25px;
+    flex-wrap: wrap;
+}
+
+.deposit-left-column {
+    flex: 1;
+    min-width: 280px;
+}
+
+.deposit-right-column {
+    flex: 1;
+    min-width: 250px;
+}
+
+/* ----- FORM ELEMENTS ----- */
+.modal-select,
+.modal-input,
+.modal-textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    font-size: 0.9rem;
+    font-family: 'Courier New', 'Segoe UI', monospace;
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #ffffff;
+    border-radius: 16px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.modal-select:focus,
+.modal-input:focus,
+.modal-textarea:focus {
+    border-color: #facc15;
+}
+
+.modal-select option {
+    background: #1e293b;
+    color: #ffffff;
+}
+
+.modal-textarea {
+    min-height: 60px;
+    resize: vertical;
+    font-family: 'Courier New', 'Segoe UI', monospace;
+}
+
+/* ----- QR SECTION ----- */
+.qr-section {
+    margin: 15px 0;
+    padding: 12px;
+    background: #0f1724;
+    border-radius: 20px;
+    border: 1px dashed #facc15;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.qr-title {
+    font-size: 0.75rem;
+    color: #facc15;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.qr-placeholder {
+    background: #1e293b;
+    border-radius: 16px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.qr-image {
+    width: 130px;
+    height: 130px;
+    object-fit: contain;
+    margin-bottom: 8px;
+    background: #ffffff;
+    padding: 5px;
+    border-radius: 12px;
+}
+
+.wallet-address-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #0f1724;
+    padding: 6px 10px;
+    border-radius: 12px;
+    margin-top: 8px;
+    width: 100%;
+}
+
+.wallet-address {
+    font-size: 0.65rem;
+    word-break: break-all;
+    color: #facc15;
+    font-family: monospace;
+    flex: 1;
+    text-align: left;
+}
+
+.copy-btn {
+    background: #3b82f6;
+    border: none;
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.6rem;
+    transition: background 0.2s ease;
+    font-family: 'Courier New', 'Segoe UI', monospace;
+}
+
+.copy-btn:hover {
+    background: #2563eb;
+}
+
+/* ----- INSTRUCTIONS BOX ----- */
+.instructions-box {
+    background: #0f1724;
+    border-radius: 20px;
+    padding: 15px;
+    text-align: left;
+    border-left: 4px solid #facc15;
+    height: 100%;
+}
+
+.instructions-title {
+    color: #facc15;
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.instructions-text {
+    font-size: 0.7rem;
+    color: #cbd5e1;
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.instructions-text strong {
+    color: #facc15;
+}
+
+.warning-text {
+    font-size: 0.7rem;
+    color: #ef4444;
+    line-height: 1.6;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #334155;
+}
+
+.warning-text strong {
+    color: #facc15;
+}
+
+/* ----- MODAL BUTTONS ----- */
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.modal-confirm {
+    flex: 1;
+    background: #22c55e;
+    color: #ffffff;
+    padding: 12px;
+    border: none;
+    border-radius: 60px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: 'Courier New', 'Segoe UI', monospace;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+}
+
+.modal-confirm:hover {
+    background: #16a34a;
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+}
+
+.modal-cancel {
+    flex: 1;
+    background: #ef4444;
+    color: #ffffff;
+    padding: 12px;
+    border: none;
+    border-radius: 60px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: 'Courier New', 'Segoe UI', monospace;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+}
+
+.modal-cancel:hover {
+    background: #dc2626;
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+/* ----- RESPONSIVE ----- */
+@media (max-width: 750px) {
+    .deposit-two-columns {
+        flex-direction: column;
+    }
+
+    .modal-content {
+        padding: 16px;
+    }
+
+    .modal-content h3 {
+        font-size: 1.1rem;
+    }
+
+    .modal-select,
+    .modal-input,
+    .modal-textarea {
+        padding: 10px;
+        font-size: 0.85rem;
+    }
+
+    .qr-image {
+        width: 100px;
+        height: 100px;
+    }
+
+    .wallet-address {
+        font-size: 0.55rem;
+    }
+
+    .modal-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .instructions-text,
+    .warning-text {
+        font-size: 0.65rem;
+    }
+
+    .qr-section {
+        max-height: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        padding: 12px;
+        border-radius: 20px;
+        max-height: 90vh;
+    }
+
+    .deposit-left-column {
+        min-width: 0;
+    }
+
+    .deposit-right-column {
+        min-width: 0;
+    }
+
+    .qr-image {
+        width: 80px;
+        height: 80px;
+    }
+
+    .qr-section {
+        padding: 8px;
+    }
+
+    .wallet-address-container {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .wallet-address {
+        font-size: 0.5rem;
+        text-align: center;
+        word-break: break-all;
+    }
+
+    .copy-btn {
+        padding: 3px 8px;
+        font-size: 0.5rem;
+    }
+}
