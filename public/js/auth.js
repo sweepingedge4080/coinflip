@@ -1,5 +1,5 @@
 // ============================================================
-//  AUTH.JS - Authentication Logic
+//  AUTH.JS - Authentication Logic (No Admin References)
 // ============================================================
 
 // ============================================================
@@ -32,10 +32,6 @@ async function signup(username, password) {
         showAuthUI();
         setGameEnabled(true);
         updateUI();
-        
-        if (isAdmin) {
-            loadAdminUsers();
-        }
         
         showNotification(`✅ Welcome ${currentUser.username}!`);
         log(`User signed up: ${username}`);
@@ -73,10 +69,6 @@ async function login(username, password) {
         showAuthUI();
         setGameEnabled(true);
         updateUI();
-        
-        if (isAdmin) {
-            loadAdminUsers();
-        }
         
         showNotification(`✅ Welcome back ${currentUser.username}!`);
         log(`User logged in: ${username}`);
@@ -147,10 +139,6 @@ async function checkSession() {
         setGameEnabled(true);
         updateUI();
         
-        if (isAdmin) {
-            loadAdminUsers();
-        }
-        
         showNotification(`✅ Welcome back ${currentUser.username}!`);
         log(`Session restored for: ${currentUser.username}`);
         return true;
@@ -170,7 +158,7 @@ async function checkSession() {
 }
 
 // ============================================================
-//  ADMIN LOGIN (For admin.html)
+//  ADMIN LOGIN (For admin.html - Separate Page)
 // ============================================================
 
 async function adminLogin(username, password) {
@@ -188,7 +176,7 @@ async function adminLogin(username, password) {
             throw new Error('Not an admin user');
         }
         
-        // Store admin token separately
+        // Store admin token separately (for admin.html)
         sessionStorage.setItem(STORAGE_KEYS.ADMIN_TOKEN, data.token);
         sessionStorage.setItem(STORAGE_KEYS.ADMIN_USER, JSON.stringify(data.user));
         
@@ -227,7 +215,32 @@ function getAdminUser() {
 }
 
 // ============================================================
-//  AUTH EVENT LISTENERS (Setup)
+//  AUTH UI HELPERS
+// ============================================================
+
+function showAuthUI() {
+    DOM.authForm.style.display = 'none';
+    DOM.userInfo.style.display = 'block';
+    DOM.currentUserDisplay.innerText = currentUser.username;
+    DOM.userIdDisplay.innerText = currentUser.id;
+    
+    // ✅ Show admin badge if user is admin (just visual, no panel)
+    if (isAdmin) {
+        DOM.adminBadge.style.display = 'inline-block';
+    } else {
+        DOM.adminBadge.style.display = 'none';
+    }
+}
+
+function hideAuthUI() {
+    DOM.authForm.style.display = 'block';
+    DOM.userInfo.style.display = 'none';
+    DOM.adminBadge.style.display = 'none';
+    DOM.balance.innerText = '0.00';
+}
+
+// ============================================================
+//  AUTH EVENT LISTENERS
 // ============================================================
 
 function setupAuthListeners() {
@@ -294,3 +307,5 @@ window.getAdminToken = getAdminToken;
 window.getAdminUser = getAdminUser;
 window.setupAuthListeners = setupAuthListeners;
 window.togglePasswordVisibility = togglePasswordVisibility;
+window.showAuthUI = showAuthUI;
+window.hideAuthUI = hideAuthUI;
