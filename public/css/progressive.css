@@ -1,0 +1,438 @@
+/* ============================================================
+   PROGRESSIVE.CSS - Progressive Mode Styles
+   ============================================================ */
+
+.progressive-panel {
+    background: linear-gradient(135deg, #1a2a3a, #0f1724);
+    border-radius: 32px;
+    padding: 18px;
+    margin-bottom: 20px;
+    border: 2px solid #facc15;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ----- ANIMATED GLOW BACKGROUND ----- */
+.progressive-panel::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(250, 204, 21, 0.08) 0%, transparent 70%);
+    animation: pulseGlow 3s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+    0% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+    100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+}
+
+/* ----- PROGRESSIVE HEADER ----- */
+.progressive-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+}
+
+.progressive-title {
+    font-size: 1rem;
+    font-weight: bold;
+    background: linear-gradient(135deg, #facc15, #ff8c00);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.progressive-status {
+    font-size: 0.85rem;
+    font-weight: bold;
+    padding: 4px 14px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+.progressive-status.active {
+    background: #22c55e;
+    color: #0f1724;
+    animation: statusPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.85;
+        transform: scale(1.03);
+    }
+}
+
+.progressive-status.inactive {
+    background: #64748b;
+    color: #ffffff;
+}
+
+/* ----- LEVEL & POT DISPLAY ----- */
+.progressive-level-display {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #facc15;
+    text-shadow: 0 0 20px rgba(250, 204, 21, 0.3);
+    position: relative;
+    z-index: 1;
+}
+
+.progressive-pot {
+    font-size: 1.1rem;
+    color: #22c55e;
+    font-weight: bold;
+    position: relative;
+    z-index: 1;
+}
+
+/* ----- CHECKPOINTS ----- */
+.checkpoints-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+    margin: 12px 0;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+}
+
+.checkpoint {
+    flex: 1;
+    min-width: 40px;
+    background: #0f1724;
+    border-radius: 12px;
+    padding: 6px 3px;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 1px solid #334155;
+}
+
+.checkpoint.reached {
+    background: linear-gradient(135deg, #facc15, #a855f7);
+    border-color: #facc15;
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(250, 204, 21, 0.4);
+}
+
+.checkpoint.reached .checkpoint-multiplier {
+    color: #0f1724;
+    font-weight: bold;
+}
+
+.checkpoint.reached .checkpoint-label {
+    color: #0f1724;
+}
+
+.checkpoint.current {
+    border-color: #22c55e;
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
+}
+
+.checkpoint-multiplier {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #facc15;
+}
+
+.checkpoint-label {
+    font-size: 0.5rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.checkpoint-prize {
+    font-size: 0.6rem;
+    color: #22c55e;
+    font-weight: bold;
+}
+
+/* ----- PROGRESSIVE CONTROLS ----- */
+.progressive-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    position: relative;
+    z-index: 1;
+}
+
+.progressive-controls button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Courier New', 'Segoe UI', monospace;
+}
+
+.progressive-controls button:hover:not(:disabled) {
+    transform: scale(1.02);
+}
+
+.toggle-progressive-btn {
+    background: #334155;
+    color: #ffffff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: 'Courier New', 'Segoe UI', monospace;
+    transition: all 0.2s ease;
+}
+
+.toggle-progressive-btn.active {
+    background: #facc15;
+    color: #0f1724;
+}
+
+.toggle-progressive-btn.active:hover:not(:disabled) {
+    background: #fbbf24;
+}
+
+.toggle-progressive-btn:hover:not(:disabled) {
+    background: #475569;
+}
+
+.cashout-btn {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #ffffff;
+}
+
+.cashout-btn:hover:not(:disabled) {
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
+}
+
+.cashout-btn:disabled {
+    background: #334155;
+    color: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ----- LEVEL UP OVERLAY ----- */
+.level-up-overlay .card {
+    background: linear-gradient(145deg, #1a2a3a, #0f1724);
+    border: 2px solid #facc15;
+    box-shadow: 0 30px 80px rgba(250, 204, 21, 0.2);
+}
+
+.level-up-overlay .card .emoji {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.level-up-overlay .card h2 {
+    font-size: 2rem;
+    background: linear-gradient(135deg, #facc15, #ff8c00);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 6px;
+}
+
+.level-up-overlay .card .level-number {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #facc15;
+    text-shadow: 0 0 30px rgba(250, 204, 21, 0.3);
+}
+
+.level-up-overlay .card .prize-amount {
+    font-size: 1.5rem;
+    color: #22c55e;
+    font-weight: bold;
+    margin: 8px 0;
+}
+
+.level-up-overlay .card .next-multiplier {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+}
+
+.level-up-overlay .card .button-group {
+    display: flex;
+    gap: 12px;
+}
+
+.level-up-overlay .card .button-group button {
+    flex: 1;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 40px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Courier New', 'Segoe UI', monospace;
+}
+
+.level-up-overlay .card .button-group .cashout-btn-overlay {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #ffffff;
+}
+
+.level-up-overlay .card .button-group .cashout-btn-overlay:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.4);
+}
+
+.level-up-overlay .card .button-group .continue-btn-overlay {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #ffffff;
+}
+
+.level-up-overlay .card .button-group .continue-btn-overlay:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
+}
+
+/* ----- BIG LOSS OVERLAY ----- */
+.big-loss-overlay .card {
+    background: linear-gradient(145deg, #2a1a1a, #1a0a0a);
+    border: 2px solid #ef4444;
+    box-shadow: 0 30px 80px rgba(239, 68, 68, 0.2);
+}
+
+.big-loss-overlay .card .emoji {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.big-loss-overlay .card h2 {
+    font-size: 2rem;
+    color: #ef4444;
+    margin-bottom: 6px;
+}
+
+.big-loss-overlay .card .lost-amount {
+    font-size: 1.8rem;
+    color: #ef4444;
+    font-weight: bold;
+    margin: 8px 0;
+}
+
+.big-loss-overlay .card .lost-details {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+}
+
+.big-loss-overlay .card button {
+    padding: 14px 40px;
+    border: none;
+    border-radius: 40px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Courier New', 'Segoe UI', monospace;
+    background: #334155;
+    color: #ffffff;
+}
+
+.big-loss-overlay .card button:hover {
+    background: #475569;
+}
+
+/* ----- RESPONSIVE ----- */
+@media (max-width: 750px) {
+    .checkpoint {
+        min-width: 30px;
+        padding: 4px 2px;
+    }
+
+    .checkpoint-multiplier {
+        font-size: 0.7rem;
+    }
+
+    .checkpoint-label {
+        font-size: 0.4rem;
+    }
+
+    .progressive-level-display {
+        font-size: 1.5rem;
+    }
+
+    .progressive-controls {
+        flex-direction: column;
+    }
+
+    .level-up-overlay .card .button-group {
+        flex-direction: column;
+    }
+
+    .level-up-overlay .card {
+        padding: 25px;
+    }
+
+    .big-loss-overlay .card {
+        padding: 25px;
+    }
+
+    .progressive-header {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .progressive-status {
+        align-self: center;
+    }
+
+    .checkpoints-container {
+        gap: 4px;
+    }
+
+    .checkpoint {
+        min-width: 25px;
+    }
+}
+
+@media (max-width: 480px) {
+    .progressive-level-display {
+        font-size: 1.2rem;
+    }
+
+    .progressive-pot {
+        font-size: 0.9rem;
+    }
+
+    .checkpoint-multiplier {
+        font-size: 0.6rem;
+    }
+
+    .checkpoint-prize {
+        font-size: 0.5rem;
+    }
+}
