@@ -1,5 +1,5 @@
 // ============================================================
-//  UI.JS - UI Updates & Helpers (RESTORED)
+//  UI.JS - UI Updates & Helpers
 // ============================================================
 
 // ----- DOM REFERENCE -----
@@ -108,7 +108,11 @@ function updateUI() {
         if (DOM.betInput) DOM.betInput.max = currentUserData.balance;
     }
     
-    if (DOM.userIdDisplay) DOM.userIdDisplay.innerText = currentUserData.id || currentUserData._id;
+    // ✅ Update user ID display
+    if (DOM.userIdDisplay) DOM.userIdDisplay.innerText = currentUserData.id || currentUserData._id || '-';
+    
+    // ✅ Update username display
+    if (DOM.currentUserDisplay) DOM.currentUserDisplay.innerText = currentUserData.username || 'Player';
 }
 
 // ============================================================
@@ -116,6 +120,7 @@ function updateUI() {
 // ============================================================
 
 function showNotification(msg, duration = 3000) {
+    // Remove existing notifications
     const existing = document.querySelectorAll('.notification');
     existing.forEach(el => el.remove());
     
@@ -183,6 +188,7 @@ function showAuthUI() {
     if (DOM.currentUserDisplay) DOM.currentUserDisplay.innerText = currentUser.username;
     if (DOM.userIdDisplay) DOM.userIdDisplay.innerText = currentUser.id;
     
+    // Show admin badge if user is admin (just visual, no panel)
     if (DOM.adminBadge) {
         DOM.adminBadge.style.display = isAdmin ? 'inline-block' : 'none';
     }
@@ -200,6 +206,7 @@ function hideAuthUI() {
 // ============================================================
 
 function showWinCelebration(amount) {
+    // Flash effect
     const flash = document.createElement('div');
     flash.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle,rgba(250,204,21,0.3) 0%,rgba(168,85,247,0.1) 100%);animation:flashAnim 0.5s ease-out;pointer-events:none;z-index:99998;';
     const style = document.createElement('style');
@@ -208,6 +215,7 @@ function showWinCelebration(amount) {
     document.body.appendChild(flash);
     setTimeout(() => { flash.remove(); style.remove(); }, 500);
     
+    // Glow effect on coin area
     if (DOM.coinArea) {
         DOM.coinArea.classList.add('win-glow');
         setTimeout(() => DOM.coinArea.classList.remove('win-glow'), 800);
@@ -235,6 +243,7 @@ function copyToClipboard(elementId) {
     navigator.clipboard.writeText(text)
         .then(() => showNotification(`📋 Copied: ${text.substring(0, 20)}...`))
         .catch(() => {
+            // Fallback
             const el = document.getElementById(elementId);
             if (el) {
                 const range = document.createRange();
@@ -247,13 +256,36 @@ function copyToClipboard(elementId) {
         });
 }
 
+// ============================================================
+//  ✅ COPY USER ID - NEW FUNCTION
+// ============================================================
+
 function copyUserId() {
-    const userId = DOM.userIdDisplay?.innerText;
-    if (userId && userId !== '-') {
-        navigator.clipboard.writeText(userId)
-            .then(() => showNotification(`📋 User ID copied: ${userId}`))
-            .catch(() => showNotification(`📋 User ID: ${userId}`));
+    const userIdEl = document.getElementById('userIdDisplay');
+    if (!userIdEl) {
+        showNotification('❌ No user ID to copy');
+        return;
     }
+    
+    const userId = userIdEl.innerText;
+    if (!userId || userId === '-') {
+        showNotification('❌ No user ID to copy');
+        return;
+    }
+    
+    navigator.clipboard.writeText(userId)
+        .then(() => {
+            showNotification(`📋 User ID copied: ${userId}`);
+        })
+        .catch(() => {
+            // Fallback for older browsers
+            const range = document.createRange();
+            range.selectNode(userIdEl);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            document.execCommand('copy');
+            showNotification(`📋 User ID copied: ${userId}`);
+        });
 }
 
 // ============================================================
