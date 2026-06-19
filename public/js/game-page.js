@@ -1,5 +1,5 @@
 // ============================================================
-//  GAME-PAGE.JS - Game Page Specific Logic (FIXED - Balance Sync)
+//  GAME-PAGE.JS - Game Page Specific Logic (FIXED - Force Enable)
 // ============================================================
 
 // ============================================================
@@ -42,28 +42,26 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             if (freshData && freshData.balance !== undefined) {
                 console.log(`💰 Balance from server: $${freshData.balance.toFixed(2)}`);
-                // Update user data with fresh balance
                 currentUserData = freshData;
                 user.balance = freshData.balance;
                 localStorage.setItem('userData', JSON.stringify(user));
                 window.currentUserData = freshData;
             }
         } catch (fetchError) {
-            console.warn('⚠️ Could not fetch fresh user data, using cached data:', fetchError);
+            console.warn('⚠️ Could not fetch fresh user data:', fetchError);
         }
 
         // ✅ Force enable the game
         enableGameFully();
 
+        // ✅ Start force enable interval (keeps buttons enabled)
+        startForceEnableInterval();
+
         // ✅ Force update UI
         if (typeof updateUI === 'function') {
             updateUI();
         } else {
-            // Direct UI update if function not available
-            const balanceEl = document.getElementById('balance');
-            if (balanceEl && currentUserData) {
-                balanceEl.innerText = currentUserData.balance.toFixed(2);
-            }
+            updateUIDirect();
         }
         
         if (typeof renderCheckpoints === 'function') {
@@ -112,9 +110,10 @@ function enableGameFully() {
     // ✅ Enable bet input
     if (elements.betInput) {
         elements.betInput.disabled = false;
+        elements.betInput.removeAttribute('disabled');
         elements.betInput.style.opacity = '1';
         elements.betInput.style.cursor = 'text';
-        // Set max to balance or a high number
+        elements.betInput.style.pointerEvents = 'auto';
         if (currentUserData && currentUserData.balance > 0) {
             elements.betInput.max = currentUserData.balance;
         } else {
@@ -125,21 +124,24 @@ function enableGameFully() {
         }
     }
     
-    // ✅ Enable all buttons
-    const buttons = ['headsBtn', 'tailsBtn', 'flipBtn', 'halfBtn', 'doubleBtn', 'maxBtn', 'depositBtn', 'withdrawBtn', 'toggleProgressive'];
-    buttons.forEach(id => {
+    // ✅ Enable ALL buttons - using multiple methods to ensure it works
+    const buttonIds = ['headsBtn', 'tailsBtn', 'flipBtn', 'halfBtn', 'doubleBtn', 'maxBtn', 'depositBtn', 'withdrawBtn', 'toggleProgressive'];
+    buttonIds.forEach(id => {
         const el = elements[id];
         if (el) {
             el.disabled = false;
+            el.removeAttribute('disabled');
             el.style.opacity = '1';
             el.style.cursor = 'pointer';
+            el.style.pointerEvents = 'auto';
         }
     });
     
-    // ✅ Cashout button - enabled when progressive is active
+    // ✅ Cashout button
     if (elements.cashoutProgressive) {
         if (progressiveActive && progressiveLevel > 0) {
             elements.cashoutProgressive.disabled = false;
+            elements.cashoutProgressive.removeAttribute('disabled');
             elements.cashoutProgressive.style.opacity = '1';
         } else {
             elements.cashoutProgressive.disabled = true;
@@ -159,12 +161,95 @@ function enableGameFully() {
     };
 
     // ✅ Also update balance display
+    updateUIDirect();
+
+    console.log('✅ Game fully enabled!');
+}
+
+// ============================================================
+//  ✅ START FORCE ENABLE INTERVAL
+// ============================================================
+
+let forceEnableInterval = null;
+
+function startForceEnableInterval() {
+    // Clear any existing interval
+    if (forceEnableInterval) {
+        clearInterval(forceEnableInterval);
+    }
+    
+    // Run every 500ms to keep buttons enabled
+    forceEnableInterval = setInterval(() => {
+        // Only run if we're on the game page
+        if (window.location.pathname === '/game') {
+            // Re-enable all buttons
+            const buttonIds = ['headsBtn', 'tailsBtn', 'flipBtn', 'halfBtn', 'doubleBtn', 'maxBtn', 'depositBtn', 'withdrawBtn', 'toggleProgressive'];
+            buttonIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && el.disabled === true) {
+                    el.disabled = false;
+                    el.removeAttribute('disabled');
+                    el.style.opacity = '1';
+                    el.style.cursor = 'pointer';
+                    el.style.pointerEvents = 'auto';
+                }
+            });
+            
+            // Re-enable bet input
+            const betInput = document.getElementById('betAmount');
+            if (betInput && betInput.disabled === true) {
+                betInput.disabled = false;
+                betInput.removeAttribute('disabled');
+                betInput.style.opacity = '1';
+                betInput.style.cursor = 'text';
+                betInput.style.pointerEvents = 'auto';
+            }
+        }
+    }, 500);
+}
+
+// ============================================================
+//  ✅ UPDATE UI DIRECTLY
+// ============================================================
+
+function updateUIDirect() {
     const balanceEl = document.getElementById('balance');
     if (balanceEl && currentUserData) {
         balanceEl.innerText = currentUserData.balance.toFixed(2);
     }
-
-    console.log('✅ Game fully enabled!');
+    
+    const winsEl = document.getElementById('winsCount');
+    if (winsEl && currentUserData) {
+        winsEl.innerText = currentUserData.wins || 0;
+    }
+    
+    const lossesEl = document.getElementById('lossesCount');
+    if (lossesEl && currentUserData) {
+        lossesEl.innerText = currentUserData.losses || 0;
+    }
+    
+    const streakEl = document.getElementById('currentStreak');
+    if (streakEl && currentUserData) {
+        streakEl.innerText = currentUserData.currentStreak || 0;
+    }
+    
+    const totalWageredEl = document.getElementById('totalWagered');
+    if (totalWageredEl && currentUserData) {
+        totalWageredEl.innerText = (currentUserData.totalWagered || 0).toFixed(2);
+    }
+    
+    const bestStreakEl = document.getElementById('bestStreak');
+    if (bestStreakEl && currentUserData) {
+        bestStreakEl.innerText = currentUserData.bestStreak || 0;
+    }
+    
+    // Calculate win rate
+    const total = (currentUserData.wins || 0) + (currentUserData.losses || 0);
+    const winRate = total > 0 ? Math.round(((currentUserData.wins || 0) / total) * 100) : 0;
+    const winRateEl = document.getElementById('winRate');
+    if (winRateEl) {
+        winRateEl.innerText = winRate + '%';
+    }
 }
 
 // ============================================================
@@ -175,6 +260,10 @@ const logoutBtn = document.getElementById('gameLogoutBtn');
 if (logoutBtn) {
     logoutBtn.addEventListener('click', function() {
         if (confirm('Are you sure you want to logout?')) {
+            if (forceEnableInterval) {
+                clearInterval(forceEnableInterval);
+                forceEnableInterval = null;
+            }
             localStorage.removeItem('authToken');
             localStorage.removeItem('userData');
             sessionStorage.removeItem('authToken');
@@ -184,7 +273,7 @@ if (logoutBtn) {
 }
 
 // ============================================================
-//  ✅ COMPLETELY OVERRIDE checkSession
+//  ✅ OVERRIDE FUNCTIONS
 // ============================================================
 
 window.checkSession = function() {
@@ -200,15 +289,12 @@ window.hideAuthUI = function() {
     console.log('🔒 hideAuthUI suppressed on game page');
 };
 
-// ============================================================
-//  ✅ OVERRIDE app.js initialization
-// ============================================================
-
 if (window.initApp) {
     const originalInitApp = window.initApp;
     window.initApp = function() {
         console.log('🔒 App init overridden on game page');
         enableGameFully();
+        startForceEnableInterval();
         return Promise.resolve();
     };
 }
