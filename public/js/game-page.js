@@ -1,5 +1,5 @@
 // ============================================================
-//  GAME-PAGE.JS - CLEAN & SIMPLE FIX
+//  GAME-PAGE.JS - ULTIMATE FORCE (Inline Styles)
 // ============================================================
 
 // ============================================================
@@ -51,13 +51,13 @@ document.addEventListener('DOMContentLoaded', async function() {
             console.warn('⚠️ Could not fetch fresh user data:', fetchError);
         }
 
-        // ✅ DIRECT ENABLE - Simple and works
-        enableAllControls();
+        // ✅ ULTIMATE FORCE - Inline styles + remove all barriers
+        ultimateForceEnable();
 
         // ✅ Update UI
         updateAllUI();
 
-        // ✅ Start keep-alive interval
+        // ✅ Start keep-alive
         startKeepAlive();
 
         // Show admin badge if admin
@@ -70,17 +70,21 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.log(`💰 Current balance: $${(currentUserData.balance || 0).toFixed(2)}`);
         console.log('🎮 Game enabled successfully');
 
+        // ✅ Extra force after 1 second
+        setTimeout(ultimateForceEnable, 1000);
+        setTimeout(ultimateForceEnable, 3000);
+
     } catch (e) {
         console.error('❌ Error loading game:', e);
     }
 });
 
 // ============================================================
-//  ✅ ENABLE ALL CONTROLS - SIMPLE & DIRECT
+//  ✅ ULTIMATE FORCE ENABLE - INLINE STYLES
 // ============================================================
 
-function enableAllControls() {
-    console.log('🔓 Enabling all controls...');
+function ultimateForceEnable() {
+    console.log('🔓 ULTIMATE FORCE enabling all controls...');
     
     // All button IDs
     const allIds = [
@@ -100,13 +104,22 @@ function enableAllControls() {
     allIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            // Remove all disabled attributes
+            // ✅ REMOVE ALL ATTRIBUTES that could block clicks
             el.disabled = false;
             el.removeAttribute('disabled');
-            // Force styles
-            el.style.opacity = '1';
-            el.style.pointerEvents = 'auto';
-            el.style.cursor = 'pointer';
+            el.removeAttribute('aria-disabled');
+            el.removeAttribute('inert');
+            
+            // ✅ FORCE INLINE STYLES (highest priority)
+            el.style.setProperty('opacity', '1', 'important');
+            el.style.setProperty('pointer-events', 'auto', 'important');
+            el.style.setProperty('cursor', 'pointer', 'important');
+            el.style.setProperty('display', 'block', 'important');
+            el.style.setProperty('visibility', 'visible', 'important');
+            el.style.setProperty('user-select', 'none', 'important');
+            
+            // ✅ Remove any class that might be disabling
+            el.classList.remove('disabled', 'inactive', 'dimmed', 'locked');
         }
     });
     
@@ -115,9 +128,13 @@ function enableAllControls() {
     if (betInput) {
         betInput.disabled = false;
         betInput.removeAttribute('disabled');
-        betInput.style.opacity = '1';
-        betInput.style.pointerEvents = 'auto';
-        betInput.style.cursor = 'text';
+        betInput.style.setProperty('opacity', '1', 'important');
+        betInput.style.setProperty('pointer-events', 'auto', 'important');
+        betInput.style.setProperty('cursor', 'text', 'important');
+        betInput.style.setProperty('display', 'block', 'important');
+        betInput.style.setProperty('visibility', 'visible', 'important');
+        betInput.classList.remove('disabled', 'inactive', 'dimmed', 'locked');
+        
         if (currentUserData && currentUserData.balance > 0) {
             betInput.max = currentUserData.balance;
             if (parseFloat(betInput.value) <= 0) {
@@ -126,6 +143,12 @@ function enableAllControls() {
         }
     }
     
+    // ✅ Fix parent containers that might have pointer-events: none
+    const containers = document.querySelectorAll('.game-container, .bet-panel, .choice-buttons, .action-buttons, .banking-panel');
+    containers.forEach(container => {
+        container.style.setProperty('pointer-events', 'auto', 'important');
+    });
+    
     // Result text
     const result = document.getElementById('result');
     if (result) {
@@ -133,7 +156,7 @@ function enableAllControls() {
         result.style.color = '#e2e8f0';
     }
     
-    console.log('✅ All controls enabled');
+    console.log('✅ ULTIMATE FORCE complete');
 }
 
 // ============================================================
@@ -196,20 +219,23 @@ function startKeepAlive() {
     }
     
     keepAliveInterval = setInterval(() => {
-        // Check if any controls are disabled
+        // Check if any controls are disabled or have pointer-events: none
         const checkIds = ['headsBtn', 'tailsBtn', 'flipBtn', 'halfBtn', 'doubleBtn', 'maxBtn', 'depositBtn', 'withdrawBtn'];
         let needsEnable = false;
         
         checkIds.forEach(id => {
             const el = document.getElementById(id);
-            if (el && el.disabled === true) {
-                needsEnable = true;
+            if (el) {
+                const style = window.getComputedStyle(el);
+                if (el.disabled === true || style.pointerEvents === 'none' || style.opacity === '0.5') {
+                    needsEnable = true;
+                }
             }
         });
         
         if (needsEnable) {
             console.log('🔓 Keep-alive: re-enabling controls');
-            enableAllControls();
+            ultimateForceEnable();
         }
     }, 1000);
 }
@@ -235,17 +261,15 @@ if (logoutBtn) {
 }
 
 // ============================================================
-//  ✅ OVERRIDE setGameEnabled - SIMPLE
+//  ✅ OVERRIDE FUNCTIONS
 // ============================================================
 
-// Just override the function directly
 window.setGameEnabled = function(enabled) {
-    console.log(`🔒 setGameEnabled called with ${enabled} - IGNORING, forcing enabled`);
-    enableAllControls();
+    console.log(`🔒 setGameEnabled called - FORCING ENABLED`);
+    ultimateForceEnable();
     return true;
 };
 
-// Also override checkSession
 window.checkSession = function() {
     console.log('🔒 Session check overridden');
     return Promise.resolve(true);
@@ -259,12 +283,11 @@ window.hideAuthUI = function() {
     console.log('🔒 hideAuthUI suppressed');
 };
 
-// Override app.js init
 if (window.initApp) {
     const originalInitApp = window.initApp;
     window.initApp = function() {
         console.log('🔒 App init overridden');
-        enableAllControls();
+        ultimateForceEnable();
         startKeepAlive();
         return Promise.resolve();
     };
