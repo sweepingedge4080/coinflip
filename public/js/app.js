@@ -1,5 +1,5 @@
 // ============================================================
-//  APP.JS - Main Application Entry Point
+//  APP.JS - Main Application Entry Point (FIXED - No Auto-Disable)
 // ============================================================
 
 // ============================================================
@@ -35,7 +35,6 @@ async function initApp() {
         setupModalListeners();
         setupProgressiveListeners();
         setupGameListeners();
-        // ❌ setupAdminListeners() REMOVED - No in-game admin controls
         log('✅ Event listeners setup complete');
         
         // ----- STEP 3: Apply mobile detection -----
@@ -51,7 +50,6 @@ async function initApp() {
         log('✅ Initial UI rendered');
         
         // ----- STEP 6: Log startup info -----
-       
         log(`📈 Progressive Multipliers: ${PROGRESSIVE_MULTIPLIERS.join('x, ')}x`);
         log(`🏆 Max Level: ${PROGRESSIVE_MULTIPLIERS.length} (${PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length-1]}x)`);
         
@@ -60,6 +58,9 @@ async function initApp() {
         
         log('🚀 CoinFlip Casino is ready!');
         log(`👤 ${sessionRestored ? 'Session restored' : 'Not logged in'}`);
+        
+        // ✅ FIXED: Don't call setGameEnabled here - let game-page.js handle it
+        // The game page will enable controls after session validation
         
         // Optional: Show welcome notification if logged in
         if (sessionRestored && currentUser) {
@@ -84,7 +85,6 @@ async function initApp() {
 
 function setupKeyboardShortcuts() {
     document.addEventListener('keydown', function(e) {
-        // Only trigger if not typing in an input field
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         
         switch (e.key) {
@@ -158,7 +158,6 @@ function showAppInfo() {
         console.log(`   Balance:    $${status.balance.toFixed(2)}`);
         console.log(`   Admin:      ${status.isAdmin ? '✅ Yes' : '❌ No'}`);
     }
-    console.log(`   Win Chance: ${(WIN_CHANCE * 100).toFixed(1)}%`);
     console.log('========================================');
 }
 
@@ -184,7 +183,6 @@ async function startApp() {
     await domReady();
     await initApp();
     
-    // Expose helpful globals for debugging
     window.__app = {
         state: AppState,
         status: getAppStatus,
@@ -201,13 +199,11 @@ async function startApp() {
 }
 
 // ============================================================
-//  START - Auto-start when DOM is ready
+//  START
 // ============================================================
 
-// Auto-start when DOM is ready
 startApp();
 
-// Also handle if DOM is already loaded
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
     // Already loaded, but startApp handles this via domReady()
 }
@@ -222,4 +218,4 @@ window.startApp = startApp;
 window.getAppStatus = getAppStatus;
 window.showAppInfo = showAppInfo;
 window.setupKeyboardShortcuts = setupKeyboardShortcuts;
-window.__app = null; // Will be set after start
+window.__app = null;
