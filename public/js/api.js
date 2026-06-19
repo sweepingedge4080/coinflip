@@ -52,20 +52,15 @@ async function apiCall(endpoint, method = 'GET', data = null) {
         }
     }
     
-    // Build full URL
+    // ✅ FIX: Build full URL correctly
     const baseUrl = API_BASE || '';
-    const fullUrl = `${baseUrl}/api${endpoint}`;
+    // Ensure endpoint starts with /
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : '/' + endpoint;
+    const fullUrl = baseUrl + '/api' + cleanEndpoint;
     
-    // Validate URL is safe
-    try {
-        new URL(fullUrl);
-    } catch (e) {
-        throw new Error(`Invalid URL: ${fullUrl}`);
-    }
+    log(`📡 API Call: ${method} ${fullUrl}`);
     
     try {
-        log(`📡 API Call: ${method} ${endpoint}`);
-        
         const response = await fetch(fullUrl, options);
         
         // Parse response
@@ -76,7 +71,8 @@ async function apiCall(endpoint, method = 'GET', data = null) {
         } else {
             // Handle non-JSON responses
             const text = await response.text();
-            throw new Error(`Unexpected response format: ${text.substring(0, 100)}`);
+            logWarning(`Non-JSON response: ${text.substring(0, 100)}`);
+            throw new Error(`Unexpected response format`);
         }
         
         // Check response status
