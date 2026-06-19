@@ -1,5 +1,5 @@
 // ============================================================
-//  server.js - Production Ready with Security Fixes
+//  server.js - UPDATED with multi-page routing
 // ============================================================
 
 require('dotenv').config();
@@ -11,58 +11,51 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
+const path = require('path');
 
 const app = express();
-
-// ✅ FIX 1: Trust proxy (Render's load balancer)
 app.set('trust proxy', 1);
-
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 // ============================================================
 //  SECURITY MIDDLEWARE
 // ============================================================
 
-// Helmet - Secure HTTP headers
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            imgSrc: ["'self'", "https://api.qrserver.com"],
+            imgSrc: ["'self'", "https://api.qrserver.com", "data:"],
             scriptSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
+            connectSrc: ["'self'"],
         },
     },
 }));
 
-// CORS - Only allow specific domains
 app.use(cors({
     origin: process.env.FRONTEND_URL 
-        ? [process.env.FRONTEND_URL, 'http://localhost:5000'] 
-        : ['http://localhost:5000', 'https://your-app.onrender.com'],
+        ? [process.env.FRONTEND_URL, 'http://localhost:3000'] 
+        : ['http://localhost:3000', 'https://your-app.onrender.com'],
     credentials: true
 }));
 
-// ✅ FIX 2: Rate Limiting with proxy trust
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
+    windowMs: 15 * 60 * 1000,
     max: 100,
     message: { error: 'Too many requests, please try again later.' },
     standardHeaders: true,
     legacyHeaders: false,
-    // ✅ Disable validation checks that cause errors
     validate: {
         xForwardedForHeader: false,
         trustProxy: false
     }
 });
 
-// Apply rate limiting to auth and game routes
 app.use('/api/auth', limiter);
 app.use('/api/game', limiter);
 app.use('/api/deposit', limiter);
 
-// General rate limit
 const generalLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
     max: 1000,
@@ -78,8 +71,38 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.static('public'));
 
 // ============================================================
+//  ✅ NEW: Serve HTML Pages (with route handling)
+// ============================================================
+
+// Landing page (root)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'landing.html'));
+});
+
+// Loading page
+app.get('/loading', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'loading.html'));
+});
+
+// Auth page
+app.get('/auth', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'auth.html'));
+});
+
+// Game page (protected - will check token later)
+app.get('/game', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'game.html'));
+});
+
+// Admin page (unchanged)
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// ============================================================
 //  MONGODB CONNECTION
 // ============================================================
+
 const MONGO_URI = process.env.MONGODB_URI;
 if (!MONGO_URI) {
     console.error('❌ CRITICAL ERROR: MONGODB_URI is not set!');
@@ -149,7 +172,7 @@ function getNextLevelData(level) {
 }
 
 function getMaxBet(level) {
-    return 999999; // No practical limit
+    return 999999;
 }
 
 function getWinBonus(level) {
@@ -164,6 +187,7 @@ function getXPToNext(level) {
 // ============================================================
 //  AUTH MIDDLEWARE
 // ============================================================
+
 const auth = (req, res, next) => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
     if (!token) {
@@ -179,7 +203,6 @@ const auth = (req, res, next) => {
     }
 };
 
-// Admin middleware
 const isAdmin = async (req, res, next) => {
     try {
         const user = await User.findById(req.userId);
@@ -319,7 +342,7 @@ app.get('/api/auth/me', auth, async (req, res) => {
 });
 
 // ============================================================
-//  GAME ROUTES (Including add-progressive)
+//  GAME ROUTES
 // ============================================================
 
 app.get('/api/game/stats', auth, async (req, res) => {
@@ -350,7 +373,6 @@ app.get('/api/game/stats', auth, async (req, res) => {
     }
 });
 
-// ✅ Flip coin route
 app.post('/api/game/flip', [
     auth,
     body('betAmount').isFloat({ min: 0.01 }),
@@ -456,7 +478,6 @@ app.post('/api/game/flip', [
     }
 });
 
-// ✅ FIX 3: ADD PROGRESSIVE CASHOUT ROUTE (Directly in server.js)
 app.post('/api/game/add-progressive', auth, async (req, res) => {
     try {
         const { amount, streak } = req.body;
@@ -470,7 +491,6 @@ app.post('/api/game/add-progressive', auth, async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
         
-        // Add the progressive winnings to user balance
         user.balance += amount;
         await user.save();
         
@@ -832,6 +852,7 @@ app.post('/api/admin/remove-funds', auth, isAdmin, async (req, res) => {
 // ============================================================
 //  HEALTH CHECK
 // ============================================================
+
 app.get('/api/health', (req, res) => {
     const dbState = mongoose.connection.readyState;
     const states = {
@@ -850,6 +871,7 @@ app.get('/api/health', (req, res) => {
 // ============================================================
 //  ERROR HANDLING
 // ============================================================
+
 app.use((err, req, res, next) => {
     console.error('❌ Unhandled error:', err);
     res.status(500).json({ error: 'Something went wrong' });
@@ -858,15 +880,22 @@ app.use((err, req, res, next) => {
 // ============================================================
 //  START SERVER
 // ============================================================
+
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📡 Health check: http://localhost:${PORT}/api/health`);
+    console.log('📍 Pages:');
+    console.log(`   🏠 Landing: http://localhost:${PORT}/`);
+    console.log(`   ⏳ Loading: http://localhost:${PORT}/loading`);
+    console.log(`   🔐 Auth:    http://localhost:${PORT}/auth`);
+    console.log(`   🎰 Game:    http://localhost:${PORT}/game`);
+    console.log(`   👑 Admin:   http://localhost:${PORT}/admin`);
     console.log('🔗 Secure endpoints enabled:');
     console.log('   ✅ Helmet.js - Security headers');
     console.log('   ✅ Rate Limiting - Brute force protection');
     console.log('   ✅ Input Validation - All user inputs sanitized');
     console.log('   ✅ CORS - Domain restricted');
     console.log('   ✅ JWT - Environment secret');
-    console.log('   ✅ NO MAX BET LIMITS - Players can bet up to their balance');
+    console.log('   ✅ NO MAX BET LIMITS');
     console.log('   ✅ PROXY TRUST ENABLED - Render load balancer support');
 });
