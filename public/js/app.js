@@ -51,7 +51,7 @@ async function initApp() {
         log('✅ Initial UI rendered');
         
         // ----- STEP 6: Log startup info -----
-        log(`📊 Win Chance: ${(WIN_CHANCE * 100).toFixed(1)}% (11% house edge)`);
+       
         log(`📈 Progressive Multipliers: ${PROGRESSIVE_MULTIPLIERS.join('x, ')}x`);
         log(`🏆 Max Level: ${PROGRESSIVE_MULTIPLIERS.length} (${PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length-1]}x)`);
         
