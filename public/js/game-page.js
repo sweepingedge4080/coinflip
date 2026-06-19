@@ -1,5 +1,5 @@
 // ============================================================
-//  GAME-PAGE.JS - Game Page Specific Logic (FIXED - Force Enable)
+//  GAME-PAGE.JS - Game Page Specific Logic (FIXED)
 // ============================================================
 
 // ============================================================
@@ -124,7 +124,7 @@ function enableGameFully() {
         }
     }
     
-    // ✅ Enable ALL buttons - using multiple methods to ensure it works
+    // ✅ Enable ALL buttons
     const buttonIds = ['headsBtn', 'tailsBtn', 'flipBtn', 'halfBtn', 'doubleBtn', 'maxBtn', 'depositBtn', 'withdrawBtn', 'toggleProgressive'];
     buttonIds.forEach(id => {
         const el = elements[id];
@@ -173,16 +173,12 @@ function enableGameFully() {
 let forceEnableInterval = null;
 
 function startForceEnableInterval() {
-    // Clear any existing interval
     if (forceEnableInterval) {
         clearInterval(forceEnableInterval);
     }
     
-    // Run every 500ms to keep buttons enabled
     forceEnableInterval = setInterval(() => {
-        // Only run if we're on the game page
         if (window.location.pathname === '/game') {
-            // Re-enable all buttons
             const buttonIds = ['headsBtn', 'tailsBtn', 'flipBtn', 'halfBtn', 'doubleBtn', 'maxBtn', 'depositBtn', 'withdrawBtn', 'toggleProgressive'];
             buttonIds.forEach(id => {
                 const el = document.getElementById(id);
@@ -195,7 +191,6 @@ function startForceEnableInterval() {
                 }
             });
             
-            // Re-enable bet input
             const betInput = document.getElementById('betAmount');
             if (betInput && betInput.disabled === true) {
                 betInput.disabled = false;
@@ -209,46 +204,64 @@ function startForceEnableInterval() {
 }
 
 // ============================================================
-//  ✅ UPDATE UI DIRECTLY
+//  ✅ UPDATE UI DIRECTLY - FIXED (No null errors)
 // ============================================================
 
 function updateUIDirect() {
+    // Only proceed if we have user data
+    if (!currentUserData) {
+        console.warn('⚠️ No user data available for UI update');
+        return;
+    }
+    
+    // Balance
     const balanceEl = document.getElementById('balance');
-    if (balanceEl && currentUserData) {
+    if (balanceEl) {
         balanceEl.innerText = currentUserData.balance.toFixed(2);
     }
     
+    // Wins
     const winsEl = document.getElementById('winsCount');
-    if (winsEl && currentUserData) {
+    if (winsEl) {
         winsEl.innerText = currentUserData.wins || 0;
     }
     
+    // Losses
     const lossesEl = document.getElementById('lossesCount');
-    if (lossesEl && currentUserData) {
+    if (lossesEl) {
         lossesEl.innerText = currentUserData.losses || 0;
     }
     
+    // Streak
     const streakEl = document.getElementById('currentStreak');
-    if (streakEl && currentUserData) {
+    if (streakEl) {
         streakEl.innerText = currentUserData.currentStreak || 0;
     }
     
+    // Total Wagered
     const totalWageredEl = document.getElementById('totalWagered');
-    if (totalWageredEl && currentUserData) {
+    if (totalWageredEl) {
         totalWageredEl.innerText = (currentUserData.totalWagered || 0).toFixed(2);
     }
     
+    // Best Streak
     const bestStreakEl = document.getElementById('bestStreak');
-    if (bestStreakEl && currentUserData) {
+    if (bestStreakEl) {
         bestStreakEl.innerText = currentUserData.bestStreak || 0;
     }
     
-    // Calculate win rate
+    // Win Rate
     const total = (currentUserData.wins || 0) + (currentUserData.losses || 0);
     const winRate = total > 0 ? Math.round(((currentUserData.wins || 0) / total) * 100) : 0;
     const winRateEl = document.getElementById('winRate');
     if (winRateEl) {
         winRateEl.innerText = winRate + '%';
+    }
+    
+    // User ID
+    const userIdDisplay = document.getElementById('userIdDisplay');
+    if (userIdDisplay) {
+        userIdDisplay.innerText = currentUserData.id || currentUserData._id || '-';
     }
 }
 
