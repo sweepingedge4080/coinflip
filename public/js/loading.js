@@ -110,7 +110,7 @@ function updateTip(index) {
 }
 
 // ============================================================
-//  COMPLETE LOADING - REDIRECT TO AUTH
+//  COMPLETE LOADING - REDIRECT TO LOGIN
 // ============================================================
 
 function completeLoading() {
@@ -124,7 +124,8 @@ function completeLoading() {
         document.body.style.opacity = '0';
 
         setTimeout(() => {
-            window.location.href = '/auth';
+            // ✅ FIXED: Redirect to /login (not /auth)
+            window.location.href = '/login';
         }, 600);
     }, 600);
 }
@@ -135,7 +136,6 @@ function completeLoading() {
 
 document.addEventListener('visibilitychange', function() {
     if (document.hidden) {
-        // Pause or adjust if needed
         console.log('⏸️ Loading page paused (tab hidden)');
     } else {
         console.log('▶️ Loading page resumed');
@@ -147,7 +147,6 @@ document.addEventListener('visibilitychange', function() {
 // ============================================================
 
 window.addEventListener('beforeunload', function(e) {
-    // Allow navigation, just log it
     console.log('⏳ Navigating away from loading page');
 });
 
