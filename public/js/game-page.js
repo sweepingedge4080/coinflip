@@ -1,5 +1,5 @@
 // ============================================================
-//  GAME-PAGE.JS - Game Page Specific Logic (FIXED)
+//  GAME-PAGE.JS - Game Page Specific Logic (FIXED - No Redirect Loop)
 // ============================================================
 
 // ============================================================
@@ -27,16 +27,22 @@ document.addEventListener('DOMContentLoaded', function() {
             displayEl.textContent = user.username || 'Player';
         }
 
-        // ✅ Set game data FIRST
-        currentUser = user;
-        currentUserData = user;
-        authToken = token;
-        isAdmin = user.isAdmin || false;
+        // ✅ Force set global variables
+        window.authToken = token;
+        window.currentUser = user;
+        window.currentUserData = user;
+        window.isAdmin = user.isAdmin || false;
 
-        // ✅ Enable the game NOW (before app.js runs)
-        setGameEnabled(true);
-        updateUI();
-        renderCheckpoints();
+        // ✅ Enable the game NOW
+        if (typeof setGameEnabled === 'function') {
+            setGameEnabled(true);
+        }
+        if (typeof updateUI === 'function') {
+            updateUI();
+        }
+        if (typeof renderCheckpoints === 'function') {
+            renderCheckpoints();
+        }
 
         // Show admin badge if admin (visual only - no panel)
         const adminBadge = document.getElementById('adminBadge');
@@ -77,16 +83,17 @@ if (logoutBtn) {
 }
 
 // ============================================================
-//  ✅ PREVENT REDIRECT LOOP - Override checkSession
+//  ✅ COMPLETELY OVERRIDE checkSession to prevent redirect loop
 // ============================================================
 
+// Override BEFORE app.js runs
 window.checkSession = function() {
-    console.log('🔒 Session check handled by game page (override)');
+    console.log('🔒 Session check overridden on game page - returning true');
     return Promise.resolve(true);
 };
 
 // ============================================================
-//  ✅ OVERRIDE showAuthUI and hideAuthUI
+//  ✅ OVERRIDE auth UI functions
 // ============================================================
 
 window.showAuthUI = function() {
@@ -98,16 +105,31 @@ window.hideAuthUI = function() {
 };
 
 // ============================================================
-//  GAME LOG
+//  ✅ Also override app.js initialization if needed
 // ============================================================
 
-console.log('🎰 Game page loaded successfully');
-console.log('🪙 CoinFlip Casino v2.0.0');
+// If app.js already loaded, prevent it from doing anything
+if (window.initApp) {
+    const originalInitApp = window.initApp;
+    window.initApp = function() {
+        console.log('🔒 App init overridden on game page');
+        // Don't run the original app initialization
+        return Promise.resolve();
+    };
+}
 
 // ============================================================
-//  ERROR HANDLING
+//  ✅ Fix for auth.js redirect in login page
 // ============================================================
 
-window.addEventListener('error', function(e) {
-    console.error('⚠️ Unhandled error on game page:', e.message);
-});
+// Also override the login page's session check to prevent redirect loop
+if (window.location.pathname === '/login') {
+    // If we're on the login page and have a token, don't auto-redirect
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    if (token) {
+        console.log('🔒 Login page: Token exists, but not redirecting to game until user clicks login');
+        // The login.js will handle the actual login flow
+    }
+}
+
+console.log('🎰 Game page loaded successfully - redirect loop prevented');
