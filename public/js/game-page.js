@@ -1,5 +1,5 @@
 // ============================================================
-//  GAME-PAGE.JS - Game Page Specific Logic
+//  GAME-PAGE.JS - Game Page Specific Logic (FIXED)
 // ============================================================
 
 // ============================================================
@@ -27,24 +27,25 @@ document.addEventListener('DOMContentLoaded', function() {
             displayEl.textContent = user.username || 'Player';
         }
 
-        // Show admin panel if admin
-        if (user.isAdmin) {
-            const adminPanel = document.getElementById('adminPanel');
-            const adminBadge = document.getElementById('adminBadge');
-            if (adminPanel) adminPanel.style.display = 'block';
-            if (adminBadge) adminBadge.style.display = 'inline-block';
-            console.log('👑 Admin mode enabled');
-        }
+        // ✅ Set game data FIRST
+        currentUser = user;
+        currentUserData = user;
+        authToken = token;
+        isAdmin = user.isAdmin || false;
 
-        // ✅ Initialize the game after session is confirmed
-        // This ensures all game functions are properly loaded
-        if (typeof initGame === 'function') {
-            initGame();
-        } else {
-            console.warn('⚠️ initGame function not found, game may not load properly');
+        // ✅ Enable the game NOW (before app.js runs)
+        setGameEnabled(true);
+        updateUI();
+        renderCheckpoints();
+
+        // Show admin badge if admin (visual only - no panel)
+        const adminBadge = document.getElementById('adminBadge');
+        if (adminBadge) {
+            adminBadge.style.display = isAdmin ? 'inline-block' : 'none';
         }
 
         console.log(`✅ Welcome back, ${user.username}!`);
+        console.log('🎮 Game enabled successfully');
 
     } catch (e) {
         console.error('❌ Error parsing user data:', e);
@@ -79,55 +80,34 @@ if (logoutBtn) {
 //  ✅ PREVENT REDIRECT LOOP - Override checkSession
 // ============================================================
 
-// Override the checkSession function in auth.js to prevent redirect
-// This is a safe override since the game page handles its own session check
-if (typeof window.checkSession === 'function') {
-    const originalCheckSession = window.checkSession;
-    window.checkSession = function() {
-        // Do nothing - we already handle session in game-page.js
-        console.log('🔒 Session check handled by game page (override)');
-        return Promise.resolve(true);
-    };
-} else {
-    window.checkSession = function() {
-        console.log('🔒 Session check handled by game page');
-        return Promise.resolve(true);
-    };
-}
+window.checkSession = function() {
+    console.log('🔒 Session check handled by game page (override)');
+    return Promise.resolve(true);
+};
 
 // ============================================================
-//  ✅ PREVENT REDIRECT LOOP - Override showAuthUI and hideAuthUI
+//  ✅ OVERRIDE showAuthUI and hideAuthUI
 // ============================================================
 
-// Override auth UI functions to prevent any redirect attempts
-if (typeof window.showAuthUI === 'function') {
-    const originalShowAuthUI = window.showAuthUI;
-    window.showAuthUI = function() {
-        // Don't do anything - we're already on the game page
-        console.log('🔒 showAuthUI suppressed on game page');
-    };
-}
+window.showAuthUI = function() {
+    console.log('🔒 showAuthUI suppressed on game page');
+};
 
-if (typeof window.hideAuthUI === 'function') {
-    const originalHideAuthUI = window.hideAuthUI;
-    window.hideAuthUI = function() {
-        // Don't do anything - we're already on the game page
-        console.log('🔒 hideAuthUI suppressed on game page');
-    };
-}
+window.hideAuthUI = function() {
+    console.log('🔒 hideAuthUI suppressed on game page');
+};
 
 // ============================================================
-//  GAME LOG (Remove win chance log)
+//  GAME LOG
 // ============================================================
 
 console.log('🎰 Game page loaded successfully');
 console.log('🪙 CoinFlip Casino v2.0.0');
 
 // ============================================================
-//  ERROR HANDLING - Catch any unhandled errors
+//  ERROR HANDLING
 // ============================================================
 
 window.addEventListener('error', function(e) {
     console.error('⚠️ Unhandled error on game page:', e.message);
-    // Don't redirect - just log the error
 });
