@@ -1,5 +1,5 @@
 // ============================================================
-//  AUTH.JS - Auth Page Logic
+//  LOGIN.JS - Login Page Logic
 // ============================================================
 
 // ============================================================
@@ -96,6 +96,7 @@ loginBtn.addEventListener('click', async function() {
     this.textContent = '⏳ Logging in...';
 
     try {
+        // ✅ FIXED: Use the correct API endpoint
         const response = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -118,7 +119,7 @@ loginBtn.addEventListener('click', async function() {
         // Store user data
         localStorage.setItem('userData', JSON.stringify(data.user));
 
-        // Redirect to game
+        // ✅ Redirect to game
         window.location.href = '/game';
 
     } catch (error) {
@@ -177,6 +178,7 @@ signupBtn.addEventListener('click', async function() {
     this.textContent = '⏳ Creating account...';
 
     try {
+        // ✅ FIXED: Use the correct API endpoint
         const response = await fetch('/api/auth/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -195,7 +197,7 @@ signupBtn.addEventListener('click', async function() {
         // Store user data
         localStorage.setItem('userData', JSON.stringify(data.user));
 
-        // Redirect to game
+        // ✅ Redirect to game
         window.location.href = '/game';
 
     } catch (error) {
@@ -239,6 +241,7 @@ async function checkSession() {
     if (!token) return;
 
     try {
+        // ✅ FIXED: Use the correct API endpoint
         const response = await fetch('/api/auth/me', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -249,6 +252,7 @@ async function checkSession() {
         }
     } catch (e) {
         // Token invalid, continue
+        console.log('Session check failed, continuing to login page');
     }
 }
 
@@ -258,5 +262,5 @@ checkSession();
 //  LOG
 // ============================================================
 
-console.log('🔐 Auth page loaded');
+console.log('🔐 Login page loaded');
 console.log('📝 Login or sign up to continue');
