@@ -59,8 +59,8 @@ async function initApp() {
         log('🚀 CoinFlip Casino is ready!');
         log(`👤 ${sessionRestored ? 'Session restored' : 'Not logged in'}`);
         
-        // ✅ FIXED: REMOVED setGameEnabled(false) - THIS WAS THE PROBLEM!
-        // Do NOT disable the game here - let the session check handle it
+        // ✅ FIX: Do NOT call setGameEnabled here - let the session and game-page handle it
+        // REMOVED: setGameEnabled(false);
         
         // Optional: Show welcome notification if logged in
         if (sessionRestored && currentUser) {
