@@ -1,5 +1,5 @@
 // ============================================================
-//  GAME.JS - Core Game Logic (Fully Secured)
+//  GAME.JS - Core Game Logic with Flip History Log
 // ============================================================
 
 // ----- STATE -----
@@ -32,13 +32,12 @@ function validateBetAmount(amount) {
 function sanitizeBetAmount(amount) {
     const parsed = parseFloat(amount);
     if (isNaN(parsed) || !isFinite(parsed)) return 0;
-    // Round to 2 decimal places max
     return Math.round(parsed * 100) / 100;
 }
 
 function sanitizeChoice(choice) {
     if (choice === 'heads' || choice === 'tails') return choice;
-    return 'heads'; // Default fallback
+    return 'heads';
 }
 
 // ============================================================
@@ -54,7 +53,6 @@ function halfBet() {
     let newBet = currentBet / 2;
     if (newBet < 0.01) newBet = 0.01;
     
-    // Round to 2 decimal places
     newBet = Math.round(newBet * 100) / 100;
     
     DOM.betInput.value = newBet.toFixed(2);
@@ -70,7 +68,6 @@ function doubleBet() {
     let newBet = currentBet * 2;
     if (newBet > currentUserData.balance) newBet = currentUserData.balance;
     
-    // Round to 2 decimal places
     newBet = Math.round(newBet * 100) / 100;
     
     DOM.betInput.value = newBet.toFixed(2);
@@ -81,14 +78,13 @@ function maxBet() {
     if (!currentUserData || progressiveActive) return;
     
     const maxAmount = Math.min(currentUserData.balance, 10000);
-    // Round down to 2 decimal places
     const roundedMax = Math.floor(maxAmount * 100) / 100;
     DOM.betInput.value = roundedMax.toFixed(2);
     showNotification(`Max bet: ${roundedMax.toFixed(2)}`);
 }
 
 // ============================================================
-//  BET INPUT VALIDATION (Real-time)
+//  BET INPUT VALIDATION
 // ============================================================
 
 function setupBetInputValidation() {
@@ -98,10 +94,8 @@ function setupBetInputValidation() {
         const rawValue = this.value;
         const sanitized = sanitizeBetAmount(rawValue);
         
-        // If input is empty or invalid, don't update
         if (isNaN(sanitized) || sanitized <= 0) return;
         
-        // Check against balance
         if (currentUserData && sanitized > currentUserData.balance) {
             this.style.borderColor = '#ef4444';
         } else {
@@ -130,11 +124,130 @@ function setupBetInputValidation() {
 }
 
 // ============================================================
+//  FLIP HISTORY LOG
+// ============================================================
+
+let flipHistory = [];
+let totalFlips = 0;
+let totalWins = 0;
+let totalLosses = 0;
+let startBalance = 0;
+let currentProfit = 0;
+
+function addLogEntry(choice, result, betAmount, winnings, newBalance) {
+    const entry = {
+        id: totalFlips + 1,
+        choice: choice,
+        result: result,
+        betAmount: betAmount,
+        winnings: winnings || 0,
+        newBalance: newBalance,
+        timestamp: new Date().toLocaleTimeString()
+    };
+    
+    flipHistory.unshift(entry);
+    totalFlips++;
+    
+    if (result === 'win') {
+        totalWins++;
+    } else {
+        totalLosses++;
+    }
+    
+    currentProfit = newBalance - startBalance;
+    
+    renderLogEntry(entry);
+    updateLogStats();
+}
+
+function renderLogEntry(entry) {
+    const logBody = document.getElementById('logBody');
+    if (!logBody) return;
+    
+    const empty = logBody.querySelector('.log-empty');
+    if (empty) empty.remove();
+    
+    const div = document.createElement('div');
+    div.className = 'log-entry';
+    div.innerHTML = `
+        <span class="log-number">#${entry.id}</span>
+        <span class="log-choice ${entry.choice}">${entry.choice.toUpperCase()}</span>
+        <span class="log-result ${entry.result}">${entry.result === 'win' ? '✅ WIN' : '❌ LOSE'}</span>
+        <span class="log-amount">$${entry.betAmount.toFixed(2)}</span>
+        ${entry.result === 'win' ? `<span class="log-amount" style="color:#22c55e;">+$${entry.winnings.toFixed(2)}</span>` : ''}
+        <span class="log-balance">$${entry.newBalance.toFixed(2)}</span>
+        <span class="log-profit ${entry.result === 'win' ? 'positive' : 'negative'}">${entry.result === 'win' ? '+' : ''}$${(entry.newBalance - startBalance).toFixed(2)}</span>
+    `;
+    
+    logBody.prepend(div);
+    
+    while (logBody.children.length > 200) {
+        logBody.removeChild(logBody.lastChild);
+    }
+}
+
+function updateLogStats() {
+    const winRate = totalFlips > 0 ? ((totalWins / totalFlips) * 100).toFixed(1) : 0;
+    
+    const flipCountEl = document.getElementById('logFlipCount');
+    const winCountEl = document.getElementById('logWinCount');
+    const lossCountEl = document.getElementById('logLossCount');
+    const winRateEl = document.getElementById('logWinRate');
+    const profitEl = document.getElementById('logProfit');
+    
+    if (flipCountEl) flipCountEl.innerHTML = `Total Flips: <span class="stat-value">${totalFlips}</span>`;
+    if (winCountEl) winCountEl.innerHTML = `Wins: <span class="stat-value green">${totalWins}</span>`;
+    if (lossCountEl) lossCountEl.innerHTML = `Losses: <span class="stat-value red">${totalLosses}</span>`;
+    if (winRateEl) winRateEl.innerHTML = `Win Rate: <span class="stat-value gold">${winRate}%</span>`;
+    if (profitEl) {
+        const profitClass = currentProfit >= 0 ? 'green' : 'red';
+        profitEl.innerHTML = `Profit: <span class="stat-value ${profitClass}">${currentProfit >= 0 ? '+' : ''}$${currentProfit.toFixed(2)}</span>`;
+    }
+}
+
+function clearLog() {
+    const logBody = document.getElementById('logBody');
+    if (!logBody) return;
+    
+    flipHistory = [];
+    totalFlips = 0;
+    totalWins = 0;
+    totalLosses = 0;
+    currentProfit = 0;
+    startBalance = currentUserData ? currentUserData.balance : 0;
+    
+    logBody.innerHTML = `<div class="log-empty">🗑️ Log cleared. Start playing!</div>`;
+    updateLogStats();
+    showNotification('🗑️ Log cleared');
+}
+
+function toggleLog() {
+    const logBody = document.getElementById('logBody');
+    const toggleBtn = document.getElementById('toggleLogBtn');
+    if (!logBody || !toggleBtn) return;
+    
+    logBody.classList.toggle('minimized');
+    toggleBtn.textContent = logBody.classList.contains('minimized') ? '⬇️ Expand' : '⬆️ Minimize';
+}
+
+function initLog() {
+    startBalance = currentUserData ? currentUserData.balance : 0;
+    
+    const clearBtn = document.getElementById('clearLogBtn');
+    if (clearBtn) clearBtn.onclick = clearLog;
+    
+    const toggleBtn = document.getElementById('toggleLogBtn');
+    if (toggleBtn) toggleBtn.onclick = toggleLog;
+    
+    updateLogStats();
+    console.log('📜 Flip log initialized');
+}
+
+// ============================================================
 //  MAIN FLIP FUNCTION
 // ============================================================
 
 async function flipCoin() {
-    // --- Pre-flight checks ---
     if (isFlipping) {
         showNotification('⏳ Please wait for the current flip to finish');
         return;
@@ -150,7 +263,6 @@ async function flipCoin() {
         return;
     }
     
-    // --- Determine bet amount ---
     let bet;
     let isProgressiveFlip = false;
     
@@ -163,7 +275,6 @@ async function flipCoin() {
     } else {
         bet = sanitizeBetAmount(DOM.betInput.value);
         
-        // ✅ Validate bet amount
         const betValidation = validateBetAmount(bet);
         if (!betValidation.valid) {
             showNotification(`❌ ${betValidation.message}`);
@@ -175,7 +286,6 @@ async function flipCoin() {
             return;
         }
         
-        // ✅ Ensure bet doesn't exceed max allowed
         const maxAllowed = Math.min(currentUserData.balance, 10000);
         if (bet > maxAllowed) {
             showNotification(`❌ Max bet is $${maxAllowed.toFixed(2)}`);
@@ -183,10 +293,8 @@ async function flipCoin() {
         }
     }
     
-    // ✅ Sanitize choice
     const safeChoice = sanitizeChoice(selectedChoice);
     
-    // --- Start flip ---
     isFlipping = true;
     DOM.flipBtn.disabled = true;
     DOM.coin.classList.add('flipping');
@@ -194,7 +302,6 @@ async function flipCoin() {
     DOM.result.className = 'result';
     
     try {
-        // --- Call server ---
         const response = await apiFlip(
             bet,
             safeChoice,
@@ -204,18 +311,15 @@ async function flipCoin() {
         
         log('📊 Server response:', response);
         
-        // --- Validate server response ---
         if (!response || typeof response !== 'object') {
             throw new Error('Invalid response from server');
         }
         
-        // --- Process server response ---
         const serverWin = response.isWin === true;
         const serverWinnings = parseFloat(response.winnings) || 0;
         const serverNewBalance = parseFloat(response.newBalance) || currentUserData.balance;
         const serverStats = response.stats || {};
         
-        // --- Update local data from server ---
         currentUserData.balance = serverNewBalance;
         currentUserData.wins = parseInt(serverStats.wins) || currentUserData.wins;
         currentUserData.losses = parseInt(serverStats.losses) || currentUserData.losses;
@@ -225,7 +329,6 @@ async function flipCoin() {
         
         updateUI();
         
-        // --- Show result with delay (for animation) ---
         setTimeout(() => {
             DOM.coin.classList.remove('flipping');
             DOM.coin.textContent = '🪙';
@@ -237,7 +340,6 @@ async function flipCoin() {
                 handleLossResponse(response, isProgressiveFlip, bet);
             }
             
-            // --- Reset flip state ---
             isFlipping = false;
             DOM.flipBtn.disabled = false;
             
@@ -273,11 +375,13 @@ function handleWinResponse(response, isProgressiveFlip, bet) {
     if (isProgressiveFlip || progressiveActive) {
         handleProgressiveWin(response);
     } else {
-        // Normal win
         DOM.result.innerHTML = `🎉 WIN! Won $${serverWinnings.toFixed(2)}! 🎉`;
         DOM.result.className = 'result win';
         showWinCelebration(serverWinnings);
         showNotification(`🎉 Won $${serverWinnings.toFixed(2)}!`);
+        
+        // ✅ Add log entry for normal win
+        addLogEntry(selectedChoice, 'win', bet, serverWinnings, currentUserData.balance);
     }
 }
 
@@ -285,10 +389,12 @@ function handleLossResponse(response, isProgressiveFlip, bet) {
     if (isProgressiveFlip || progressiveActive) {
         handleProgressiveLoss(bet);
     } else {
-        // Normal loss
         DOM.result.innerHTML = `💀 LOSS! Lost $${bet.toFixed(2)} 💀`;
         DOM.result.className = 'result lose';
         showLossCelebration(bet);
+        
+        // ✅ Add log entry for normal loss
+        addLogEntry(selectedChoice, 'lose', bet, 0, currentUserData.balance);
     }
 }
 
@@ -309,13 +415,11 @@ function handleProgressiveWin(response) {
     DOM.result.className = 'result progressive-win';
     showNotification(`🔥 Level ${progressiveLevel}! Pot: $${pot.toFixed(2)}`, 2000);
     
-    // Check if max level reached
     if (progressiveLevel >= PROGRESSIVE_MULTIPLIERS.length) {
         handleMaxLevelReached();
         return;
     }
     
-    // Show level up overlay
     const nextMultiplier = progressiveLevel < PROGRESSIVE_MULTIPLIERS.length 
         ? PROGRESSIVE_MULTIPLIERS[progressiveLevel] 
         : PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
@@ -345,7 +449,6 @@ function handleProgressiveLoss(bet) {
 function handleMaxLevelReached() {
     const finalPot = progressiveBet * PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
     
-    // Balance already updated from server
     updateUI();
     showNotification(`🏆 MAX LEVEL REACHED! Won $${finalPot.toFixed(2)}! 🏆`, 5000);
     showWinCelebration(finalPot);
@@ -366,7 +469,6 @@ function handleMaxLevelReached() {
 // ============================================================
 
 function setupGameListeners() {
-    // Choice buttons
     if (DOM.headsBtn) {
         DOM.headsBtn.onclick = function() {
             selectedChoice = 'heads';
@@ -383,18 +485,13 @@ function setupGameListeners() {
         };
     }
     
-    // Action buttons
     if (DOM.halfBtn) DOM.halfBtn.onclick = halfBet;
     if (DOM.doubleBtn) DOM.doubleBtn.onclick = doubleBet;
     if (DOM.maxBtn) DOM.maxBtn.onclick = maxBet;
-    
-    // Flip button
     if (DOM.flipBtn) DOM.flipBtn.onclick = flipCoin;
     
-    // Bet input validation
     setupBetInputValidation();
     
-    // Enter key on bet input
     if (DOM.betInput) {
         DOM.betInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !progressiveActive) {
@@ -428,12 +525,10 @@ function initGame() {
     detectAndApplyMobileMode();
     window.addEventListener('resize', detectAndApplyMobileMode);
     
-    // Set initial state
     setGameEnabled(false);
     renderCheckpoints();
-    
-    // Setup bet input validation
     setupBetInputValidation();
+    initLog();
     
     log('✅ Game initialized');
 }
@@ -460,3 +555,7 @@ window.setupGameListeners = setupGameListeners;
 window.setupBetInputValidation = setupBetInputValidation;
 window.detectAndApplyMobileMode = detectAndApplyMobileMode;
 window.initGame = initGame;
+window.addLogEntry = addLogEntry;
+window.clearLog = clearLog;
+window.toggleLog = toggleLog;
+window.initLog = initLog;
