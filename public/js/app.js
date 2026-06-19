@@ -1,5 +1,5 @@
 // ============================================================
-//  APP.JS - Main Application Entry Point (FIXED)
+//  APP.JS - Main Application Entry Point (RESTORED)
 // ============================================================
 
 // ============================================================
@@ -59,8 +59,8 @@ async function initApp() {
         log('🚀 CoinFlip Casino is ready!');
         log(`👤 ${sessionRestored ? 'Session restored' : 'Not logged in'}`);
         
-        // ✅ FIX: Do NOT call setGameEnabled here - let the session and game-page handle it
-        // REMOVED: setGameEnabled(false);
+        // ✅ Let checkSession handle enabling the game
+        // Do NOT call setGameEnabled here
         
         // Optional: Show welcome notification if logged in
         if (sessionRestored && currentUser) {
