@@ -1,5 +1,5 @@
 // ============================================================
-//  GAME-PAGE.JS - Game Page Specific Logic (ULTRA FORCE)
+//  GAME-PAGE.JS - CLEAN & SIMPLE FIX
 // ============================================================
 
 // ============================================================
@@ -51,21 +51,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             console.warn('⚠️ Could not fetch fresh user data:', fetchError);
         }
 
-        // ✅ ULTRA FORCE: Use MutationObserver to catch any changes
-        setupMutationObserver();
+        // ✅ DIRECT ENABLE - Simple and works
+        enableAllControls();
 
-        // ✅ Force enable the game
-        enableGameFully();
+        // ✅ Update UI
+        updateAllUI();
 
-        // ✅ Start force enable interval
-        startForceEnableInterval();
-
-        // ✅ Force update UI
-        updateUIDirect();
-        
-        if (typeof renderCheckpoints === 'function') {
-            renderCheckpoints();
-        }
+        // ✅ Start keep-alive interval
+        startKeepAlive();
 
         // Show admin badge if admin
         const adminBadge = document.getElementById('adminBadge');
@@ -79,179 +72,77 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     } catch (e) {
         console.error('❌ Error loading game:', e);
-        showNotification('❌ Error loading game. Please refresh.');
     }
 });
 
 // ============================================================
-//  ✅ ULTRA FORCE: MutationObserver
+//  ✅ ENABLE ALL CONTROLS - SIMPLE & DIRECT
 // ============================================================
 
-let mutationObserver = null;
-
-function setupMutationObserver() {
-    // Disconnect existing observer
-    if (mutationObserver) {
-        mutationObserver.disconnect();
-        mutationObserver = null;
-    }
+function enableAllControls() {
+    console.log('🔓 Enabling all controls...');
     
-    // Watch for changes to the DOM
-    mutationObserver = new MutationObserver(function(mutations) {
-        // Check if any game elements were changed
-        const buttonIds = ['headsBtn', 'tailsBtn', 'flipBtn', 'halfBtn', 'doubleBtn', 'maxBtn', 'depositBtn', 'withdrawBtn', 'toggleProgressive', 'betAmount'];
-        let needsEnable = false;
-        
-        buttonIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el && (el.disabled === true || el.style.opacity === '0.5' || el.style.pointerEvents === 'none')) {
-                needsEnable = true;
-            }
-        });
-        
-        if (needsEnable) {
-            console.log('🔓 Mutation detected - re-enabling game...');
-            enableGameFully();
-        }
-    });
+    // All button IDs
+    const allIds = [
+        'betAmount',
+        'headsBtn', 
+        'tailsBtn',
+        'flipBtn',
+        'halfBtn',
+        'doubleBtn',
+        'maxBtn',
+        'depositBtn',
+        'withdrawBtn',
+        'toggleProgressiveBtn',
+        'cashoutProgressiveBtn'
+    ];
     
-    // Start observing
-    mutationObserver.observe(document.body, {
-        attributes: true,
-        childList: true,
-        subtree: true,
-        attributeFilter: ['disabled', 'style', 'class']
-    });
-    
-    console.log('🔍 MutationObserver started');
-}
-
-// ============================================================
-//  ✅ FORCE ENABLE GAME - Direct DOM Manipulation
-// ============================================================
-
-function enableGameFully() {
-    console.log('🔓 Force enabling game...');
-    
-    // Get all game elements
-    const elements = {
-        betInput: document.getElementById('betAmount'),
-        headsBtn: document.getElementById('headsBtn'),
-        tailsBtn: document.getElementById('tailsBtn'),
-        flipBtn: document.getElementById('flipBtn'),
-        halfBtn: document.getElementById('halfBtn'),
-        doubleBtn: document.getElementById('doubleBtn'),
-        maxBtn: document.getElementById('maxBtn'),
-        depositBtn: document.getElementById('depositBtn'),
-        withdrawBtn: document.getElementById('withdrawBtn'),
-        result: document.getElementById('result'),
-        toggleProgressive: document.getElementById('toggleProgressiveBtn'),
-        cashoutProgressive: document.getElementById('cashoutProgressiveBtn')
-    };
-
-    // ✅ Enable bet input
-    if (elements.betInput) {
-        elements.betInput.disabled = false;
-        elements.betInput.removeAttribute('disabled');
-        elements.betInput.style.opacity = '1';
-        elements.betInput.style.cursor = 'text';
-        elements.betInput.style.pointerEvents = 'auto';
-        if (currentUserData && currentUserData.balance > 0) {
-            elements.betInput.max = currentUserData.balance;
-        } else {
-            elements.betInput.max = 999999;
-        }
-        if (parseFloat(elements.betInput.value) <= 0) {
-            elements.betInput.value = '10';
-        }
-    }
-    
-    // ✅ Enable ALL buttons
-    const buttonIds = ['headsBtn', 'tailsBtn', 'flipBtn', 'halfBtn', 'doubleBtn', 'maxBtn', 'depositBtn', 'withdrawBtn', 'toggleProgressive'];
-    buttonIds.forEach(id => {
-        const el = elements[id];
+    allIds.forEach(id => {
+        const el = document.getElementById(id);
         if (el) {
+            // Remove all disabled attributes
             el.disabled = false;
             el.removeAttribute('disabled');
+            // Force styles
             el.style.opacity = '1';
-            el.style.cursor = 'pointer';
             el.style.pointerEvents = 'auto';
-            el.style.pointerEvents = 'auto !important';
+            el.style.cursor = 'pointer';
         }
     });
     
-    // ✅ Cashout button
-    if (elements.cashoutProgressive) {
-        if (progressiveActive && progressiveLevel > 0) {
-            elements.cashoutProgressive.disabled = false;
-            elements.cashoutProgressive.removeAttribute('disabled');
-            elements.cashoutProgressive.style.opacity = '1';
-        } else {
-            elements.cashoutProgressive.disabled = true;
-            elements.cashoutProgressive.style.opacity = '0.5';
+    // Special handling for bet input
+    const betInput = document.getElementById('betAmount');
+    if (betInput) {
+        betInput.disabled = false;
+        betInput.removeAttribute('disabled');
+        betInput.style.opacity = '1';
+        betInput.style.pointerEvents = 'auto';
+        betInput.style.cursor = 'text';
+        if (currentUserData && currentUserData.balance > 0) {
+            betInput.max = currentUserData.balance;
+            if (parseFloat(betInput.value) <= 0) {
+                betInput.value = '10';
+            }
         }
     }
     
-    if (elements.result) {
-        elements.result.innerHTML = '🪙 Select HEADS or TAILS to start';
-        elements.result.style.color = '#e2e8f0';
-    }
-
-    // ✅ Override setGameEnabled
-    window.setGameEnabled = function(enabled) {
-        console.log(`🔒 setGameEnabled called - FORCING ENABLED`);
-        enableGameFully();
-    };
-
-    // ✅ Also update balance display
-    updateUIDirect();
-
-    console.log('✅ Game fully enabled!');
-}
-
-// ============================================================
-//  ✅ START FORCE ENABLE INTERVAL
-// ============================================================
-
-let forceEnableInterval = null;
-
-function startForceEnableInterval() {
-    if (forceEnableInterval) {
-        clearInterval(forceEnableInterval);
+    // Result text
+    const result = document.getElementById('result');
+    if (result) {
+        result.innerHTML = '🪙 Select HEADS or TAILS to start';
+        result.style.color = '#e2e8f0';
     }
     
-    forceEnableInterval = setInterval(() => {
-        if (window.location.pathname === '/game') {
-            const buttonIds = ['headsBtn', 'tailsBtn', 'flipBtn', 'halfBtn', 'doubleBtn', 'maxBtn', 'depositBtn', 'withdrawBtn', 'toggleProgressive'];
-            let needsEnable = false;
-            
-            buttonIds.forEach(id => {
-                const el = document.getElementById(id);
-                if (el && (el.disabled === true || el.style.opacity === '0.5' || el.style.pointerEvents === 'none')) {
-                    needsEnable = true;
-                }
-            });
-            
-            const betInput = document.getElementById('betAmount');
-            if (betInput && (betInput.disabled === true || betInput.style.opacity === '0.5')) {
-                needsEnable = true;
-            }
-            
-            if (needsEnable) {
-                console.log('🔓 Interval detected disabled elements - re-enabling...');
-                enableGameFully();
-            }
-        }
-    }, 500);
+    console.log('✅ All controls enabled');
 }
 
 // ============================================================
-//  ✅ UPDATE UI DIRECTLY
+//  ✅ UPDATE ALL UI
 // ============================================================
 
-function updateUIDirect() {
+function updateAllUI() {
     if (!currentUserData) {
-        console.warn('⚠️ No user data available for UI update');
+        console.warn('⚠️ No user data');
         return;
     }
     
@@ -291,11 +182,36 @@ function updateUIDirect() {
     if (winRateEl) {
         winRateEl.innerText = winRate + '%';
     }
-    
-    const userIdDisplay = document.getElementById('userIdDisplay');
-    if (userIdDisplay) {
-        userIdDisplay.innerText = currentUserData.id || currentUserData._id || '-';
+}
+
+// ============================================================
+//  ✅ START KEEP-ALIVE INTERVAL
+// ============================================================
+
+let keepAliveInterval = null;
+
+function startKeepAlive() {
+    if (keepAliveInterval) {
+        clearInterval(keepAliveInterval);
     }
+    
+    keepAliveInterval = setInterval(() => {
+        // Check if any controls are disabled
+        const checkIds = ['headsBtn', 'tailsBtn', 'flipBtn', 'halfBtn', 'doubleBtn', 'maxBtn', 'depositBtn', 'withdrawBtn'];
+        let needsEnable = false;
+        
+        checkIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && el.disabled === true) {
+                needsEnable = true;
+            }
+        });
+        
+        if (needsEnable) {
+            console.log('🔓 Keep-alive: re-enabling controls');
+            enableAllControls();
+        }
+    }, 1000);
 }
 
 // ============================================================
@@ -306,13 +222,9 @@ const logoutBtn = document.getElementById('gameLogoutBtn');
 if (logoutBtn) {
     logoutBtn.addEventListener('click', function() {
         if (confirm('Are you sure you want to logout?')) {
-            if (forceEnableInterval) {
-                clearInterval(forceEnableInterval);
-                forceEnableInterval = null;
-            }
-            if (mutationObserver) {
-                mutationObserver.disconnect();
-                mutationObserver = null;
+            if (keepAliveInterval) {
+                clearInterval(keepAliveInterval);
+                keepAliveInterval = null;
             }
             localStorage.removeItem('authToken');
             localStorage.removeItem('userData');
@@ -323,66 +235,40 @@ if (logoutBtn) {
 }
 
 // ============================================================
-//  ✅ OVERRIDE FUNCTIONS
+//  ✅ OVERRIDE setGameEnabled - SIMPLE
 // ============================================================
 
+// Just override the function directly
+window.setGameEnabled = function(enabled) {
+    console.log(`🔒 setGameEnabled called with ${enabled} - IGNORING, forcing enabled`);
+    enableAllControls();
+    return true;
+};
+
+// Also override checkSession
 window.checkSession = function() {
-    console.log('🔒 Session check overridden on game page');
+    console.log('🔒 Session check overridden');
     return Promise.resolve(true);
 };
 
 window.showAuthUI = function() {
-    console.log('🔒 showAuthUI suppressed on game page');
+    console.log('🔒 showAuthUI suppressed');
 };
 
 window.hideAuthUI = function() {
-    console.log('🔒 hideAuthUI suppressed on game page');
+    console.log('🔒 hideAuthUI suppressed');
 };
 
-// ============================================================
-//  ✅ COMPLETELY BLOCK app.js from disabling game
-// ============================================================
-
-// Override the DOM elements themselves to prevent disabling
+// Override app.js init
 if (window.initApp) {
     const originalInitApp = window.initApp;
     window.initApp = function() {
-        console.log('🔒 App init overridden on game page');
-        // Instead of running app init, just enable game
-        enableGameFully();
-        startForceEnableInterval();
+        console.log('🔒 App init overridden');
+        enableAllControls();
+        startKeepAlive();
         return Promise.resolve();
     };
 }
 
-// ============================================================
-//  ✅ Also override any functions that might disable the game
-// ============================================================
-
-// If setGameEnabled exists, override it
-if (typeof window.setGameEnabled === 'function') {
-    const originalSetGameEnabled = window.setGameEnabled;
-    window.setGameEnabled = function(enabled) {
-        console.log(`🔒 setGameEnabled called with ${enabled} - IGNORING, forcing enabled`);
-        enableGameFully();
-        return true;
-    };
-}
-
-// If setGameEnabled is defined later, intercept it
-Object.defineProperty(window, 'setGameEnabled', {
-    set: function(value) {
-        console.log('🔒 setGameEnabled being set - intercepting');
-        // Don't store the original, just keep our version
-    },
-    get: function() {
-        return function() {
-            console.log('🔒 setGameEnabled called - forcing enabled');
-            enableGameFully();
-        };
-    },
-    configurable: true
-});
-
-console.log('🎰 Game page loaded successfully');
+console.log('🎰 Game page loaded');
 console.log(`💰 Balance: $${(currentUserData ? currentUserData.balance : 0).toFixed(2)}`);
