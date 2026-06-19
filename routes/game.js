@@ -25,8 +25,6 @@ router.post('/flip', auth, async (req, res) => {
     try {
         const { betAmount, choice, progressiveStreak = 0, originalBet = betAmount } = req.body;
         
-        console.log(`🪙 Flip request: ${req.username} - Bet: $${betAmount} - Choice: ${choice}`);
-        
         if (!betAmount || betAmount <= 0) {
             return res.status(400).json({ error: 'Invalid bet amount' });
         }
@@ -34,7 +32,6 @@ router.post('/flip', auth, async (req, res) => {
             return res.status(400).json({ error: 'Invalid choice' });
         }
         
-        // ✅ Get user from database
         const user = await User.findById(req.userId);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -46,7 +43,7 @@ router.post('/flip', auth, async (req, res) => {
             return res.status(400).json({ error: 'Insufficient balance' });
         }
         
-        // ✅ Deduct bet from user.balance
+        // Deduct bet
         user.balance -= actualBetAmount;
         user.totalWagered = (user.totalWagered || 0) + actualBetAmount;
         
@@ -55,41 +52,33 @@ router.post('/flip', auth, async (req, res) => {
         
         let xpGain = 2;
         let leveledUp = false;
-        let winnings = 0;
-        let payoutMultiplier = BASE_PAYOUT_MULTIPLIER;
         
         if (isWin) {
+            let payoutMultiplier;
             if (progressiveStreak > 0) {
                 payoutMultiplier = getProgressiveMultiplier(progressiveStreak);
             } else {
                 payoutMultiplier = BASE_PAYOUT_MULTIPLIER;
             }
             
-            winnings = actualBetAmount * payoutMultiplier;
-            
-            // ✅ ADD winnings to user.balance
+            const winnings = actualBetAmount * payoutMultiplier;
             user.balance += winnings;
-            user.wins = (user.wins || 0) + 1;
-            user.currentStreak = (user.currentStreak || 0) + 1;
-            if (user.currentStreak > (user.bestStreak || 0)) {
+            user.wins += 1;
+            user.currentStreak += 1;
+            if (user.currentStreak > user.bestStreak) {
                 user.bestStreak = user.currentStreak;
             }
             xpGain = Math.floor(10 + (actualBetAmount / 10));
             
-            // ✅ Add XP
+            // Check level up
             user.xp = (user.xp || 0) + xpGain;
-            
-            // ✅ Check level up (100 XP per level)
             const newLevel = Math.floor((user.xp || 0) / 100) + 1;
-            if (newLevel > (user.level || 1)) {
+            if (newLevel > user.level) {
                 user.level = newLevel;
                 leveledUp = true;
             }
             
-            // ✅ SAVE to database
             await user.save();
-            
-            console.log(`✅ WIN: ${req.username} won $${winnings.toFixed(2)} - New balance: $${user.balance.toFixed(2)}`);
             
             res.json({
                 success: true,
@@ -111,16 +100,11 @@ router.post('/flip', auth, async (req, res) => {
                 }
             });
         } else {
-            // ❌ LOSS
-            user.losses = (user.losses || 0) + 1;
+            user.losses += 1;
             user.currentStreak = 0;
             xpGain = 2;
             user.xp = (user.xp || 0) + xpGain;
-            
-            // ✅ SAVE to database
             await user.save();
-            
-            console.log(`❌ LOSS: ${req.username} lost $${actualBetAmount.toFixed(2)} - New balance: $${user.balance.toFixed(2)}`);
             
             res.json({
                 success: true,
@@ -148,7 +132,7 @@ router.post('/flip', auth, async (req, res) => {
 });
 
 // ============================================================
-//  ADD PROGRESSIVE WINNINGS
+//  ✅ ADD PROGRESSIVE WINNINGS (FIXED)
 // ============================================================
 router.post('/add-progressive', auth, async (req, res) => {
     try {
@@ -163,13 +147,11 @@ router.post('/add-progressive', auth, async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
         
-        // ✅ ADD to user balance
+        // Add the progressive winnings to user balance
         user.balance += amount;
-        
-        // ✅ SAVE to database
         await user.save();
         
-        console.log(`✅ Progressive cashout: ${user.username} cashed out $${amount.toFixed(2)} from ${streak || '?'} win streak - New balance: $${user.balance.toFixed(2)}`);
+        console.log(`✅ Progressive cashout: ${user.username} cashed out $${amount.toFixed(2)} from ${streak || '?'} win streak`);
         
         res.json({
             success: true,
@@ -191,9 +173,6 @@ router.get('/stats', auth, async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        
-        console.log(`📊 Stats requested: ${user.username} - Balance: $${user.balance.toFixed(2)}`);
-        
         res.json({
             id: user._id,
             username: user.username,
