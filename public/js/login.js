@@ -96,7 +96,6 @@ loginBtn.addEventListener('click', async function() {
     this.textContent = '⏳ Logging in...';
 
     try {
-        // ✅ FIXED: Use the correct API endpoint
         const response = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -178,7 +177,6 @@ signupBtn.addEventListener('click', async function() {
     this.textContent = '⏳ Creating account...';
 
     try {
-        // ✅ FIXED: Use the correct API endpoint
         const response = await fetch('/api/auth/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -233,29 +231,52 @@ function showError(element, message) {
 }
 
 // ============================================================
-//  CHECK SESSION (Auto-redirect if already logged in)
+//  ✅ CHECK SESSION - FIXED (Prevents redirect loop)
 // ============================================================
 
 async function checkSession() {
     const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
     if (!token) return;
 
+    // ✅ Prevent redirect loop - only redirect if not already on game page
+    // If we're already on the login page, we shouldn't redirect to game
+    // Only redirect if we have a valid token AND we're not on the game page
+    // But we are on the login page, so we should redirect to game if token is valid
+
     try {
-        // ✅ FIXED: Use the correct API endpoint
         const response = await fetch('/api/auth/me', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
         if (response.ok) {
-            // Already logged in, redirect to game
-            window.location.href = '/game';
+            // ✅ Valid token, redirect to game (but only if we're on the login page)
+            if (window.location.pathname === '/login' || window.location.pathname === '/') {
+                console.log('✅ Valid session found, redirecting to game...');
+                window.location.href = '/game';
+            } else {
+                console.log('✅ Valid session, already on game page');
+            }
+        } else {
+            // Token invalid, clear it
+            console.log('⚠️ Invalid session, clearing token');
+            localStorage.removeItem('authToken');
+            sessionStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
         }
     } catch (e) {
-        // Token invalid, continue
-        console.log('Session check failed, continuing to login page');
+        // Token invalid, clear it
+        console.log('⚠️ Session check failed, clearing token');
+        localStorage.removeItem('authToken');
+        sessionStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
     }
 }
 
+// ============================================================
+//  INITIALIZE
+// ============================================================
+
+// Check session on load (will redirect to game if already logged in)
 checkSession();
 
 // ============================================================
