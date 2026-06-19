@@ -1,5 +1,5 @@
 // ============================================================
-//  GAME-PAGE.JS - BRUTE FORCE ENABLE
+//  GAME-PAGE.JS - ULTIMATE FORCE ENABLE
 // ============================================================
 
 // ============================================================
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 // ============================================================
-//  ✅ FORCE ENABLE ALL CONTROLS
+//  ✅ FORCE ENABLE ALL CONTROLS - ULTIMATE VERSION
 // ============================================================
 
 function forceEnableAll() {
@@ -137,10 +137,51 @@ function forceEnableAll() {
         }
     }
     
-    // Also fix parent containers
-    const containers = document.querySelectorAll('.game-container, .bet-panel, .choice-buttons, .action-buttons, .banking-panel');
-    containers.forEach(container => {
-        container.style.setProperty('pointer-events', 'auto', 'important');
+    // ✅ CRITICAL: Find and fix ALL parent containers that might have pointer-events: none
+    // Check the entire game container and all its children
+    const gameContainer = document.querySelector('.game-container');
+    if (gameContainer) {
+        // Remove pointer-events: none from the game container
+        gameContainer.style.setProperty('pointer-events', 'auto', 'important');
+        
+        // Find all elements with pointer-events: none inside the game container
+        const blockedElements = gameContainer.querySelectorAll('*');
+        blockedElements.forEach(el => {
+            const computedStyle = window.getComputedStyle(el);
+            if (computedStyle.pointerEvents === 'none') {
+                console.log(`🔓 Found blocked element: ${el.tagName}.${el.className} - removing pointer-events: none`);
+                el.style.setProperty('pointer-events', 'auto', 'important');
+            }
+        });
+    }
+    
+    // Also check specific containers
+    const containerSelectors = [
+        '.game-container',
+        '.bet-panel',
+        '.choice-buttons',
+        '.action-buttons',
+        '.banking-panel',
+        '.progressive-panel',
+        '.coin-area',
+        '.stats',
+        '.game-header',
+        '.auth-panel'
+    ];
+    
+    containerSelectors.forEach(selector => {
+        const containers = document.querySelectorAll(selector);
+        containers.forEach(container => {
+            container.style.setProperty('pointer-events', 'auto', 'important');
+        });
+    });
+    
+    // ✅ ALSO check for any overlay that might be blocking clicks
+    const overlays = document.querySelectorAll('.overlay, .modal, .level-up-overlay, .big-loss-overlay');
+    overlays.forEach(overlay => {
+        if (overlay.style.display === 'none' || overlay.style.display === '') {
+            overlay.style.setProperty('pointer-events', 'none', 'important');
+        }
     });
     
     // Update result text
