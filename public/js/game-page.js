@@ -1,5 +1,5 @@
 // ============================================================
-//  GAME-PAGE.JS - ULTIMATE FORCE (Inline Styles)
+//  GAME-PAGE.JS - BRUTE FORCE ENABLE
 // ============================================================
 
 // ============================================================
@@ -51,14 +51,17 @@ document.addEventListener('DOMContentLoaded', async function() {
             console.warn('⚠️ Could not fetch fresh user data:', fetchError);
         }
 
-        // ✅ ULTIMATE FORCE - Inline styles + remove all barriers
-        ultimateForceEnable();
+        // ✅ Update UI with balance
+        const balanceEl = document.getElementById('balance');
+        if (balanceEl && currentUserData) {
+            balanceEl.innerText = currentUserData.balance.toFixed(2);
+        }
 
-        // ✅ Update UI
-        updateAllUI();
+        // ✅ Start the force enable interval (runs every 500ms)
+        startForceEnable();
 
-        // ✅ Start keep-alive
-        startKeepAlive();
+        // ✅ Also run it immediately
+        forceEnableAll();
 
         // Show admin badge if admin
         const adminBadge = document.getElementById('adminBadge');
@@ -68,11 +71,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         console.log(`✅ Welcome back, ${currentUserData.username || user.username}!`);
         console.log(`💰 Current balance: $${(currentUserData.balance || 0).toFixed(2)}`);
-        console.log('🎮 Game enabled successfully');
-
-        // ✅ Extra force after 1 second
-        setTimeout(ultimateForceEnable, 1000);
-        setTimeout(ultimateForceEnable, 3000);
+        console.log('🎮 Force enable started');
 
     } catch (e) {
         console.error('❌ Error loading game:', e);
@@ -80,13 +79,11 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 // ============================================================
-//  ✅ ULTIMATE FORCE ENABLE - INLINE STYLES
+//  ✅ FORCE ENABLE ALL CONTROLS
 // ============================================================
 
-function ultimateForceEnable() {
-    console.log('🔓 ULTIMATE FORCE enabling all controls...');
-    
-    // All button IDs
+function forceEnableAll() {
+    // All button IDs that need to be enabled
     const allIds = [
         'betAmount',
         'headsBtn', 
@@ -97,29 +94,29 @@ function ultimateForceEnable() {
         'maxBtn',
         'depositBtn',
         'withdrawBtn',
-        'toggleProgressiveBtn',
-        'cashoutProgressiveBtn'
+        'toggleProgressiveBtn'
     ];
+    
+    let enabledCount = 0;
     
     allIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            // ✅ REMOVE ALL ATTRIBUTES that could block clicks
+            // Remove ALL disabling attributes
             el.disabled = false;
             el.removeAttribute('disabled');
             el.removeAttribute('aria-disabled');
             el.removeAttribute('inert');
             
-            // ✅ FORCE INLINE STYLES (highest priority)
+            // Force styles
             el.style.setProperty('opacity', '1', 'important');
             el.style.setProperty('pointer-events', 'auto', 'important');
             el.style.setProperty('cursor', 'pointer', 'important');
-            el.style.setProperty('display', 'block', 'important');
-            el.style.setProperty('visibility', 'visible', 'important');
-            el.style.setProperty('user-select', 'none', 'important');
             
-            // ✅ Remove any class that might be disabling
-            el.classList.remove('disabled', 'inactive', 'dimmed', 'locked');
+            // Remove any disabling classes
+            el.classList.remove('disabled', 'inactive', 'dimmed', 'locked', 'opacity-50', 'pointer-events-none');
+            
+            enabledCount++;
         }
     });
     
@@ -131,113 +128,55 @@ function ultimateForceEnable() {
         betInput.style.setProperty('opacity', '1', 'important');
         betInput.style.setProperty('pointer-events', 'auto', 'important');
         betInput.style.setProperty('cursor', 'text', 'important');
-        betInput.style.setProperty('display', 'block', 'important');
-        betInput.style.setProperty('visibility', 'visible', 'important');
         betInput.classList.remove('disabled', 'inactive', 'dimmed', 'locked');
-        
         if (currentUserData && currentUserData.balance > 0) {
             betInput.max = currentUserData.balance;
-            if (parseFloat(betInput.value) <= 0) {
+            if (parseFloat(betInput.value) <= 0 || isNaN(parseFloat(betInput.value))) {
                 betInput.value = '10';
             }
         }
     }
     
-    // ✅ Fix parent containers that might have pointer-events: none
+    // Also fix parent containers
     const containers = document.querySelectorAll('.game-container, .bet-panel, .choice-buttons, .action-buttons, .banking-panel');
     containers.forEach(container => {
         container.style.setProperty('pointer-events', 'auto', 'important');
     });
     
-    // Result text
+    // Update result text
     const result = document.getElementById('result');
     if (result) {
         result.innerHTML = '🪙 Select HEADS or TAILS to start';
         result.style.color = '#e2e8f0';
     }
     
-    console.log('✅ ULTIMATE FORCE complete');
-}
-
-// ============================================================
-//  ✅ UPDATE ALL UI
-// ============================================================
-
-function updateAllUI() {
-    if (!currentUserData) {
-        console.warn('⚠️ No user data');
-        return;
-    }
-    
-    const balanceEl = document.getElementById('balance');
-    if (balanceEl) {
-        balanceEl.innerText = currentUserData.balance.toFixed(2);
-    }
-    
-    const winsEl = document.getElementById('winsCount');
-    if (winsEl) {
-        winsEl.innerText = currentUserData.wins || 0;
-    }
-    
-    const lossesEl = document.getElementById('lossesCount');
-    if (lossesEl) {
-        lossesEl.innerText = currentUserData.losses || 0;
-    }
-    
-    const streakEl = document.getElementById('currentStreak');
-    if (streakEl) {
-        streakEl.innerText = currentUserData.currentStreak || 0;
-    }
-    
-    const totalWageredEl = document.getElementById('totalWagered');
-    if (totalWageredEl) {
-        totalWageredEl.innerText = (currentUserData.totalWagered || 0).toFixed(2);
-    }
-    
-    const bestStreakEl = document.getElementById('bestStreak');
-    if (bestStreakEl) {
-        bestStreakEl.innerText = currentUserData.bestStreak || 0;
-    }
-    
-    const total = (currentUserData.wins || 0) + (currentUserData.losses || 0);
-    const winRate = total > 0 ? Math.round(((currentUserData.wins || 0) / total) * 100) : 0;
-    const winRateEl = document.getElementById('winRate');
-    if (winRateEl) {
-        winRateEl.innerText = winRate + '%';
+    if (enabledCount > 0) {
+        console.log(`🔓 Force enabled ${enabledCount} controls`);
     }
 }
 
 // ============================================================
-//  ✅ START KEEP-ALIVE INTERVAL
+//  ✅ START FORCE ENABLE INTERVAL
 // ============================================================
 
-let keepAliveInterval = null;
+let forceEnableInterval = null;
 
-function startKeepAlive() {
-    if (keepAliveInterval) {
-        clearInterval(keepAliveInterval);
+function startForceEnable() {
+    // Clear any existing interval
+    if (forceEnableInterval) {
+        clearInterval(forceEnableInterval);
+        forceEnableInterval = null;
     }
     
-    keepAliveInterval = setInterval(() => {
-        // Check if any controls are disabled or have pointer-events: none
-        const checkIds = ['headsBtn', 'tailsBtn', 'flipBtn', 'halfBtn', 'doubleBtn', 'maxBtn', 'depositBtn', 'withdrawBtn'];
-        let needsEnable = false;
-        
-        checkIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                const style = window.getComputedStyle(el);
-                if (el.disabled === true || style.pointerEvents === 'none' || style.opacity === '0.5') {
-                    needsEnable = true;
-                }
-            }
-        });
-        
-        if (needsEnable) {
-            console.log('🔓 Keep-alive: re-enabling controls');
-            ultimateForceEnable();
+    // Run every 500ms to keep buttons enabled
+    forceEnableInterval = setInterval(function() {
+        // Only run on game page
+        if (window.location.pathname === '/game') {
+            forceEnableAll();
         }
-    }, 1000);
+    }, 500);
+    
+    console.log('🔓 Force enable interval started (every 500ms)');
 }
 
 // ============================================================
@@ -248,9 +187,10 @@ const logoutBtn = document.getElementById('gameLogoutBtn');
 if (logoutBtn) {
     logoutBtn.addEventListener('click', function() {
         if (confirm('Are you sure you want to logout?')) {
-            if (keepAliveInterval) {
-                clearInterval(keepAliveInterval);
-                keepAliveInterval = null;
+            // Clear the interval
+            if (forceEnableInterval) {
+                clearInterval(forceEnableInterval);
+                forceEnableInterval = null;
             }
             localStorage.removeItem('authToken');
             localStorage.removeItem('userData');
@@ -261,37 +201,32 @@ if (logoutBtn) {
 }
 
 // ============================================================
-//  ✅ OVERRIDE FUNCTIONS
+//  ✅ OVERRIDE setGameEnabled to prevent disabling
 // ============================================================
 
+// Override the global setGameEnabled function
 window.setGameEnabled = function(enabled) {
-    console.log(`🔒 setGameEnabled called - FORCING ENABLED`);
-    ultimateForceEnable();
+    console.log('🔒 setGameEnabled called - IGNORING and forcing enabled');
+    forceEnableAll();
     return true;
 };
 
+// Also override app.js init
+if (window.initApp) {
+    const originalInitApp = window.initApp;
+    window.initApp = function() {
+        console.log('🔒 App init overridden - forcing enable');
+        forceEnableAll();
+        startForceEnable();
+        return Promise.resolve();
+    };
+}
+
+// Override checkSession
 window.checkSession = function() {
     console.log('🔒 Session check overridden');
     return Promise.resolve(true);
 };
 
-window.showAuthUI = function() {
-    console.log('🔒 showAuthUI suppressed');
-};
-
-window.hideAuthUI = function() {
-    console.log('🔒 hideAuthUI suppressed');
-};
-
-if (window.initApp) {
-    const originalInitApp = window.initApp;
-    window.initApp = function() {
-        console.log('🔒 App init overridden');
-        ultimateForceEnable();
-        startKeepAlive();
-        return Promise.resolve();
-    };
-}
-
-console.log('🎰 Game page loaded');
+console.log('🎰 Game page loaded - force enable active');
 console.log(`💰 Balance: $${(currentUserData ? currentUserData.balance : 0).toFixed(2)}`);
