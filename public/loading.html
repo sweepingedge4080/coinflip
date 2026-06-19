@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading - CoinFlip Casino</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/loading.css">
+</head>
+<body>
+
+    <!-- ============================================================
+         LOADING CONTAINER
+         ============================================================ -->
+    <div class="loading-container">
+        <!-- Background Glow -->
+        <div class="bg-glow"></div>
+
+        <!-- Logo Animation -->
+        <div class="logo-wrapper">
+            <div class="logo-ring">
+                <div class="ring ring-outer"></div>
+                <div class="ring ring-middle"></div>
+                <div class="ring ring-inner"></div>
+            </div>
+            <div class="logo-icon">🪙</div>
+        </div>
+
+        <!-- Brand Name -->
+        <div class="brand-name">
+            <span class="brand-text">CoinFlip</span>
+            <span class="brand-badge">CASINO</span>
+        </div>
+
+        <!-- Loading Bar -->
+        <div class="loading-bar-container">
+            <div class="loading-bar" id="loadingBar"></div>
+        </div>
+
+        <!-- Loading Text -->
+        <div class="loading-text" id="loadingText">Preparing your game...</div>
+
+        <!-- Loading Tips (Rotating) -->
+        <div class="loading-tips" id="loadingTips">
+            <p class="tip">💡 Did you know? Progressive mode can multiply your winnings up to 55x!</p>
+        </div>
+
+        <!-- Progress Percentage -->
+        <div class="progress-percentage" id="progressPercentage">0%</div>
+    </div>
+
+    <!-- ============================================================
+         JAVASCRIPT
+         ============================================================ -->
+    <script src="/js/loading.js"></script>
+</body>
+</html>
