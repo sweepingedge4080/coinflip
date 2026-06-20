@@ -1,5 +1,5 @@
 // ============================================================
-//  PROGRESSIVE.JS - Progressive Mode Logic (KEEPS MODE ON)
+//  PROGRESSIVE.JS - Progressive Mode Logic (Uses Isolated Pot)
 // ============================================================
 
 // ----- STATE -----
@@ -11,7 +11,7 @@ let isInProgressiveRun = false;
 let pendingLevelUp = false;
 
 // ============================================================
-//  PROGRESSIVE VALIDATION HELPERS (ADDED)
+//  PROGRESSIVE VALIDATION HELPERS
 // ============================================================
 
 function validateProgressiveBet(amount) {
@@ -124,6 +124,9 @@ function resetProgressiveRun() {
     isInProgressiveRun = false;
     pendingLevelUp = false;
     
+    // ✅ Reset the isolated pot
+    resetProgressivePot();
+    
     if (DOM.betLockedInfo) {
         DOM.betLockedInfo.classList.remove('visible');
     }
@@ -146,6 +149,9 @@ function fullResetProgressive() {
     progressivePot = 0;
     isInProgressiveRun = false;
     pendingLevelUp = false;
+    
+    // ✅ Reset the isolated pot
+    resetProgressivePot();
     
     if (DOM.betLockedInfo) {
         DOM.betLockedInfo.classList.remove('visible');
@@ -207,6 +213,9 @@ function startProgressiveRun() {
     isInProgressiveRun = true;
     pendingLevelUp = false;
     
+    // ✅ START THE ISOLATED POT
+    startProgressivePot(bet);
+    
     if (DOM.betInput) {
         DOM.betInput.disabled = true;
     }
@@ -238,7 +247,7 @@ function startProgressiveRun() {
 }
 
 // ============================================================
-//  CASHOUT PROGRESSIVE
+//  CASHOUT PROGRESSIVE - Uses Isolated Pot
 // ============================================================
 
 function cashoutProgressive() {
@@ -247,17 +256,18 @@ function cashoutProgressive() {
         return;
     }
     
-    const multiplier = progressiveLevel <= PROGRESSIVE_MULTIPLIERS.length 
-        ? PROGRESSIVE_MULTIPLIERS[progressiveLevel - 1] 
-        : PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
-    const winnings = progressiveBet * multiplier;
+    // ✅ CASH OUT THE ISOLATED POT
+    const potResult = cashoutProgressivePot();
     
-    if (!isFinite(winnings) || winnings <= 0) {
-        showNotification('❌ Invalid winnings amount');
+    if (!potResult) {
+        showNotification('❌ Error cashing out');
         return;
     }
     
-    apiAddProgressive(winnings, progressiveLevel)
+    const { potValue, isolatedBet, netProfit, level, multiplier } = potResult;
+    
+    // ✅ Call server to add winnings to balance
+    apiAddProgressive(potValue, level)
         .then(response => {
             if (!response || typeof response !== 'object') {
                 throw new Error('Invalid server response');
@@ -270,15 +280,22 @@ function cashoutProgressive() {
             
             currentUserData.balance = newBalance;
             updateUI();
-            showNotification(`💰💰💰 CASHED OUT! Won $${winnings.toFixed(2)} at ${multiplier}x multiplier! 💰💰💰`, 5000);
-            showWinCelebration(winnings);
-            log(`Progressive cashed out: $${winnings} at Level ${progressiveLevel}`);
+            
+            // ✅ LOG THE CASHOUT
+            if (typeof addLogEntry === 'function') {
+                addLogEntry(selectedChoice || 'heads', 'win', isolatedBet, netProfit, currentUserData.balance);
+            }
+            
+            showNotification(`💰💰💰 CASHED OUT! Won $${potValue.toFixed(2)} at ${multiplier}x multiplier! Net profit: $${netProfit.toFixed(2)} 💰💰💰`, 5000);
+            showWinCelebration(potValue);
+            log(`Progressive cashed out: $${potValue} at Level ${level} (net profit: $${netProfit})`);
         })
         .catch(error => {
             logError('Cashout failed', error);
             showNotification('❌ Error cashing out: ' + error.message);
         });
     
+    // ✅ Reset the run but KEEP mode active
     const savedBet = progressiveBet;
     resetProgressiveRun();
     if (DOM.betInput) {
@@ -288,6 +305,72 @@ function cashoutProgressive() {
     progressiveBet = savedBet;
     
     showNotification(`💰 Cashed out! Mode stays active.`, 3000);
+}
+
+// ============================================================
+//  ADVANCE PROGRESSIVE LEVEL (when player wins)
+// ============================================================
+
+function advanceProgressiveLevel() {
+    if (!progressiveActive) {
+        console.warn('⚠️ Cannot advance: progressive mode not active');
+        return false;
+    }
+    
+    const newLevel = progressiveLevel + 1;
+    const maxLevel = PROGRESSIVE_MULTIPLIERS.length;
+    
+    if (newLevel > maxLevel) {
+        console.warn('⚠️ Already at max level');
+        return false;
+    }
+    
+    // ✅ Advance the isolated pot
+    const potState = advanceProgressivePot(newLevel);
+    
+    if (!potState) {
+        console.warn('⚠️ Failed to advance progressive pot');
+        return false;
+    }
+    
+    progressiveLevel = newLevel;
+    progressivePot = potState.potValue;
+    
+    renderCheckpoints();
+    updateProgressiveUI();
+    
+    console.log(`⬆️ Advanced to Level ${newLevel}, Pot: $${progressivePot.toFixed(2)}`);
+    return true;
+}
+
+// ============================================================
+//  BUST PROGRESSIVE (when player loses)
+// ============================================================
+
+function bustProgressive() {
+    if (!progressiveActive) {
+        console.warn('⚠️ Cannot bust: progressive mode not active');
+        return false;
+    }
+    
+    // ✅ Bust the isolated pot
+    const bustResult = bustProgressivePot();
+    
+    if (!bustResult) {
+        console.warn('⚠️ Failed to bust progressive pot');
+        return false;
+    }
+    
+    const { lostAmount, isolatedBet, level } = bustResult;
+    
+    // ✅ LOG THE BUST
+    if (typeof addLogEntry === 'function') {
+        addLogEntry(selectedChoice || 'heads', 'lose', isolatedBet, -lostAmount, currentUserData.balance);
+    }
+    
+    console.log(`💀 Progressive bust: Lost $${lostAmount} at Level ${level}`);
+    
+    return true;
 }
 
 // ============================================================
@@ -335,6 +418,10 @@ function showLevelUpOverlay(level, pot, nextMultiplier) {
             const overlayEl = document.getElementById('levelUpOverlay');
             if (overlayEl) overlayEl.remove();
             pendingLevelUp = false;
+            
+            // ✅ Advance the progressive level (pot grows, bet already deducted)
+            advanceProgressiveLevel();
+            
             if (DOM.result) {
                 DOM.result.innerHTML = `🔥 Continuing to Level ${progressiveLevel + 1}! Good luck!`;
                 DOM.result.className = 'result progressive-win';
@@ -377,6 +464,8 @@ function showBigLossOverlay(level, lostAmount) {
             document.querySelectorAll('.big-loss-overlay').forEach(el => el.remove());
             
             const savedBet = progressiveBet;
+            
+            // ✅ Reset streak but KEEP mode active
             resetProgressiveRun();
             
             if (DOM.betInput) {
@@ -450,6 +539,8 @@ window.resetProgressiveRun = resetProgressiveRun;
 window.fullResetProgressive = fullResetProgressive;
 window.startProgressiveRun = startProgressiveRun;
 window.cashoutProgressive = cashoutProgressive;
+window.advanceProgressiveLevel = advanceProgressiveLevel;
+window.bustProgressive = bustProgressive;
 window.showLevelUpOverlay = showLevelUpOverlay;
 window.showBigLossOverlay = showBigLossOverlay;
 window.setupProgressiveListeners = setupProgressiveListeners;
