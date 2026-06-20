@@ -1,5 +1,5 @@
 // ============================================================
-//  GAME.JS - Core Game Logic with Flip History Log (FIXED)
+//  GAME.JS - Core Game Logic with Flip History Log
 // ============================================================
 
 // ----- STATE -----
@@ -133,7 +133,7 @@ let totalWins = 0;
 let totalLosses = 0;
 let startBalance = 0;
 let currentProfit = 0;
-let progressiveRunLogged = false; // ✅ Track if we've logged the progressive run
+let progressiveRunLogged = false;
 
 function addLogEntry(choice, result, betAmount, winnings, newBalance) {
     const entry = {
@@ -414,8 +414,8 @@ function handleProgressiveWin(response) {
     DOM.result.className = 'result progressive-win';
     showNotification(`🔥 Level ${progressiveLevel}! Pot: $${pot.toFixed(2)}`, 2000);
     
-    // ✅ DON'T log each level - only log the final cashout
-    // progressiveRunLogged will be set to true when we cash out
+    // ✅ DON'T log each level - only log on cashout or bust
+    // progressiveRunLogged will be set to true when we cash out or bust
     
     if (progressiveLevel >= PROGRESSIVE_MULTIPLIERS.length) {
         handleMaxLevelReached();
@@ -439,8 +439,10 @@ function handleProgressiveLoss(bet) {
     DOM.result.className = 'result lose';
     showLossCelebration(lostAmount);
     
-    // ✅ Log the loss (this is a real loss)
-    addLogEntry(selectedChoice, 'lose', progressiveBet, 0, currentUserData.balance);
+    // ✅ Log the loss (this is a real loss - bet was already deducted)
+    // Show the total amount lost (pot that was on the line)
+    addLogEntry(selectedChoice, 'lose', progressiveBet, -lostAmount, currentUserData.balance);
+    progressiveRunLogged = true;
     
     const savedBet = progressiveBet;
     showBigLossOverlay(levelReached, lostAmount);
@@ -449,18 +451,17 @@ function handleProgressiveLoss(bet) {
     DOM.betInput.value = savedBet.toFixed(2);
     DOM.betInput.disabled = true;
     progressiveBet = savedBet;
-    progressiveRunLogged = false;
 }
 
 function handleMaxLevelReached() {
     const finalPot = progressiveBet * PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
+    const netProfit = finalPot - progressiveBet;
     
     updateUI();
     showNotification(`🏆 MAX LEVEL REACHED! Won $${finalPot.toFixed(2)}! 🏆`, 5000);
     showWinCelebration(finalPot);
     
-    // ✅ Log the final cashout
-    const netProfit = finalPot - progressiveBet;
+    // ✅ Log the final cashout - show net profit
     addLogEntry(selectedChoice, 'win', progressiveBet, netProfit, currentUserData.balance);
     progressiveRunLogged = true;
     
@@ -477,7 +478,7 @@ function handleMaxLevelReached() {
 }
 
 // ============================================================
-//  CASHOUT PROGRESSIVE (called from progressive.js)
+//  CASHOUT PROGRESSIVE HANDLER (called from progressive.js)
 // ============================================================
 
 function cashoutProgressiveHandler() {
@@ -488,11 +489,11 @@ function cashoutProgressiveHandler() {
     
     const multiplier = progressiveLevel <= PROGRESSIVE_MULTIPLIERS.length 
         ? PROGRESSIVE_MULTIPLIERS[progressiveLevel - 1] 
-        : PROGRESSIVE_MULTIPLIERS[progressiveLevel];
+        : PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
     const pot = progressiveBet * multiplier;
     const netProfit = pot - progressiveBet;
     
-    // ✅ Log the cashout
+    // ✅ Log the cashout - show net profit (pot - bet)
     addLogEntry(selectedChoice, 'win', progressiveBet, netProfit, currentUserData.balance);
     progressiveRunLogged = true;
     
