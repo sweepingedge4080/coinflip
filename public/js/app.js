@@ -1,114 +1,221 @@
 // ============================================================
-//  APP INITIALIZATION (Modified)
+//  APP.JS - Main Application Entry Point (RESTORED)
 // ============================================================
 
-function initApp() {
-    console.log('🔄 Initializing CoinFlip Casino...');
-    
-    // Initialize DOM references
-    initDOM();
-    
-    // Setup all listeners
-    setupAuthListeners();
-    setupModalListeners();
-    setupProgressiveListeners(); // Make sure this is called
-    setupBetInputValidation();
-    setupGameListeners();
-    setupEventListeners();
-    
-    // Apply mobile detection
-    applyMobileDetection();
-    
-    // Check for existing session
-    checkSession();
-    
-    // Initialize progressive system
-    initProgressiveSystem();
-    
-    // Render initial UI
-    renderUI();
-    
-    console.log('🚀 CoinFlip Casino is ready!');
-    console.log('💡 Type __app.info() for app info, __app.status() for status, __app.forceRefresh() to refresh');
-}
+// ============================================================
+//  APPLICATION STATE
+// ============================================================
 
-function initProgressiveSystem() {
-    console.log('🎯 Initializing progressive system...');
-    
-    // Set up the progressive listeners
-    if (window.setupProgressiveListeners) {
-        window.setupProgressiveListeners();
+const AppState = {
+    initialized: false,
+    ready: false,
+    version: '2.0.0'
+};
+
+// ============================================================
+//  MAIN INITIALIZATION
+// ============================================================
+
+async function initApp() {
+    if (AppState.initialized) {
+        log('⚠️ App already initialized');
+        return;
     }
     
-    // Display progressive multipliers
-    const multipliers = [2, 3, 5, 8, 13, 21, 34, 55];
-    console.log(`📈 Progressive Multipliers: ${multipliers.join('x, ')}x`);
-    console.log(`🏆 Max Level: ${multipliers.length} (${multipliers[multipliers.length-1]}x)`);
+    AppState.initialized = true;
+    log('🔄 Initializing CoinFlip Casino v' + AppState.version);
+    
+    try {
+        // ----- STEP 1: Initialize DOM -----
+        initDOM();
+        log('✅ DOM initialized');
+        
+        // ----- STEP 2: Setup Event Listeners -----
+        setupAuthListeners();
+        setupModalListeners();
+        setupProgressiveListeners();
+        setupGameListeners();
+        log('✅ Event listeners setup complete');
+        
+        // ----- STEP 3: Apply mobile detection -----
+        detectAndApplyMobileMode();
+        window.addEventListener('resize', detectAndApplyMobileMode);
+        log('✅ Mobile detection applied');
+        
+        // ----- STEP 4: Check for existing session -----
+        const sessionRestored = await checkSession();
+        
+        // ----- STEP 5: Render initial UI -----
+        renderCheckpoints();
+        log('✅ Initial UI rendered');
+        
+        // ----- STEP 6: Log startup info -----
+        log(`📈 Progressive Multipliers: ${PROGRESSIVE_MULTIPLIERS.join('x, ')}x`);
+        log(`🏆 Max Level: ${PROGRESSIVE_MULTIPLIERS.length} (${PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length-1]}x)`);
+        
+        // ----- STEP 7: Mark as ready -----
+        AppState.ready = true;
+        
+        log('🚀 CoinFlip Casino is ready!');
+        log(`👤 ${sessionRestored ? 'Session restored' : 'Not logged in'}`);
+        
+        // ✅ Let checkSession handle enabling the game
+        // Do NOT call setGameEnabled here
+        
+        // Optional: Show welcome notification if logged in
+        if (sessionRestored && currentUser) {
+            setTimeout(() => {
+                showNotification(`👋 Welcome back, ${currentUser.username}!`, 2000);
+            }, 500);
+        }
+        
+        // ----- STEP 8: Add keyboard shortcuts -----
+        setupKeyboardShortcuts();
+        
+    } catch (error) {
+        logError('App initialization failed', error);
+        showNotification('❌ Failed to initialize app. Please refresh the page.');
+        AppState.initialized = false;
+    }
 }
 
 // ============================================================
-//  GLOBAL KEYBOARD SHORTCUTS (Modified)
+//  KEYBOARD SHORTCUTS
 // ============================================================
 
 function setupKeyboardShortcuts() {
-    console.log('⌨️ Keyboard shortcuts enabled: 1=Heads, 2=Tails, Space=Flip, H=Half, D=Double, M=Max, P=Progressive, C=Cashout');
-    
     document.addEventListener('keydown', function(e) {
-        // Don't trigger if typing in input
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-            return;
-        }
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         
-        switch(e.key.toLowerCase()) {
+        switch (e.key) {
             case '1':
-                // Bet Heads
-                if (document.getElementById('headsBtn')) {
-                    document.getElementById('headsBtn').click();
-                }
+                if (DOM.headsBtn) DOM.headsBtn.click();
                 break;
             case '2':
-                // Bet Tails
-                if (document.getElementById('tailsBtn')) {
-                    document.getElementById('tailsBtn').click();
-                }
+                if (DOM.tailsBtn) DOM.tailsBtn.click();
                 break;
             case ' ':
-                // Flip
                 e.preventDefault();
-                if (document.getElementById('flipBtn')) {
-                    document.getElementById('flipBtn').click();
+                if (DOM.flipBtn && !DOM.flipBtn.disabled) {
+                    DOM.flipBtn.click();
                 }
                 break;
             case 'h':
-                // Half bet
-                if (document.getElementById('halfBet')) {
-                    document.getElementById('halfBet').click();
-                }
+            case 'H':
+                if (DOM.halfBtn) DOM.halfBtn.click();
                 break;
             case 'd':
-                // Double bet
-                if (document.getElementById('doubleBet')) {
-                    document.getElementById('doubleBet').click();
-                }
+            case 'D':
+                if (DOM.doubleBtn) DOM.doubleBtn.click();
                 break;
             case 'm':
-                // Max bet
-                if (document.getElementById('maxBet')) {
-                    document.getElementById('maxBet').click();
-                }
+            case 'M':
+                if (DOM.maxBtn) DOM.maxBtn.click();
                 break;
             case 'p':
-                // Toggle progressive
-                if (document.getElementById('progressiveToggle')) {
-                    document.getElementById('progressiveToggle').click();
+            case 'P':
+                if (DOM.toggleProgressiveBtn && !DOM.toggleProgressiveBtn.disabled) {
+                    DOM.toggleProgressiveBtn.click();
                 }
                 break;
             case 'c':
-                // Cashout progressive
-                if (document.getElementById('progressiveCashout')) {
-                    document.getElementById('progressiveCashout').click();
+            case 'C':
+                if (DOM.cashoutProgressiveBtn && !DOM.cashoutProgressiveBtn.disabled) {
+                    DOM.cashoutProgressiveBtn.click();
                 }
                 break;
         }
     });
+    
+    log('⌨️ Keyboard shortcuts enabled: 1=Heads, 2=Tails, Space=Flip, H=Half, D=Double, M=Max, P=Progressive, C=Cashout');
 }
+
+// ============================================================
+//  APP HELPERS
+// ============================================================
+
+function getAppStatus() {
+    return {
+        initialized: AppState.initialized,
+        ready: AppState.ready,
+        version: AppState.version,
+        loggedIn: !!authToken,
+        username: currentUser ? currentUser.username : null,
+        isAdmin: isAdmin,
+        balance: currentUserData ? currentUserData.balance : 0
+    };
+}
+
+function showAppInfo() {
+    const status = getAppStatus();
+    console.log('========================================');
+    console.log('🪙 COIN FLIP CASINO v' + status.version);
+    console.log('========================================');
+    console.log(`   Status:     ${status.ready ? '✅ Ready' : '⏳ Loading'}`);
+    console.log(`   Logged In:  ${status.loggedIn ? '✅ Yes' : '❌ No'}`);
+    if (status.loggedIn) {
+        console.log(`   Username:   ${status.username}`);
+        console.log(`   Balance:    $${status.balance.toFixed(2)}`);
+        console.log(`   Admin:      ${status.isAdmin ? '✅ Yes' : '❌ No'}`);
+    }
+    console.log('========================================');
+}
+
+// ============================================================
+//  DOM READY CHECK
+// ============================================================
+
+function domReady() {
+    return new Promise((resolve) => {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', resolve);
+        } else {
+            resolve();
+        }
+    });
+}
+
+// ============================================================
+//  START APPLICATION
+// ============================================================
+
+async function startApp() {
+    await domReady();
+    await initApp();
+    
+    window.__app = {
+        state: AppState,
+        status: getAppStatus,
+        info: showAppInfo,
+        reload: () => location.reload(),
+        forceRefresh: async () => {
+            await refreshUserData();
+            renderCheckpoints();
+            showNotification('🔄 App refreshed');
+        }
+    };
+    
+    console.log('💡 Type __app.info() for app info, __app.status() for status, __app.forceRefresh() to refresh');
+}
+
+// ============================================================
+//  START
+// ============================================================
+
+startApp();
+
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    // Already loaded, but startApp handles this via domReady()
+}
+
+// ============================================================
+//  EXPOSE GLOBALLY
+// ============================================================
+
+window.AppState = AppState;
+window.initApp = initApp;
+window.startApp = startApp;
+window.getAppStatus = getAppStatus;
+window.showAppInfo = showAppInfo;
+window.setupKeyboardShortcuts = setupKeyboardShortcuts;
+window.__app = null;
