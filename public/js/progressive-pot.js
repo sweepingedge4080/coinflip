@@ -18,10 +18,6 @@ let progressivePotState = {
     potValue: 0
 };
 
-// ----- MAIN GAME STATE REFERENCE -----
-// This will be set by the main app to keep everything in sync
-window.progressiveActive = false;
-
 // ============================================================
 //  PROGRESSIVE POT FUNCTIONS
 // ============================================================
@@ -29,19 +25,13 @@ window.progressiveActive = false;
 function startProgressivePot(betAmount) {
     console.log('🔥 Starting progressive pot with bet:', betAmount);
     
-    // Reset state completely first
-    resetProgressivePot();
-    
-    // Set new state
+    // Reset state
     progressivePotState.isActive = true;
     progressivePotState.isolatedBet = betAmount;
     progressivePotState.currentLevel = 0;
     progressivePotState.betDeducted = true; // Bet was already deducted by the server
     progressivePotState.startBalance = currentUserData ? currentUserData.balance : 0;
     progressivePotState.potValue = betAmount * 2; // Level 1 is 2x
-    
-    // Sync the main flag
-    window.progressiveActive = true;
     
     console.log('📊 Progressive pot state:', progressivePotState);
     return progressivePotState;
@@ -79,7 +69,7 @@ function cashoutProgressivePot() {
     
     console.log(`💰 Cashing out progressive pot: $${potValue.toFixed(2)} (net profit: $${netProfit.toFixed(2)})`);
     
-    // Calculate result before reset
+    // Reset the pot
     const result = {
         potValue: potValue,
         isolatedBet: isolatedBet,
@@ -124,17 +114,10 @@ function resetProgressivePot() {
     progressivePotState.betDeducted = false;
     progressivePotState.startBalance = 0;
     progressivePotState.potValue = 0;
-    
-    // Sync the main flag
-    window.progressiveActive = false;
 }
 
 function getProgressivePotState() {
     return { ...progressivePotState };
-}
-
-function isProgressiveActive() {
-    return progressivePotState.isActive;
 }
 
 function getProgressiveMultiplier(level) {
@@ -142,34 +125,6 @@ function getProgressiveMultiplier(level) {
     if (level <= 0) return 2;
     if (level > multipliers.length) return multipliers[multipliers.length - 1];
     return multipliers[level - 1];
-}
-
-function getMaxProgressiveLevel() {
-    return 8; // 55x multiplier
-}
-
-// ============================================================
-//  PROGRESSIVE UI UPDATES
-// ============================================================
-
-function updateProgressiveUI() {
-    const potDisplay = document.getElementById('progressivePot');
-    const levelDisplay = document.getElementById('progressiveLevel');
-    const multiplierDisplay = document.getElementById('progressiveMultiplier');
-    
-    if (!progressivePotState.isActive) {
-        if (potDisplay) potDisplay.textContent = '$0.00';
-        if (levelDisplay) levelDisplay.textContent = '0';
-        if (multiplierDisplay) multiplierDisplay.textContent = '2x';
-        return;
-    }
-    
-    if (potDisplay) potDisplay.textContent = `$${progressivePotState.potValue.toFixed(2)}`;
-    if (levelDisplay) levelDisplay.textContent = progressivePotState.currentLevel;
-    if (multiplierDisplay) {
-        const mult = getProgressiveMultiplier(progressivePotState.currentLevel);
-        multiplierDisplay.textContent = `${mult}x`;
-    }
 }
 
 // ============================================================
@@ -183,9 +138,6 @@ window.cashoutProgressivePot = cashoutProgressivePot;
 window.bustProgressivePot = bustProgressivePot;
 window.resetProgressivePot = resetProgressivePot;
 window.getProgressivePotState = getProgressivePotState;
-window.isProgressiveActive = isProgressiveActive;
 window.getProgressiveMultiplier = getProgressiveMultiplier;
-window.getMaxProgressiveLevel = getMaxProgressiveLevel;
-window.updateProgressiveUI = updateProgressiveUI;
 
 console.log('🔥 Progressive Pot system loaded');
