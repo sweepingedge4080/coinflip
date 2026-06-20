@@ -133,7 +133,6 @@ let totalWins = 0;
 let totalLosses = 0;
 let startBalance = 0;
 let currentProfit = 0;
-let progressiveRunLogged = false;
 
 function addLogEntry(choice, result, betAmount, winnings, newBalance) {
     const entry = {
@@ -216,7 +215,6 @@ function clearLog() {
     totalLosses = 0;
     currentProfit = 0;
     startBalance = currentUserData ? currentUserData.balance : 0;
-    progressiveRunLogged = false;
     
     logBody.innerHTML = `<div class="log-empty">🗑️ Log cleared. Start playing!</div>`;
     updateLogStats();
@@ -234,7 +232,6 @@ function toggleLog() {
 
 function initLog() {
     startBalance = currentUserData ? currentUserData.balance : 0;
-    progressiveRunLogged = false;
     
     const clearBtn = document.getElementById('clearLogBtn');
     if (clearBtn) clearBtn.onclick = clearLog;
@@ -323,6 +320,7 @@ async function flipCoin() {
         const serverNewBalance = parseFloat(response.newBalance) || currentUserData.balance;
         const serverStats = response.stats || {};
         
+        // ✅ ONLY update from server - NO local math
         currentUserData.balance = serverNewBalance;
         currentUserData.wins = parseInt(serverStats.wins) || currentUserData.wins;
         currentUserData.losses = parseInt(serverStats.losses) || currentUserData.losses;
@@ -338,9 +336,35 @@ async function flipCoin() {
             DOM.coin.style.filter = serverWin ? 'none' : 'grayscale(0.5)';
             
             if (serverWin) {
-                handleWinResponse(response, isProgressiveFlip, bet);
+                // ✅ Progressive wins: log the NET profit (winnings - bet) for display
+                if (isProgressiveFlip || progressiveActive) {
+                    const netProfit = serverWinnings - bet;
+                    addLogEntry(selectedChoice, 'win', bet, netProfit, serverNewBalance);
+                } else {
+                    // ✅ Normal win: log full winnings
+                    addLogEntry(selectedChoice, 'win', bet, serverWinnings, serverNewBalance);
+                }
+                
+                // ✅ Show UI result
+                if (isProgressiveFlip || progressiveActive) {
+                    handleProgressiveWin(response);
+                } else {
+                    DOM.result.innerHTML = `🎉 WIN! Won $${serverWinnings.toFixed(2)}! 🎉`;
+                    DOM.result.className = 'result win';
+                    showWinCelebration(serverWinnings);
+                    showNotification(`🎉 Won $${serverWinnings.toFixed(2)}!`);
+                }
             } else {
-                handleLossResponse(response, isProgressiveFlip, bet);
+                // ✅ Loss: log the loss
+                addLogEntry(selectedChoice, 'lose', bet, 0, serverNewBalance);
+                
+                if (isProgressiveFlip || progressiveActive) {
+                    handleProgressiveLoss(bet);
+                } else {
+                    DOM.result.innerHTML = `💀 LOSS! Lost $${bet.toFixed(2)} 💀`;
+                    DOM.result.className = 'result lose';
+                    showLossCelebration(bet);
+                }
             }
             
             isFlipping = false;
@@ -369,36 +393,7 @@ async function flipCoin() {
 }
 
 // ============================================================
-//  WIN / LOSS HANDLERS
-// ============================================================
-
-function handleWinResponse(response, isProgressiveFlip, bet) {
-    const serverWinnings = parseFloat(response.winnings) || 0;
-    
-    if (isProgressiveFlip || progressiveActive) {
-        handleProgressiveWin(response);
-    } else {
-        DOM.result.innerHTML = `🎉 WIN! Won $${serverWinnings.toFixed(2)}! 🎉`;
-        DOM.result.className = 'result win';
-        showWinCelebration(serverWinnings);
-        showNotification(`🎉 Won $${serverWinnings.toFixed(2)}!`);
-        addLogEntry(selectedChoice, 'win', bet, serverWinnings, currentUserData.balance);
-    }
-}
-
-function handleLossResponse(response, isProgressiveFlip, bet) {
-    if (isProgressiveFlip || progressiveActive) {
-        handleProgressiveLoss(bet);
-    } else {
-        DOM.result.innerHTML = `💀 LOSS! Lost $${bet.toFixed(2)} 💀`;
-        DOM.result.className = 'result lose';
-        showLossCelebration(bet);
-        addLogEntry(selectedChoice, 'lose', bet, 0, currentUserData.balance);
-    }
-}
-
-// ============================================================
-//  PROGRESSIVE WIN / LOSS HANDLERS
+//  PROGRESSIVE HANDLERS (UI only - NO MATH)
 // ============================================================
 
 function handleProgressiveWin(response) {
@@ -414,8 +409,7 @@ function handleProgressiveWin(response) {
     DOM.result.className = 'result progressive-win';
     showNotification(`🔥 Level ${progressiveLevel}! Pot: $${pot.toFixed(2)}`, 2000);
     
-    // ✅ DON'T log each level - only log on cashout or bust
-    // progressiveRunLogged will be set to true when we cash out or bust
+    // ✅ Log entry is already added in flipCoin() - don't add again
     
     if (progressiveLevel >= PROGRESSIVE_MULTIPLIERS.length) {
         handleMaxLevelReached();
@@ -439,10 +433,7 @@ function handleProgressiveLoss(bet) {
     DOM.result.className = 'result lose';
     showLossCelebration(lostAmount);
     
-    // ✅ Log the loss (this is a real loss - bet was already deducted)
-    // Show the total amount lost (pot that was on the line)
-    addLogEntry(selectedChoice, 'lose', progressiveBet, -lostAmount, currentUserData.balance);
-    progressiveRunLogged = true;
+    // ✅ Log entry is already added in flipCoin() - don't add again
     
     const savedBet = progressiveBet;
     showBigLossOverlay(levelReached, lostAmount);
@@ -455,15 +446,12 @@ function handleProgressiveLoss(bet) {
 
 function handleMaxLevelReached() {
     const finalPot = progressiveBet * PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
-    const netProfit = finalPot - progressiveBet;
     
     updateUI();
     showNotification(`🏆 MAX LEVEL REACHED! Won $${finalPot.toFixed(2)}! 🏆`, 5000);
     showWinCelebration(finalPot);
     
-    // ✅ Log the final cashout - show net profit
-    addLogEntry(selectedChoice, 'win', progressiveBet, netProfit, currentUserData.balance);
-    progressiveRunLogged = true;
+    // ✅ Log entry is already added in flipCoin() - don't add again
     
     const savedBet = progressiveBet;
     resetProgressiveRun();
@@ -489,13 +477,12 @@ function cashoutProgressiveHandler() {
     
     const multiplier = progressiveLevel <= PROGRESSIVE_MULTIPLIERS.length 
         ? PROGRESSIVE_MULTIPLIERS[progressiveLevel - 1] 
-        : PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
+        : PROGRESSIVE_MULTIPLIERS[progressiveLevel];
     const pot = progressiveBet * multiplier;
     const netProfit = pot - progressiveBet;
     
-    // ✅ Log the cashout - show net profit (pot - bet)
+    // ✅ Log the cashout - net profit (pot - bet)
     addLogEntry(selectedChoice, 'win', progressiveBet, netProfit, currentUserData.balance);
-    progressiveRunLogged = true;
     
     // Call the actual cashout function from progressive.js
     window.cashoutProgressive();
@@ -583,8 +570,6 @@ window.halfBet = halfBet;
 window.doubleBet = doubleBet;
 window.maxBet = maxBet;
 window.flipCoin = flipCoin;
-window.handleWinResponse = handleWinResponse;
-window.handleLossResponse = handleLossResponse;
 window.handleProgressiveWin = handleProgressiveWin;
 window.handleProgressiveLoss = handleProgressiveLoss;
 window.handleMaxLevelReached = handleMaxLevelReached;
@@ -597,4 +582,3 @@ window.addLogEntry = addLogEntry;
 window.clearLog = clearLog;
 window.toggleLog = toggleLog;
 window.initLog = initLog;
-window.progressiveRunLogged = progressiveRunLogged;
