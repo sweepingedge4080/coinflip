@@ -21,13 +21,12 @@ const PORT = process.env.PORT || 3000;
 //  SECURITY MIDDLEWARE
 // ============================================================
 
-// ✅ UPDATED CSP - Allows Google Fonts
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
             imgSrc: ["'self'", "https://api.qrserver.com", "data:"],
-            scriptSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
             connectSrc: ["'self'"],
@@ -174,7 +173,7 @@ function getNextLevelData(level) {
 }
 
 function getMaxBet(level) {
-    return 999999;
+    return 999999; // No practical limit
 }
 
 function getWinBonus(level) {
@@ -205,6 +204,7 @@ const auth = (req, res, next) => {
     }
 };
 
+// Admin middleware
 const isAdmin = async (req, res, next) => {
     try {
         const user = await User.findById(req.userId);
@@ -344,7 +344,7 @@ app.get('/api/auth/me', auth, async (req, res) => {
 });
 
 // ============================================================
-//  GAME ROUTES
+//  GAME ROUTES - FIXED PROGRESSIVE MATH
 // ============================================================
 
 app.get('/api/game/stats', auth, async (req, res) => {
@@ -375,6 +375,7 @@ app.get('/api/game/stats', auth, async (req, res) => {
     }
 });
 
+// Flip coin - FIXED PROGRESSIVE MATH
 app.post('/api/game/flip', [
     auth,
     body('betAmount').isFloat({ min: 0.01 }),
@@ -395,17 +396,24 @@ app.post('/api/game/flip', [
             return res.status(404).json({ error: 'User not found' });
         }
 
+        // ✅ Check balance
         if (betAmount > user.balance) {
             return res.status(400).json({ error: 'Insufficient balance' });
         }
 
+        // Sanity check
         if (betAmount > 1000000) {
             return res.status(400).json({ error: 'Bet amount cannot exceed $1,000,000' });
         }
 
-        user.balance -= betAmount;
-        user.totalWagered = (user.totalWagered || 0) + betAmount;
+        // ✅ For progressive mode, use originalBet (locked bet) NOT the current betAmount
+        const effectiveBet = (progressiveStreak > 0 && originalBet) ? originalBet : betAmount;
+        
+        // ✅ DEDUCT THE BET ONCE - ALWAYS
+        user.balance -= effectiveBet;
+        user.totalWagered = (user.totalWagered || 0) + effectiveBet;
 
+        // 11% house edge = 44.5% win chance
         const winChance = 0.5 * (1 - 0.11);
         const result = Math.random() < winChance ? 'heads' : 'tails';
         const win = choice === result;
@@ -425,8 +433,11 @@ app.post('/api/game/flip', [
                 multiplier = PROGRESSIVE_MULTIPLIERS[PROGRESSIVE_MULTIPLIERS.length - 1];
             }
             
-            const baseBet = originalBet || betAmount;
+            // ✅ Use originalBet for progressive mode winnings calculation
+            const baseBet = (progressiveStreak > 0) ? originalBet : betAmount;
             winnings = baseBet * multiplier;
+            
+            // ✅ Add winnings to balance
             user.balance += winnings;
             user.wins = (user.wins || 0) + 1;
             user.currentStreak = (user.currentStreak || 0) + 1;
@@ -438,8 +449,10 @@ app.post('/api/game/flip', [
             user.losses = (user.losses || 0) + 1;
             user.currentStreak = 0;
             xpGain = 2;
+            // ✅ On loss, the bet was already deducted above - nothing else to deduct
         }
 
+        // Level up
         user.xp = (user.xp || 0) + xpGain;
         while (true) {
             const next = getNextLevelData(user.level);
@@ -493,6 +506,7 @@ app.post('/api/game/add-progressive', auth, async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
         
+        // Add the progressive winnings to user balance
         user.balance += amount;
         await user.save();
         
@@ -900,5 +914,5 @@ app.listen(PORT, () => {
     console.log('   ✅ JWT - Environment secret');
     console.log('   ✅ NO MAX BET LIMITS');
     console.log('   ✅ PROXY TRUST ENABLED - Render load balancer support');
-    console.log('   ✅ CSP UPDATED - Google Fonts allowed');
+    console.log('   ✅ PROGRESSIVE MATH FIXED - Bet deducted once, correct winnings');
 });
