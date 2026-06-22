@@ -2,542 +2,567 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>CoinFlip Casino | Play Now</title>
-
-    <!-- Favicon -->
-    <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinFlip Casino - Game</title>
+    
     <!-- CSS -->
     <link rel="stylesheet" href="/css/main.css">
-    <link rel="stylesheet" href="/css/auth.css">
     <link rel="stylesheet" href="/css/game.css">
     <link rel="stylesheet" href="/css/progressive.css">
     <link rel="stylesheet" href="/css/modals.css">
+    <link rel="stylesheet" href="/css/loading.css">
+    
+    <style>
+        /* Additional inline styles for critical elements */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            border-bottom: 2px solid #ff6b35;
+            margin-bottom: 20px;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .header-left h1 {
+            color: #ff6b35;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-info {
+            color: #fff;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .auth-buttons button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .auth-buttons button:hover {
+            transform: scale(1.05);
+        }
+        
+        #loginBtn {
+            background: #4a90d9;
+            color: white;
+        }
+        
+        #signupBtn {
+            background: #00cc88;
+            color: white;
+        }
+        
+        #logoutBtn {
+            background: #ff4444;
+            color: white;
+            display: none;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        #logoutBtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.3);
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .balance-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .balance-section .label {
+            color: #888;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .balance-section .amount {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+        
+        .game-controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .game-controls button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            min-width: 80px;
+        }
+        
+        .game-controls button:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+        
+        .game-controls button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-heads {
+            background: #4a90d9;
+            color: white;
+        }
+        
+        .btn-tails {
+            background: #d94a4a;
+            color: white;
+        }
+        
+        .btn-flip {
+            background: linear-gradient(145deg, #ffd700, #ff8c00);
+            color: #1a1a2e;
+            flex: 2;
+        }
+        
+        .bet-controls {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .bet-controls label {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .bet-controls input {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #2a2a4e;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            min-width: 100px;
+        }
+        
+        .bet-controls input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .bet-controls .bet-btn {
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #2a2a4e;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .bet-controls .bet-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .bet-controls .bet-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .result-display {
+            text-align: center;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .result-display.win {
+            display: block;
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            animation: pulse 0.5s ease;
+        }
+        
+        .result-display.loss {
+            display: block;
+            background: rgba(255, 68, 68, 0.1);
+            border: 2px solid #ff4444;
+            color: #ff4444;
+            animation: shake 0.5s ease;
+        }
+        
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        .stats-section .stat {
+            text-align: center;
+        }
+        
+        .stats-section .stat .label {
+            color: #888;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+        }
+        
+        .stats-section .stat .value {
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: block;
+            margin-top: 4px;
+        }
+        
+        .stats-section .stat .value.wins {
+            color: #00ff88;
+        }
+        
+        .stats-section .stat .value.losses {
+            color: #ff4444;
+        }
+        
+        .stats-section .stat .value.streak {
+            color: #ffd700;
+        }
+        
+        .xp-section {
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .xp-section .xp-header {
+            display: flex;
+            justify-content: space-between;
+            color: #888;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+        
+        .xp-section .xp-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .xp-section .xp-bar .xp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b35, #ffd700);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .history-container {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .history-container .history-entry {
+            padding: 5px 10px;
+            margin: 2px 0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .history-container .history-entry.win {
+            color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+        
+        .history-container .history-entry.loss {
+            color: #ff4444;
+            background: rgba(255, 68, 68, 0.1);
+        }
+        
+        .console-log {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: #00ff88;
+            border: 1px solid #1a2a1a;
+        }
+        
+        .console-log .log-entry {
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .console-log .log-entry.error {
+            color: #ff4444;
+        }
+        
+        .console-log .log-entry.success {
+            color: #00ff88;
+        }
+        
+        .console-log .log-entry.warning {
+            color: #ffaa00;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 10px;
+                padding: 10px;
+            }
+            
+            .header-left {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .header-right {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .game-controls button {
+                font-size: 0.9rem;
+                padding: 10px;
+            }
+            
+            .stats-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <h1>🪙 CoinFlip Casino</h1>
+        </div>
+        <div class="header-right">
+            <span class="user-info" id="userInfo">👤 User</span>
+            <div class="auth-buttons">
+                <button id="loginBtn">Login</button>
+                <button id="signupBtn">Signup</button>
+                <button id="logoutBtn">🚪 Logout</button>
+            </div>
+        </div>
+    </header>
 
-<div class="game-container">
-    <!-- ============================================================
-         GAME HEADER
-         ============================================================ -->
-    <div class="game-header">
-        <div class="logo">🪙 COIN FLIP CASINO</div>
-        <div class="game-header-actions">
-            <div class="user-info-compact">
-                <span class="user-name" id="currentUserDisplay">Player</span>
-                <div class="user-id-container" id="userIdContainer" onclick="copyUserId()">
-                    <span class="user-id-label">🆔</span>
-                    <span class="user-id-value" id="userIdDisplay">-</span>
-                    <span class="copy-id-btn">📋</span>
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Balance Section -->
+        <div class="balance-section">
+            <span class="label">Balance</span>
+            <div class="amount" id="balanceDisplay">$0.00</div>
+        </div>
+
+        <!-- Result Display -->
+        <div class="result-display" id="resultDisplay"></div>
+
+        <!-- Bet Controls -->
+        <div class="bet-controls">
+            <label for="betAmount">Bet:</label>
+            <input type="number" id="betAmount" value="1" min="0.01" step="0.01">
+            <button class="bet-btn" id="halfBet">½</button>
+            <button class="bet-btn" id="doubleBet">2×</button>
+            <button class="bet-btn" id="maxBet">MAX</button>
+        </div>
+
+        <!-- Game Controls -->
+        <div class="game-controls">
+            <button class="btn-heads" id="headsBtn">👑 HEADS</button>
+            <button class="btn-tails" id="tailsBtn">🪙 TAILS</button>
+            <button class="btn-flip" id="flipBtn">🔄 FLIP</button>
+        </div>
+
+        <!-- Progressive Pot Container -->
+        <div class="progressive-container" id="progressiveContainer">
+            <div class="progressive-header">
+                <h3>⚡ Progressive Pot</h3>
+                <button class="progressive-toggle" id="progressiveToggle">🚀 Start Progressive</button>
+            </div>
+
+            <div class="progressive-info">
+                <div class="progressive-item">
+                    <span class="label">Pot</span>
+                    <span class="value" id="progressivePot">$0.00</span>
                 </div>
-                <span id="adminBadge" class="admin-badge" style="display: none;">👑 ADMIN</span>
-            </div>
-            <button id="gameLogoutBtn" class="logout-btn-small">🚪 LOGOUT</button>
-        </div>
-    </div>
-
-    <!-- ============================================================
-         BANKING PANEL
-         ============================================================ -->
-    <div class="banking-panel">
-        <div class="balance-row">
-            <div class="balance-box">
-                <div class="balance-label">💰 BALANCE</div>
-                <div class="balance-amount" id="balance">0.00</div>
-            </div>
-            <div class="balance-box">
-                <div class="balance-label">🏆 BEST STREAK</div>
-                <div class="balance-amount" id="bestStreak">0</div>
-            </div>
-            <div class="balance-box">
-                <div class="balance-label">📊 TOTAL WAGERED</div>
-                <div class="balance-amount" id="totalWagered">0.00</div>
-            </div>
-        </div>
-        <div class="bank-buttons">
-            <button id="depositBtn" class="bank-action-btn deposit-action-btn">💵 DEPOSIT</button>
-            <button id="withdrawBtn" class="bank-action-btn withdraw-action-btn">💰 WITHDRAW</button>
-        </div>
-        <div class="info-text">💡 Deposits/Withdrawals sent to admin for processing</div>
-    </div>
-
-    <!-- ============================================================
-         DEPOSIT MODAL
-         ============================================================ -->
-    <div id="depositModal" class="modal">
-        <div class="modal-content">
-            <h3>💵 DEPOSIT REQUEST</h3>
-            <div class="deposit-two-columns">
-                <div class="deposit-left-column">
-                    <select id="depositMethod" class="modal-select">
-                        <optgroup label="🔷 Bitcoin & Ethereum">
-                            <option value="Bitcoin (BTC)">Bitcoin (BTC)</option>
-                            <option value="Ethereum (ETH)">Ethereum (ETH)</option>
-                        </optgroup>
-                        <optgroup label="💎 USDT & USDC (Multiple Chains)">
-                            <option value="USDT (ERC20)">USDT (ERC20) - Ethereum</option>
-                            <option value="USDT (BEP20)">USDT (BEP20) - BNB Chain</option>
-                            <option value="USDT (TRC20)">USDT (TRC20) - TRON</option>
-                            <option value="USDC (ERC20)">USDC (ERC20) - Ethereum</option>
-                            <option value="USDC (BEP20)">USDC (BEP20) - BNB Chain</option>
-                            <option value="USDC (TRC20)">USDC (TRC20) - TRON</option>
-                        </optgroup>
-                        <optgroup label="🟣 BNB & Altcoins">
-                            <option value="BNB (BSC)">BNB (BSC) - Binance Coin</option>
-                            <option value="Litecoin (LTC)">Litecoin (LTC)</option>
-                            <option value="Solana (SOL)">Solana (SOL)</option>
-                            <option value="Dogecoin (DOGE)">Dogecoin (DOGE)</option>
-                            <option value="Ripple (XRP)">Ripple (XRP)</option>
-                            <option value="Cardano (ADA)">Cardano (ADA)</option>
-                            <option value="Polkadot (DOT)">Polkadot (DOT)</option>
-                            <option value="Polygon (MATIC)">Polygon (MATIC)</option>
-                            <option value="Avalanche (AVAX)">Avalanche (AVAX)</option>
-                            <option value="TRON (TRX)">TRON (TRX)</option>
-                            <option value="Monero (XMR)">Monero (XMR)</option>
-                            <option value="TONCOIN (TON)">TONCOIN (TON)</option>
-                            <option value="Shiba Inu (SHIB)">Shiba Inu (SHIB) - ERC20</option>
-                        </optgroup>
-                    </select>
-
-                    <div class="qr-section" id="depositQRSection">
-                        <!-- BTC -->
-                        <div id="qr-btc" class="qr-placeholder" style="display: flex;">
-                            <div class="qr-title">💎 Bitcoin (BTC) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=16Hv2ngy7qy6ZEAxfga2mRDdMhzqgryXUC" alt="BTC QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="btcAddress">16Hv2ngy7qy6ZEAxfga2mRDdMhzqgryXUC</span>
-                                <button class="copy-btn" onclick="copyToClipboard('btcAddress')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- ETH -->
-                        <div id="qr-eth" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 Ethereum (ETH) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344" alt="ETH QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="ethAddress">0x524b351129D5bC89eFA657f5266155297F398344</span>
-                                <button class="copy-btn" onclick="copyToClipboard('ethAddress')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- USDT ERC20 -->
-                        <div id="qr-usdt-erc20" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 USDT (ERC20) - Ethereum Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344" alt="USDT ERC20 QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="usdtErc20Address">0x524b351129D5bC89eFA657f5266155297F398344</span>
-                                <button class="copy-btn" onclick="copyToClipboard('usdtErc20Address')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- USDT BEP20 -->
-                        <div id="qr-usdt-bep20" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 USDT (BEP20) - BNB Chain Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344" alt="USDT BEP20 QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="usdtBep20Address">0x524b351129D5bC89eFA657f5266155297F398344</span>
-                                <button class="copy-btn" onclick="copyToClipboard('usdtBep20Address')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- USDT TRC20 -->
-                        <div id="qr-usdt-trc20" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 USDT (TRC20) - TRON Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN" alt="USDT TRC20 QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="usdtTrc20Address">TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN</span>
-                                <button class="copy-btn" onclick="copyToClipboard('usdtTrc20Address')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- USDC ERC20 -->
-                        <div id="qr-usdc-erc20" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 USDC (ERC20) - Ethereum Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344" alt="USDC ERC20 QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="usdcErc20Address">0x524b351129D5bC89eFA657f5266155297F398344</span>
-                                <button class="copy-btn" onclick="copyToClipboard('usdcErc20Address')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- USDC BEP20 -->
-                        <div id="qr-usdc-bep20" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 USDC (BEP20) - BNB Chain Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344" alt="USDC BEP20 QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="usdcBep20Address">0x524b351129D5bC89eFA657f5266155297F398344</span>
-                                <button class="copy-btn" onclick="copyToClipboard('usdcBep20Address')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- USDC TRC20 -->
-                        <div id="qr-usdc-trc20" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 USDC (TRC20) - TRON Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN" alt="USDC TRC20 QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="usdcTrc20Address">TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN</span>
-                                <button class="copy-btn" onclick="copyToClipboard('usdcTrc20Address')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- BNB -->
-                        <div id="qr-bnb" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 BNB (BSC) - Binance Coin Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344" alt="BNB QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="bnbAddress">0x524b351129D5bC89eFA657f5266155297F398344</span>
-                                <button class="copy-btn" onclick="copyToClipboard('bnbAddress')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- LTC -->
-                        <div id="qr-ltc" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 Litecoin (LTC) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=LLVjH9nxPjGLNrGQA7TXyUx2eexKL4Yuxn" alt="LTC QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="ltcAddress">LLVjH9nxPjGLNrGQA7TXyUx2eexKL4Yuxn</span>
-                                <button class="copy-btn" onclick="copyToClipboard('ltcAddress')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- SOL -->
-                        <div id="qr-sol" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 Solana (SOL) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=6RFV3E4jSuEnATwi9NMTBfqE9yfNAz3Nh9Ad2ZPpFeE" alt="SOL QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="solAddress">6RFV3E4jSuEnATwi9NMTBfqE9yfNAz3Nh9Ad2ZPpFeE</span>
-                                <button class="copy-btn" onclick="copyToClipboard('solAddress')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- DOGE -->
-                        <div id="qr-doge" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 Dogecoin (DOGE) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=DUBtSMnvRWKJks8GvRSGtKkusmFsWdgzWK" alt="DOGE QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="dogeAddress">DUBtSMnvRWKJks8GvRSGtKkusmFsWdgzWK</span>
-                                <button class="copy-btn" onclick="copyToClipboard('dogeAddress')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- XRP -->
-                        <div id="qr-xrp" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 Ripple (XRP) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=rG3SL9GntFomLeFxJMP1tvs5fdQwogZttG" alt="XRP QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="xrpAddress">rG3SL9GntFomLeFxJMP1tvs5fdQwogZttG</span>
-                                <button class="copy-btn" onclick="copyToClipboard('xrpAddress')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- ADA -->
-                        <div id="qr-ada" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 Cardano (ADA) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=addr1q8nalkryt3j43zz2cl4c6vwmcp3smugvr5jvj7l0hmkjgn7szeu32fljmxyhtksdsdh8gue73qtgkh0q875tthemh0lq2phz4v" alt="ADA QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="adaAddress">addr1q8nalkryt3j43zz2cl4c6vwmcp3smugvr5jvj7l0hmkjgn7szeu32fljmxyhtksdsdh8gue73qtgkh0q875tthemh0lq2phz4v</span>
-                                <button class="copy-btn" onclick="copyToClipboard('adaAddress')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- DOT -->
-                        <div id="qr-dot" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 Polkadot (DOT) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=14mDXE2j5HbzXdGEXKj5xR3kJSRLyyDH94TjtDk3F1kVS2Ub" alt="DOT QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="dotAddress">14mDXE2j5HbzXdGEXKj5xR3kJSRLyyDH94TjtDk3F1kVS2Ub</span>
-                                <button class="copy-btn" onclick="copyToClipboard('dotAddress')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- MATIC -->
-                        <div id="qr-matic" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 Polygon (MATIC) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344" alt="MATIC QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="maticAddress">0x524b351129D5bC89eFA657f5266155297F398344</span>
-                                <button class="copy-btn" onclick="copyToClipboard('maticAddress')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- AVAX -->
-                        <div id="qr-avax" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 Avalanche (AVAX) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344" alt="AVAX QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="avaxAddress">0x524b351129D5bC89eFA657f5266155297F398344</span>
-                                <button class="copy-btn" onclick="copyToClipboard('avaxAddress')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- TRX -->
-                        <div id="qr-trx" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 TRON (TRX) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN" alt="TRX QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="trxAddress">TSn24mR1ZaYr7A1ZrroXzBNYyxY71CT6mN</span>
-                                <button class="copy-btn" onclick="copyToClipboard('trxAddress')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- XMR -->
-                        <div id="qr-xmr" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 Monero (XMR) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=46ujpgsAHhW325Hq2qTfm7FFDE2adKwum65TvMS83oMkbt7Ezn5oCH5TaCer3Hn7adcvewixcm9MR4X4pNTtSuxNCeKErjU" alt="XMR QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="xmrAddress">46ujpgsAHhW325Hq2qTfm7FFDE2adKwum65TvMS83oMkbt7Ezn5oCH5TaCer3Hn7adcvewixcm9MR4X4pNTtSuxNCeKErjU</span>
-                                <button class="copy-btn" onclick="copyToClipboard('xmrAddress')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- TON -->
-                        <div id="qr-ton" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 TONCOIN (TON) Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=EQBJHKaLTccsEmxP8Tc0B-1yzSeHksP7O9fbbO5jrABdZPBU" alt="TON QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="tonAddress">EQBJHKaLTccsEmxP8Tc0B-1yzSeHksP7O9fbbO5jrABdZPBU</span>
-                                <button class="copy-btn" onclick="copyToClipboard('tonAddress')">📋 COPY</button>
-                            </div>
-                        </div>
-                        <!-- SHIB -->
-                        <div id="qr-shib" class="qr-placeholder" style="display: none;">
-                            <div class="qr-title">💎 Shiba Inu (SHIB) - ERC20 Wallet</div>
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=0x524b351129D5bC89eFA657f5266155297F398344" alt="SHIB QR Code" loading="lazy">
-                            <div class="wallet-address-container">
-                                <span class="wallet-address" id="shibAddress">0x524b351129D5bC89eFA657f5266155297F398344</span>
-                                <button class="copy-btn" onclick="copyToClipboard('shibAddress')">📋 COPY</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <input type="number" step="0.01" id="depositAmount" class="modal-input" placeholder="Amount (min 10 points)" value="100" min="10" max="100000" required>
-                    <input type="text" id="depositWallet" class="modal-input" placeholder="Your Wallet Address / Transaction ID *REQUIRED*" minlength="5" maxlength="200" required>
-                    <textarea id="depositNote" class="modal-textarea" placeholder="Additional notes (optional)" maxlength="500"></textarea>
+                <div class="progressive-item">
+                    <span class="label">Level</span>
+                    <span class="value" id="progressiveLevel">0</span>
                 </div>
-
-                <div class="deposit-right-column">
-                    <div class="instructions-box">
-                        <div class="instructions-title">📋 DEPOSIT INSTRUCTIONS</div>
-                        <div class="instructions-text">
-                            <strong>1.</strong> Select your cryptocurrency from the dropdown.<br>
-                            <strong>2.</strong> Send the EXACT amount to the displayed wallet address.<br>
-                            <strong>3.</strong> Scan the QR code or click COPY to copy the address.<br>
-                            <strong>4.</strong> ⚠️ <strong>IMPORTANT:</strong> Send ONLY on the correct network!<br>
-                            <strong>5.</strong> Enter your Transaction ID / Hash in the field below.<br>
-                            <strong>6.</strong> Click "SEND REQUEST" so your transaction get processed.<br>
-                            <strong>7.</strong> Wait for admin to confirm your deposit (1-2 hours, usually less).
-                        </div>
-                        <div class="warning-text">
-                            ⚠️ <strong>CRITICAL WARNINGS:</strong><br>
-                            • <strong>BTC:</strong> Send on Bitcoin network only.<br>
-                            • <strong>ETH, USDC, USDT (ERC20), MATIC, AVAX, SHIB:</strong> Send on Ethereum (ERC20) network only.<br>
-                            • <strong>USDT (BEP20), BNB:</strong> Send on BNB Smart Chain (BSC/BEP20) only.<br>
-                            • <strong>USDT (TRC20), USDC (TRC20), TRX:</strong> Send on TRON (TRC20) network only.<br>
-                            • <strong>SOL:</strong> Send on Solana network only.<br>
-                            • <strong>LTC:</strong> Send on Litecoin network only.<br>
-                            • <strong>DOGE:</strong> Send on Dogecoin network only.<br>
-                            • <strong>XRP:</strong> Send on Ripple network only.<br>
-                            • <strong>ADA:</strong> Send on Cardano network only.<br>
-                            • <strong>DOT:</strong> Send on Polkadot network only.<br>
-                            • <strong>XMR:</strong> Send on Monero network only.<br>
-                            • <strong>TON:</strong> Send on TON network only.<br>
-                            • <strong>Sending on wrong network = PERMANENT LOSS!</strong><br>
-                            • You MUST send the Request via the button below.<br>
-                            • Include your Transaction ID exactly as shown in your wallet.<br>
-                            • No Request = no credit to your account.<br>
-                            • Minimum deposit: no minimum (but +10 dollars provide the best value)
-                        </div>
-                    </div>
+                <div class="progressive-item">
+                    <span class="label">Multiplier</span>
+                    <span class="value" id="progressiveMultiplier">2x</span>
+                </div>
+                <div class="progressive-item">
+                    <span class="label">Status</span>
+                    <span class="value" id="progressiveStatus">Inactive</span>
                 </div>
             </div>
 
-            <div class="modal-buttons">
-                <button id="confirmDepositBtn" class="modal-confirm">📧 SEND REQUEST</button>
-                <button id="cancelDepositBtn" class="modal-cancel">❌ CANCEL</button>
+            <div class="progressive-actions">
+                <button class="progressive-cashout" id="progressiveCashout" disabled>💰 Cashout</button>
             </div>
         </div>
-    </div>
 
-    <!-- ============================================================
-         WITHDRAW MODAL
-         ============================================================ -->
-    <div id="withdrawModal" class="modal">
-        <div class="modal-content">
-            <h3>💰 WITHDRAW REQUEST</h3>
-            <div class="deposit-two-columns">
-                <div class="deposit-left-column">
-                    <select id="withdrawMethod" class="modal-select">
-                        <optgroup label="🔷 Bitcoin & Ethereum">
-                            <option value="Bitcoin (BTC)">Bitcoin (BTC)</option>
-                            <option value="Ethereum (ETH)">Ethereum (ETH)</option>
-                        </optgroup>
-                        <optgroup label="💎 USDT & USDC (Multiple Chains)">
-                            <option value="USDT (ERC20)">USDT (ERC20) - Ethereum</option>
-                            <option value="USDT (BEP20)">USDT (BEP20) - BNB Chain</option>
-                            <option value="USDT (TRC20)">USDT (TRC20) - TRON</option>
-                            <option value="USDC (ERC20)">USDC (ERC20) - Ethereum</option>
-                            <option value="USDC (BEP20)">USDC (BEP20) - BNB Chain</option>
-                            <option value="USDC (TRC20)">USDC (TRC20) - TRON</option>
-                        </optgroup>
-                        <optgroup label="🟣 BNB & Altcoins">
-                            <option value="BNB (BSC)">BNB (BSC) - Binance Coin</option>
-                            <option value="Litecoin (LTC)">Litecoin (LTC)</option>
-                            <option value="Solana (SOL)">Solana (SOL)</option>
-                            <option value="Dogecoin (DOGE)">Dogecoin (DOGE)</option>
-                            <option value="Ripple (XRP)">Ripple (XRP)</option>
-                            <option value="Cardano (ADA)">Cardano (ADA)</option>
-                            <option value="Polkadot (DOT)">Polkadot (DOT)</option>
-                            <option value="Polygon (MATIC)">Polygon (MATIC)</option>
-                            <option value="Avalanche (AVAX)">Avalanche (AVAX)</option>
-                            <option value="TRON (TRX)">TRON (TRX)</option>
-                            <option value="Monero (XMR)">Monero (XMR)</option>
-                            <option value="TONCOIN (TON)">TONCOIN (TON)</option>
-                            <option value="Shiba Inu (SHIB)">Shiba Inu (SHIB) - ERC20</option>
-                        </optgroup>
-                    </select>
-                    <input type="number" step="0.01" id="withdrawAmount" class="modal-input" placeholder="Amount (min 10 points)" value="100" min="10" max="100000" required>
-                    <input type="text" id="withdrawWallet" class="modal-input" placeholder="Your Wallet Address *REQUIRED*" minlength="5" maxlength="200" required>
-                    <textarea id="withdrawNote" class="modal-textarea" placeholder="Additional notes (optional)" maxlength="500"></textarea>
-                </div>
-
-                <div class="deposit-right-column">
-                    <div class="instructions-box">
-                        <div class="instructions-title">📋 WITHDRAW INSTRUCTIONS</div>
-                        <div class="instructions-text">
-                            <strong>1.</strong> Select your cryptocurrency.<br>
-                            <strong>2.</strong> Enter your withdrawal amount (minimum 10 points).<br>
-                            <strong>3.</strong> Provide your wallet address where you want to receive funds.<br>
-                            <strong>4.</strong> Click "SEND REQUEST" to send request to the Admin.<br>
-                            <strong>5.</strong> Admin will process your withdrawal within 1-2 hours.
-                        </div>
-                        <div class="warning-text">
-                            ⚠️ <strong>CRITICAL WARNINGS:</strong><br>
-                            • Double-check your wallet address - wrong addresses cause PERMANENT LOSS!<br>
-                            • You MUST send the request via the button below.<br>
-                            • Minimum withdrawal: 10 points.<br>
-                            • Processing time: Up to 1-2 hours.
-                        </div>
-                    </div>
-                </div>
+        <!-- Stats Section -->
+        <div class="stats-section">
+            <div class="stat">
+                <span class="label">Wins</span>
+                <span class="value wins" id="winsDisplay">0</span>
             </div>
-
-            <div class="modal-buttons">
-                <button id="confirmWithdrawBtn" class="modal-confirm">📧 SEND REQUEST</button>
-                <button id="cancelWithdrawBtn" class="modal-cancel">❌ CANCEL</button>
+            <div class="stat">
+                <span class="label">Losses</span>
+                <span class="value losses" id="lossesDisplay">0</span>
+            </div>
+            <div class="stat">
+                <span class="label">Streak</span>
+                <span class="value streak" id="streakDisplay">0</span>
+            </div>
+            <div class="stat">
+                <span class="label">Best Streak</span>
+                <span class="value streak" id="bestStreakDisplay">0</span>
+            </div>
+            <div class="stat">
+                <span class="label">Level</span>
+                <span class="value" id="levelDisplay">1</span>
             </div>
         </div>
-    </div>
 
-    <!-- ============================================================
-         PROGRESSIVE PANEL - UPDATED
-         ============================================================ -->
-    <div class="progressive-panel" id="progressivePanel">
-        <div class="progressive-header">
-            <span class="progressive-title">🔥 PROGRESSIVE MODE 🔥</span>
-            <span class="progressive-status inactive" id="progressiveStatus">⏸ INACTIVE</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
-            <span class="progressive-level-display" id="currentLevelDisplay">Level 0</span>
-            <span class="progressive-pot" id="currentPotDisplay">💰 $0.00</span>
-        </div>
-        <div class="checkpoints-container" id="checkpointsContainer"></div>
-        <div class="progressive-controls">
-            <button id="toggleProgressiveBtn" class="toggle-progressive-btn">▶ START PROGRESSIVE</button>
-            <button id="cashoutProgressiveBtn" class="cashout-btn" disabled>💰 CASH OUT</button>
-        </div>
-        <div class="info-text" style="margin-top: 8px; position: relative; z-index: 1;">💡 Win to advance! Cash out anytime or risk it all for bigger multipliers! Mode stays ON until you turn it off.</div>
-    </div>
-
-    <!-- ============================================================
-         COIN AREA
-         ============================================================ -->
-    <div class="coin-area" id="coinArea">
-        <div class="coin" id="coin">🪙</div>
-        <div class="result" id="result">Select Heads or Tails to start!</div>
-    </div>
-
-    <!-- ============================================================
-         BET PANEL
-         ============================================================ -->
-    <div class="bet-panel">
-        <input type="number" step="0.01" id="betAmount" class="bet-input" placeholder="BET AMOUNT" value="100" min="0.01">
-        <div class="bet-locked-info" id="betLockedInfo">🔒 Bet locked at $<span id="lockedBetDisplay">0.00</span> for progressive run</div>
-        <div class="choice-buttons">
-            <button id="headsBtn" class="choice-btn heads">🪙 HEADS</button>
-            <button id="tailsBtn" class="choice-btn tails">🪙 TAILS</button>
-        </div>
-        <div class="action-buttons">
-            <button id="halfBtn" class="action-btn">½ HALF</button>
-            <button id="doubleBtn" class="action-btn">2x DOUBLE</button>
-            <button id="maxBtn" class="action-btn">🎲 MAX</button>
-        </div>
-        <button id="flipBtn" class="flip-btn">🔄 FLIP COIN 🔄</button>
-    </div>
-
-    <!-- ============================================================
-         STATS
-         ============================================================ -->
-    <div class="stats">
-        <div class="stat-box">
-            <div class="stat-label">WINS</div>
-            <div class="stat-value" id="winsCount">0</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-label">LOSSES</div>
-            <div class="stat-value" id="lossesCount">0</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-label">WIN RATE</div>
-            <div class="stat-value" id="winRate">0%</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-label">STREAK</div>
-            <div class="stat-value" id="currentStreak">0</div>
-        </div>
-    </div>
-
-    <!-- ============================================================
-         FLIP HISTORY LOG
-         ============================================================ -->
-    <div class="log-container">
-        <div class="log-header">
-            <span class="log-title">📜 FLIP HISTORY</span>
-            <div class="log-controls">
-                <button id="clearLogBtn" class="log-clear-btn">🗑️ Clear</button>
-                <button id="toggleLogBtn" class="log-toggle-btn">⬆️ Minimize</button>
+        <!-- XP Section -->
+        <div class="xp-section">
+            <div class="xp-header">
+                <span>XP Progress</span>
+                <span id="xpDisplay">0/100</span>
+            </div>
+            <div class="xp-bar">
+                <div class="xp-fill" id="xpProgress" style="width: 0%;"></div>
             </div>
         </div>
-        <div class="log-body" id="logBody">
-            <div class="log-empty">No flips yet. Start playing!</div>
+
+        <!-- History -->
+        <div class="history-container" id="historyContainer">
+            <div style="color: #888; text-align: center; padding: 10px;">Game history will appear here</div>
         </div>
-        <div class="log-stats">
-            <span id="logFlipCount">Total Flips: <span class="stat-value">0</span></span>
-            <span id="logWinCount">Wins: <span class="stat-value green">0</span></span>
-            <span id="logLossCount">Losses: <span class="stat-value red">0</span></span>
-            <span id="logWinRate">Win Rate: <span class="stat-value gold">0%</span></span>
-            <span id="logProfit">Profit: <span class="stat-value green">$0.00</span></span>
+
+        <!-- Console Log -->
+        <div class="console-log" id="consoleLog">
+            <div class="log-entry success">🚀 CoinFlip Casino loaded</div>
+            <div class="log-entry">📈 Multipliers: 2x, 3x, 5x, 8x, 13x, 21x, 34x, 55x</div>
+            <div class="log-entry">⌨️ Keyboard shortcuts: 1=Heads, 2=Tails, Space=Flip, H=Half, D=Double, M=Max, P=Progressive, C=Cashout</div>
         </div>
     </div>
-</div>
 
-<!-- ============================================================
-     JAVASCRIPT - Modular Loading
-     ============================================================ -->
+    <!-- Progressive Bust Overlay -->
+    <div class="progressive-bust-overlay" id="progressiveBustOverlay" style="display:none;">
+        <div class="bust-content">
+            <h2>💀 BUSTED!</h2>
+            <p>Level <span id="bustLevel">0</span></p>
+            <p>Lost <span class="bust-amount" id="bustAmount">$0.00</span></p>
+            <button onclick="document.getElementById('progressiveBustOverlay').style.display='none'" 
+                    style="margin-top:20px; padding:10px 30px; background:#ff4444; border:none; border-radius:8px; color:white; font-weight:bold; cursor:pointer;">
+                OK
+            </button>
+        </div>
+    </div>
 
-<!-- Configuration & Constants -->
-<script src="/js/config.js"></script>
+    <!-- Modal Overlay -->
+    <div class="modal-overlay" id="modalOverlay" style="display:none;">
+        <div class="modal-content" id="modalContent">
+            <span class="modal-close" id="modalClose">&times;</span>
+            <div id="modalBody"></div>
+        </div>
+    </div>
 
-<!-- Progressive Pot System -->
-<script src="/js/progressive-pot.js"></script>
-
-    
-<!-- API Layer -->
-<script src="/js/api.js"></script>
-
-<!-- UI Helpers -->
-<script src="/js/ui.js"></script>
-
-<!-- Auth Module -->
-<script src="/js/auth.js"></script>
-
-<!-- Modals -->
-<script src="/js/modals.js"></script>
-
-<!-- Progressive Mode -->
-<script src="/js/progressive.js"></script>
-
-<!-- Game Logic -->
-<script src="/js/game.js"></script>
-
-<!-- Main App Initialization -->
-<script src="/js/app.js"></script>
-
+    <!-- JavaScript -->
+    <script src="/js/config.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/ui.js"></script>
+    <script src="/js/progressive-pot.js"></script>
+    <script src="/js/progressive.js"></script>
+    <script src="/js/game.js"></script>
+    <script src="/js/modals.js"></script>
+    <script src="/js/app.js"></script>
 </body>
 </html>
