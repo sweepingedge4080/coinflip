@@ -1,183 +1,264 @@
 // ============================================================
-//  AUTH.JS - Authentication Logic with Validation
+//  AUTH.JS - Authentication System
 // ============================================================
 
 // ============================================================
-//  VALIDATION HELPERS
+//  LOGOUT FUNCTION
 // ============================================================
 
-function validateUsername(username) {
-    if (!username) return { valid: false, message: 'Username is required' };
-    if (username.length < 3) return { valid: false, message: 'Username must be at least 3 characters' };
-    if (username.length > 20) return { valid: false, message: 'Username must be less than 20 characters' };
-    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-        return { valid: false, message: 'Username can only contain letters, numbers, and underscores' };
+function logoutUser() {
+    console.log('🚪 Logging out user...');
+    
+    // Clear all session data from localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('userData');
+    
+    // Clear sessionStorage as well (for redundancy)
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('userData');
+    
+    // Clear global state
+    window.currentUser = null;
+    window.currentUserData = null;
+    window.token = null;
+    window.progressiveActive = false;
+    
+    // Clear auth headers from API client if it exists
+    if (window.api && window.api.defaults) {
+        delete window.api.defaults.headers.common['Authorization'];
     }
-    return { valid: true };
-}
-
-function validatePassword(password) {
-    if (!password) return { valid: false, message: 'Password is required' };
-    if (password.length < 4) return { valid: false, message: 'Password must be at least 4 characters' };
-    if (password.length > 100) return { valid: false, message: 'Password must be less than 100 characters' };
-    return { valid: true };
-}
-
-function sanitizeInput(input) {
-    if (!input) return '';
-    // Remove any HTML tags
-    return String(input).replace(/<[^>]*>/g, '').trim();
+    
+    // Clear axios headers if using axios directly
+    if (window.axios) {
+        delete window.axios.defaults.headers.common['Authorization'];
+    }
+    
+    // Reset UI to logged out state
+    resetUIForLoggedOutUser();
+    
+    console.log('✅ User logged out successfully');
+    
+    // Redirect to landing page after a small delay
+    setTimeout(() => {
+        window.location.href = '/landing.html';
+    }, 300);
 }
 
 // ============================================================
-//  SIGNUP
+//  RESET UI FOR LOGGED OUT USER
 // ============================================================
 
-async function signup(username, password) {
-    try {
-        // Validate username
-        const usernameValidation = validateUsername(username);
-        if (!usernameValidation.valid) {
-            showNotification(`❌ ${usernameValidation.message}`);
-            return false;
-        }
-        
-        // Validate password
-        const passwordValidation = validatePassword(password);
-        if (!passwordValidation.valid) {
-            showNotification(`❌ ${passwordValidation.message}`);
-            return false;
-        }
-        
-        // Sanitize username
-        const sanitizedUsername = sanitizeInput(username);
-        
-        showNotification('📝 Creating account...');
-        
-        const data = await apiSignup(sanitizedUsername, password);
-        
-        if (!data || !data.token) {
-            throw new Error('Invalid response from server');
-        }
-        
-        setAuthToken(data.token);
-        setUserData(data.user);
-        authToken = data.token;
-        currentUser = data.user;
-        currentUserData = data.user;
-        isAdmin = currentUser.isAdmin || false;
-        
-        showAuthUI();
-        setGameEnabled(true);
-        updateUI();
-        
-        // Clear input fields
-        DOM.loginUsername.value = '';
-        DOM.loginPassword.value = '';
-        
-        showNotification(`✅ Welcome ${currentUser.username}!`);
-        log(`User signed up: ${sanitizedUsername}`);
-        return true;
-        
-    } catch (error) {
-        logError('Signup failed', error);
-        showNotification(`❌ Signup failed: ${error.message || 'Unknown error'}`);
-        return false;
+function resetUIForLoggedOutUser() {
+    const userInfo = document.getElementById('userInfo');
+    const loginBtn = document.getElementById('loginBtn');
+    const signupBtn = document.getElementById('signupBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const balanceDisplay = document.getElementById('balanceDisplay');
+    
+    if (userInfo) {
+        userInfo.textContent = '';
+        userInfo.style.display = 'none';
+    }
+    
+    if (loginBtn) {
+        loginBtn.style.display = 'inline-block';
+    }
+    
+    if (signupBtn) {
+        signupBtn.style.display = 'inline-block';
+    }
+    
+    if (logoutBtn) {
+        logoutBtn.style.display = 'none';
+    }
+    
+    if (balanceDisplay) {
+        balanceDisplay.textContent = '$0.00';
     }
 }
 
 // ============================================================
-//  LOGIN
+//  SETUP LOGOUT LISTENER
 // ============================================================
 
-async function login(username, password) {
-    try {
-        // Validate inputs
-        if (!username || !password) {
-            showNotification('❌ Please enter username and password');
-            return false;
-        }
+function setupLogoutListener() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        // Remove any existing listeners to prevent duplicates
+        const newLogoutBtn = logoutBtn.cloneNode(true);
+        logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
         
-        // Validate username
-        const usernameValidation = validateUsername(username);
-        if (!usernameValidation.valid) {
-            showNotification(`❌ ${usernameValidation.message}`);
-            return false;
-        }
-        
-        // Validate password
-        const passwordValidation = validatePassword(password);
-        if (!passwordValidation.valid) {
-            showNotification(`❌ ${passwordValidation.message}`);
-            return false;
-        }
-        
-        // Sanitize username
-        const sanitizedUsername = sanitizeInput(username);
-        
-        showNotification('🔑 Logging in...');
-        
-        const data = await apiLogin(sanitizedUsername, password);
-        
-        if (!data || !data.token) {
-            throw new Error('Invalid response from server');
-        }
-        
-        setAuthToken(data.token);
-        setUserData(data.user);
-        authToken = data.token;
-        currentUser = data.user;
-        currentUserData = data.user;
-        isAdmin = currentUser.isAdmin || false;
-        
-        showAuthUI();
-        setGameEnabled(true);
-        updateUI();
-        
-        // Clear input fields
-        DOM.loginUsername.value = '';
-        DOM.loginPassword.value = '';
-        
-        showNotification(`✅ Welcome back ${currentUser.username}!`);
-        log(`User logged in: ${sanitizedUsername}`);
-        return true;
-        
-    } catch (error) {
-        logError('Login failed', error);
-        showNotification(`❌ Login failed: ${error.message || 'Invalid credentials'}`);
-        return false;
+        newLogoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🔘 Logout button clicked');
+            logoutUser();
+        });
+        console.log('✅ Logout button listener attached');
+    } else {
+        console.warn('⚠️ Logout button not found in DOM');
     }
 }
 
 // ============================================================
-//  LOGOUT
+//  LOGIN FUNCTION
 // ============================================================
 
-function logout() {
+async function loginUser(username, password) {
     try {
-        const username = currentUser ? currentUser.username : 'User';
+        console.log('🔐 Attempting login for:', username);
         
-        clearAuthToken();
-        setUserData(null);
-        authToken = null;
-        currentUser = null;
-        currentUserData = null;
-        isAdmin = false;
-        selectedChoice = null;
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
         
-        resetProgressiveRun();
-        hideAuthUI();
-        setGameEnabled(false);
-        updateSelectedButton();
+        const data = await response.json();
         
-        if (DOM.loginUsername) DOM.loginUsername.value = '';
-        if (DOM.loginPassword) DOM.loginPassword.value = '';
+        if (!response.ok) {
+            throw new Error(data.error || 'Login failed');
+        }
         
-        showNotification(`👋 Logged out, ${username}`);
-        log(`User logged out: ${username}`);
+        // Store token and user data
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('userData', JSON.stringify(data.user));
+        
+        // Set global state
+        window.currentUser = data.user;
+        window.currentUserData = data.user;
+        window.token = data.token;
+        
+        // Set auth header for API calls
+        if (window.api && window.api.defaults) {
+            window.api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+        }
+        
+        // Set axios header if available
+        if (window.axios) {
+            window.axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+        }
+        
+        console.log('✅ Login successful for:', data.user.username);
+        
+        // Update UI
+        updateUIForLoggedInUser(data.user);
+        
+        // Show success message
+        showNotification('Login successful! Welcome back, ' + data.user.username, 'success');
+        
+        // Redirect to game page
+        setTimeout(() => {
+            window.location.href = '/game.html';
+        }, 500);
+        
+        return data;
     } catch (error) {
-        logError('Logout failed', error);
-        showNotification('❌ Error logging out');
+        console.error('❌ Login error:', error);
+        showNotification('Login failed: ' + error.message, 'error');
+        throw error;
+    }
+}
+
+// ============================================================
+//  SIGNUP FUNCTION
+// ============================================================
+
+async function signupUser(username, password) {
+    try {
+        console.log('📝 Attempting signup for:', username);
+        
+        const response = await fetch('/api/auth/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Signup failed');
+        }
+        
+        // Store token and user data
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('userData', JSON.stringify(data.user));
+        
+        // Set global state
+        window.currentUser = data.user;
+        window.currentUserData = data.user;
+        window.token = data.token;
+        
+        // Set auth header for API calls
+        if (window.api && window.api.defaults) {
+            window.api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+        }
+        
+        if (window.axios) {
+            window.axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+        }
+        
+        console.log('✅ Signup successful for:', data.user.username);
+        
+        // Update UI
+        updateUIForLoggedInUser(data.user);
+        
+        // Show success message
+        showNotification('Account created successfully! Welcome, ' + data.user.username, 'success');
+        
+        // Redirect to game page
+        setTimeout(() => {
+            window.location.href = '/game.html';
+        }, 500);
+        
+        return data;
+    } catch (error) {
+        console.error('❌ Signup error:', error);
+        showNotification('Signup failed: ' + error.message, 'error');
+        throw error;
+    }
+}
+
+// ============================================================
+//  UPDATE UI FOR LOGGED IN USER
+// ============================================================
+
+function updateUIForLoggedInUser(user) {
+    const userInfo = document.getElementById('userInfo');
+    const loginBtn = document.getElementById('loginBtn');
+    const signupBtn = document.getElementById('signupBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const balanceDisplay = document.getElementById('balanceDisplay');
+    
+    if (userInfo) {
+        userInfo.textContent = `👤 ${user.username}`;
+        userInfo.style.display = 'block';
+    }
+    
+    if (loginBtn) {
+        loginBtn.style.display = 'none';
+    }
+    
+    if (signupBtn) {
+        signupBtn.style.display = 'none';
+    }
+    
+    if (logoutBtn) {
+        logoutBtn.style.display = 'inline-block';
+        // Reattach logout listener
+        setupLogoutListener();
+    }
+    
+    if (balanceDisplay && user.balance !== undefined) {
+        balanceDisplay.textContent = `$${user.balance.toFixed(2)}`;
     }
 }
 
@@ -185,274 +266,209 @@ function logout() {
 //  CHECK SESSION
 // ============================================================
 
-async function checkSession() {
+function checkSession() {
+    console.log('🔍 Checking saved session...');
+    
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+    
+    if (token && userData) {
+        try {
+            const user = JSON.parse(userData);
+            window.currentUser = user;
+            window.currentUserData = user;
+            window.token = token;
+            
+            // Set auth header for API calls
+            if (window.api && window.api.defaults) {
+                window.api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            }
+            
+            if (window.axios) {
+                window.axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            }
+            
+            console.log('✅ Session restored for:', user.username);
+            
+            // Update UI
+            updateUIForLoggedInUser(user);
+            
+            // Verify token is still valid
+            verifyToken(token);
+            
+            return true;
+        } catch (error) {
+            console.error('❌ Error parsing user data:', error);
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('userData');
+            return false;
+        }
+    }
+    
+    console.log('ℹ️ No saved session found');
+    return false;
+}
+
+// ============================================================
+//  VERIFY TOKEN
+// ============================================================
+
+async function verifyToken(token) {
     try {
-        const savedToken = getAuthToken();
+        const response = await fetch('/api/auth/me', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
         
-        if (!savedToken) {
-            log('No saved session found');
+        if (!response.ok) {
+            // Token is invalid, logout
+            console.warn('⚠️ Token verification failed, logging out');
+            logoutUser();
             return false;
         }
         
-        log('Checking saved session...');
-        authToken = savedToken;
+        const user = await response.json();
+        console.log('✅ Token verified for:', user.username);
         
-        const user = await apiGetUser();
-        
-        if (!user) {
-            throw new Error('No user data returned');
+        // Update user data if changed
+        if (user.balance !== undefined) {
+            const balanceDisplay = document.getElementById('balanceDisplay');
+            if (balanceDisplay) {
+                balanceDisplay.textContent = `$${user.balance.toFixed(2)}`;
+            }
+            // Update stored user data
+            const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+            storedUser.balance = user.balance;
+            localStorage.setItem('user', JSON.stringify(storedUser));
         }
         
-        setUserData(user);
-        currentUser = user;
-        currentUserData = user;
-        isAdmin = user.isAdmin || false;
-        
-        showAuthUI();
-        setGameEnabled(true);
-        updateUI();
-        
-        showNotification(`✅ Welcome back ${currentUser.username}!`);
-        log(`Session restored for: ${currentUser.username}`);
         return true;
-        
     } catch (error) {
-        logWarning('Session expired or invalid', error);
-        clearAuthToken();
-        setUserData(null);
-        authToken = null;
-        currentUser = null;
-        currentUserData = null;
-        isAdmin = false;
-        hideAuthUI();
-        setGameEnabled(false);
+        console.error('❌ Token verification error:', error);
+        logoutUser();
         return false;
     }
 }
 
 // ============================================================
-//  ADMIN LOGIN (For admin.html - Separate Page)
-// ============================================================
-
-async function adminLogin(username, password) {
-    try {
-        // Validate inputs
-        if (!username || !password) {
-            showNotification('❌ Please enter admin credentials');
-            return false;
-        }
-        
-        // Validate username
-        const usernameValidation = validateUsername(username);
-        if (!usernameValidation.valid) {
-            showNotification(`❌ ${usernameValidation.message}`);
-            return false;
-        }
-        
-        // Validate password
-        const passwordValidation = validatePassword(password);
-        if (!passwordValidation.valid) {
-            showNotification(`❌ ${passwordValidation.message}`);
-            return false;
-        }
-        
-        const sanitizedUsername = sanitizeInput(username);
-        
-        showNotification('🔑 Admin login...');
-        
-        const data = await apiLogin(sanitizedUsername, password);
-        
-        if (!data || !data.token) {
-            throw new Error('Invalid response from server');
-        }
-        
-        if (!data.user || !data.user.isAdmin) {
-            throw new Error('Not an admin user');
-        }
-        
-        // Store admin token separately (for admin.html)
-        sessionStorage.setItem(STORAGE_KEYS.ADMIN_TOKEN, data.token);
-        sessionStorage.setItem(STORAGE_KEYS.ADMIN_USER, JSON.stringify(data.user));
-        
-        showNotification('✅ Admin login successful!');
-        log(`Admin logged in: ${sanitizedUsername}`);
-        return true;
-        
-    } catch (error) {
-        logError('Admin login failed', error);
-        showNotification(`❌ Admin login failed: ${error.message}`);
-        return false;
-    }
-}
-
-function adminLogout() {
-    try {
-        sessionStorage.removeItem(STORAGE_KEYS.ADMIN_TOKEN);
-        sessionStorage.removeItem(STORAGE_KEYS.ADMIN_USER);
-        showNotification('👋 Admin logged out');
-        log('Admin logged out');
-    } catch (error) {
-        logError('Admin logout failed', error);
-    }
-}
-
-function getAdminToken() {
-    try {
-        return sessionStorage.getItem(STORAGE_KEYS.ADMIN_TOKEN);
-    } catch (error) {
-        return null;
-    }
-}
-
-function getAdminUser() {
-    try {
-        const stored = sessionStorage.getItem(STORAGE_KEYS.ADMIN_USER);
-        if (stored) {
-            return JSON.parse(stored);
-        }
-        return null;
-    } catch (error) {
-        return null;
-    }
-}
-
-// ============================================================
-//  AUTH UI HELPERS
-// ============================================================
-
-function showAuthUI() {
-    try {
-        if (!currentUser) return;
-        
-        if (DOM.authForm) DOM.authForm.style.display = 'none';
-        if (DOM.userInfo) DOM.userInfo.style.display = 'block';
-        if (DOM.currentUserDisplay) DOM.currentUserDisplay.innerText = currentUser.username;
-        if (DOM.userIdDisplay) DOM.userIdDisplay.innerText = currentUser.id;
-        
-        // Show admin badge if user is admin (just visual, no panel)
-        if (DOM.adminBadge) {
-            DOM.adminBadge.style.display = isAdmin ? 'inline-block' : 'none';
-        }
-    } catch (error) {
-        logError('showAuthUI failed', error);
-    }
-}
-
-function hideAuthUI() {
-    try {
-        if (DOM.authForm) DOM.authForm.style.display = 'block';
-        if (DOM.userInfo) DOM.userInfo.style.display = 'none';
-        if (DOM.adminBadge) DOM.adminBadge.style.display = 'none';
-        if (DOM.balance) DOM.balance.innerText = '0.00';
-    } catch (error) {
-        logError('hideAuthUI failed', error);
-    }
-}
-
-// ============================================================
-//  AUTH EVENT LISTENERS
+//  SETUP AUTH LISTENERS (Login/Signup forms)
 // ============================================================
 
 function setupAuthListeners() {
-    try {
-        if (DOM.loginBtn) {
-            DOM.loginBtn.onclick = function() {
-                const username = DOM.loginUsername ? DOM.loginUsername.value.trim() : '';
-                const password = DOM.loginPassword ? DOM.loginPassword.value : '';
-                login(username, password);
-            };
-        } else {
-            logWarning('loginBtn not found');
-        }
-        
-        if (DOM.signupBtn) {
-            DOM.signupBtn.onclick = function() {
-                const username = DOM.loginUsername ? DOM.loginUsername.value.trim() : '';
-                const password = DOM.loginPassword ? DOM.loginPassword.value : '';
-                signup(username, password);
-            };
-        } else {
-            logWarning('signupBtn not found');
-        }
-        
-        if (DOM.logoutBtn) {
-            DOM.logoutBtn.onclick = function() {
-                if (confirm('Are you sure you want to logout?')) {
-                    logout();
-                }
-            };
-        } else {
-            logWarning('logoutBtn not found');
-        }
-        
-        // Enter key on password field triggers login
-        if (DOM.loginPassword) {
-            DOM.loginPassword.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    if (DOM.loginBtn) DOM.loginBtn.click();
-                }
-            });
-        }
-        
-        // Enter key on username field moves to password
-        if (DOM.loginUsername) {
-            DOM.loginUsername.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    if (DOM.loginPassword) DOM.loginPassword.focus();
-                }
-            });
-        }
-        
-        // Auto-trim username input (remove accidental spaces)
-        if (DOM.loginUsername) {
-            DOM.loginUsername.addEventListener('blur', function() {
-                this.value = this.value.trim();
-            });
-        }
-        
-        log('✅ Auth listeners setup complete');
-    } catch (error) {
-        logError('setupAuthListeners failed', error);
+    console.log('🔧 Setting up auth listeners...');
+    
+    // Login form
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername')?.value;
+            const password = document.getElementById('loginPassword')?.value;
+            if (username && password) {
+                loginUser(username, password);
+            } else {
+                showNotification('Please enter username and password', 'error');
+            }
+        });
+        console.log('✅ Login form listener attached');
     }
+    
+    // Signup form
+    const signupForm = document.getElementById('signupForm');
+    if (signupForm) {
+        signupForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('signupUsername')?.value;
+            const password = document.getElementById('signupPassword')?.value;
+            const confirmPassword = document.getElementById('signupConfirmPassword')?.value;
+            
+            if (!username || username.length < 3) {
+                showNotification('Username must be at least 3 characters', 'error');
+                return;
+            }
+            if (!password || password.length < 4) {
+                showNotification('Password must be at least 4 characters', 'error');
+                return;
+            }
+            if (password !== confirmPassword) {
+                showNotification('Passwords do not match', 'error');
+                return;
+            }
+            
+            signupUser(username, password);
+        });
+        console.log('✅ Signup form listener attached');
+    }
+    
+    // Setup logout listener
+    setupLogoutListener();
 }
 
 // ============================================================
-//  PASSWORD VISIBILITY TOGGLE (Optional)
+//  NOTIFICATION SYSTEM
 // ============================================================
 
-function togglePasswordVisibility(inputId) {
-    try {
-        const input = document.getElementById(inputId);
-        if (!input) return;
-        
-        if (input.type === 'password') {
-            input.type = 'text';
-            showNotification('👁️ Password visible');
-        } else {
-            input.type = 'password';
-            showNotification('🔒 Password hidden');
-        }
-    } catch (error) {
-        logError('togglePasswordVisibility failed', error);
+function showNotification(message, type = 'info') {
+    console.log(`📢 ${type.toUpperCase()}: ${message}`);
+    
+    // Check if notification element exists
+    let notification = document.getElementById('notification');
+    if (!notification) {
+        // Create notification element if it doesn't exist
+        notification = document.createElement('div');
+        notification.id = 'notification';
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 9999;
+            max-width: 400px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            transform: translateX(120%);
+        `;
+        document.body.appendChild(notification);
     }
+    
+    // Set colors based on type
+    const colors = {
+        success: { bg: '#00cc88', text: '#fff' },
+        error: { bg: '#ff4444', text: '#fff' },
+        warning: { bg: '#ffaa00', text: '#1a1a2e' },
+        info: { bg: '#4a90d9', text: '#fff' }
+    };
+    
+    const color = colors[type] || colors.info;
+    notification.style.backgroundColor = color.bg;
+    notification.style.color = color.text;
+    notification.textContent = message;
+    notification.style.transform = 'translateX(0)';
+    
+    // Auto-hide after 3 seconds
+    clearTimeout(notification._timeout);
+    notification._timeout = setTimeout(() => {
+        notification.style.transform = 'translateX(120%)';
+    }, 3000);
 }
 
 // ============================================================
 //  EXPOSE GLOBALLY
 // ============================================================
 
-window.signup = signup;
-window.login = login;
-window.logout = logout;
+window.logoutUser = logoutUser;
+window.loginUser = loginUser;
+window.signupUser = signupUser;
 window.checkSession = checkSession;
-window.adminLogin = adminLogin;
-window.adminLogout = adminLogout;
-window.getAdminToken = getAdminToken;
-window.getAdminUser = getAdminUser;
+window.verifyToken = verifyToken;
 window.setupAuthListeners = setupAuthListeners;
-window.togglePasswordVisibility = togglePasswordVisibility;
-window.showAuthUI = showAuthUI;
-window.hideAuthUI = hideAuthUI;
-window.validateUsername = validateUsername;
-window.validatePassword = validatePassword;
-window.sanitizeInput = sanitizeInput;
+window.setupLogoutListener = setupLogoutListener;
+window.updateUIForLoggedInUser = updateUIForLoggedInUser;
+window.resetUIForLoggedOutUser = resetUIForLoggedOutUser;
+window.showNotification = showNotification;
+
+console.log('🔐 Auth system loaded');
